@@ -1,5 +1,5 @@
 import { ShoppingBag, X, Plus, Minus, MessageSquare } from "lucide-react";
-import { useCart } from "@/hooks/useCart";
+import { useCart, type CartItem } from "@/hooks/useCart";
 import {
   Sheet,
   SheetContent,
@@ -12,21 +12,21 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function CartDrawer() {
-  const { items, removeItem, updateQuantity, totalItems, clearCart } = useCart();
+  const { items, removeItem, updateQuantity, totalItems } = useCart();
   const WHATSAPP_NUMBER = "5584994085244";
 
   const handleCheckout = () => {
     if (items.length === 0) return;
 
     let message = "Olá! Gostaria de finalizar o pedido com os seguintes produtos:\n\n";
-    items.forEach((item) => {
+    items.forEach((item: CartItem) => {
       message += `• ${item.name} (${item.subtitle})\n`;
       message += `  Qtd: ${item.quantity} x ${item.price}\n\n`;
     });
 
-    const totalPrice = items.reduce((acc, item) => {
+    const totalPrice = items.reduce((acc: number, item: CartItem) => {
       const priceVal = parseFloat(item.price.replace("R$", "").replace(",", "."));
-      return acc + priceVal * item.quantity;
+      return acc + (priceVal * item.quantity);
     }, 0);
 
     message += `Total: R$ ${totalPrice.toFixed(2).replace(".", ",")}\n`;
@@ -70,7 +70,7 @@ export function CartDrawer() {
           <>
             <ScrollArea className="flex-1 px-6">
               <div className="divide-y divide-border py-4">
-                {items.map((item) => (
+                {items.map((item: CartItem) => (
                   <div key={item.name} className="flex gap-4 py-4">
                     <div className="size-20 shrink-0 overflow-hidden rounded-md border border-border bg-muted">
                       <img
@@ -124,9 +124,9 @@ export function CartDrawer() {
                 <span className="text-pink">
                   R${" "}
                   {items
-                    .reduce((acc, item) => {
+                    .reduce((acc: number, item: CartItem) => {
                       const priceVal = parseFloat(item.price.replace("R$", "").replace(",", "."));
-                      return acc + priceVal * item.quantity;
+                      return acc + (priceVal * item.quantity);
                     }, 0)
                     .toFixed(2)
                     .replace(".", ",")}

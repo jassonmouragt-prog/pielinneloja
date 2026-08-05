@@ -1,7 +1,8 @@
-import { ArrowRight, Heart, MessageSquare, Star } from "lucide-react";
-
+import { ArrowRight, Heart, ShoppingBag, Star } from "lucide-react";
 import { products } from "./data";
 import { Reveal } from "./Reveal";
+import { useCart } from "@/hooks/useCart";
+import { toast } from "sonner";
 
 function Stars({ rating }: { rating: number }) {
   return (
@@ -32,6 +33,7 @@ export function Products() {
     });
     toast.success("Produto adicionado ao carrinho!");
   };
+
   return (
     <section id="mais-vendidos" className="bg-background">
       <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:py-14">

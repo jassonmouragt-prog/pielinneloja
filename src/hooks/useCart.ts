@@ -22,7 +22,7 @@ export const useCart = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
-      addItem: (product) => {
+      addItem: (product: Omit<CartItem, 'quantity'>) => {
         const currentItems = get().items;
         const existingItem = currentItems.find((item) => item.name === product.name);
 
@@ -38,10 +38,10 @@ export const useCart = create<CartStore>()(
           set({ items: [...currentItems, { ...product, quantity: 1 }] });
         }
       },
-      removeItem: (name) => {
+      removeItem: (name: string) => {
         set({ items: get().items.filter((item) => item.name !== name) });
       },
-      updateQuantity: (name, quantity) => {
+      updateQuantity: (name: string, quantity: number) => {
         if (quantity <= 0) {
           get().removeItem(name);
           return;
@@ -53,7 +53,7 @@ export const useCart = create<CartStore>()(
         });
       },
       clearCart: () => set({ items: [] }),
-      totalItems: () => get().items.reduce((total, item) => total + item.quantity, 0),
+      totalItems: () => get().items.reduce((total: number, item: CartItem) => total + item.quantity, 0),
     }),
     {
       name: 'cart-storage',
