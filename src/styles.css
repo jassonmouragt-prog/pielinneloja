@@ -19,6 +19,16 @@
  */
 
 @theme inline {
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --color-pink: var(--pink);
+  --color-pink-deep: var(--pink-deep);
+  --color-pink-light: var(--pink-light);
+  --color-pink-soft: var(--pink-soft);
+  --color-lilac: var(--lilac);
+  --color-lilac-light: var(--lilac-light);
+  --color-blush: var(--blush);
+  --color-cream: var(--cream);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -62,26 +72,40 @@
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0.75rem;
+  --pink: oklch(0.649 0.238 357.7);
+  --pink-deep: oklch(0.618 0.236 2.2);
+  --pink-light: oklch(0.713 0.205 355.3);
+  --pink-soft: oklch(0.848 0.097 351.7);
+  --lilac: oklch(0.686 0.162 306.5);
+  --lilac-light: oklch(0.831 0.091 309.0);
+  --blush: oklch(0.948 0.027 344.6);
+  --cream: oklch(0.979 0.013 345.5);
+  --gradient-nav: linear-gradient(90deg, oklch(0.618 0.236 2.2), oklch(0.682 0.240 353.6));
+  --gradient-hero: linear-gradient(105deg, oklch(0.669 0.151 303.6) 0%, oklch(0.669 0.151 303.6) 38%, oklch(0.686 0.162 306.5) 55%, oklch(0.682 0.240 353.6) 100%);
+  --gradient-banner: linear-gradient(100deg, oklch(0.831 0.091 309.0) 0%, oklch(0.686 0.162 306.5) 35%, oklch(0.682 0.240 353.6) 100%);
+  --gradient-pink: linear-gradient(135deg, oklch(0.649 0.238 357.7), oklch(0.713 0.205 355.3));
+  --shadow-soft: 0 2px 12px -6px oklch(0.618 0.236 2.2 / 0.18);
+  --shadow-card: 0 4px 20px -10px oklch(0.618 0.236 2.2 / 0.22);
   --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.231 0.018 305.2);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.231 0.018 305.2);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.231 0.018 305.2);
+  --primary: oklch(0.649 0.238 357.7);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.948 0.027 344.6);
+  --secondary-foreground: oklch(0.618 0.236 2.2);
+  --muted: oklch(0.971 0.014 343.2);
+  --muted-foreground: oklch(0.514 0.020 311.4);
+  --accent: oklch(0.902 0.060 306.7);
+  --accent-foreground: oklch(0.355 0.014 302.7);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --border: oklch(0.948 0.027 344.6);
+  --input: oklch(0.948 0.027 344.6);
+  --ring: oklch(0.713 0.205 355.3);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -140,5 +164,63 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility animate-fade-up {
+  animation: fade-up 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@utility reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.55s ease-out,
+    transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  &[data-visible="true"] {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility gradient-hero {
+  background-image: var(--gradient-hero);
+}
+
+@utility gradient-banner {
+  background-image: var(--gradient-banner);
+}
+
+@utility gradient-nav {
+  background-image: var(--gradient-nav);
+}
+
+@utility gradient-pink {
+  background-image: var(--gradient-pink);
+}
+
+@utility shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+@utility shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
   }
 }
