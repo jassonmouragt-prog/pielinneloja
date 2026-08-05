@@ -21,6 +21,17 @@ function Stars({ rating }: { rating: number }) {
 }
 
 export function Products() {
+  const { addItem } = useCart();
+
+  const handleAddToCart = (product: any) => {
+    addItem({
+      name: product.name,
+      subtitle: product.subtitle,
+      price: product.price,
+      image: product.image,
+    });
+    toast.success("Produto adicionado ao carrinho!");
+  };
   return (
     <section id="mais-vendidos" className="bg-background">
       <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:py-14">
@@ -65,15 +76,13 @@ export function Products() {
                   <span className="text-[11px] text-muted-foreground">({product.reviews})</span>
                 </div>
                 <p className="mt-2 text-sm font-bold text-foreground">{product.price}</p>
-                <a
-                  href={`https://wa.me/5500000000000?text=${encodeURIComponent(`Olá! Gostaria de comprar o produto: ${product.name} ${product.subtitle} por ${product.price}`)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-md gradient-pink px-3 py-2 text-[11px] font-semibold text-primary-foreground transition-opacity duration-300 hover:opacity-90"
+                <button
+                  onClick={() => handleAddToCart(product)}
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-md gradient-pink px-3 py-2 text-[11px] font-semibold text-primary-foreground transition-opacity duration-300 hover:opacity-90 cursor-pointer"
                 >
-                  <MessageSquare className="size-3.5" />
-                  Comprar pelo WhatsApp
-                </a>
+                  <ShoppingBag className="size-3.5" />
+                  Adicionar ao Carrinho
+                </button>
               </article>
             </Reveal>
           ))}
