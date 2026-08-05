@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function CartDrawer() {
-  const { items, removeItem, updateQuantity, totalItems } = useCart();
+  const { items, removeItem, updateQuantity, totalItems, isOpen, setIsOpen } = useCart();
   const WHATSAPP_NUMBER = "5584994085244";
 
   const handleCheckout = () => {
@@ -36,7 +36,7 @@ export function CartDrawer() {
   };
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <button
           aria-label="Carrinho"
