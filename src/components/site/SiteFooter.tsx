@@ -24,7 +24,7 @@ export function SiteFooter() {
             {[Instagram, Send, Music2, Instagram].map((Icon, index) => (
               <a
                 key={index}
-                href="https://instagram.com/sualojinhamakeup"
+                href="https://www.instagram.com/sualojinhamakeup/"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Redes sociais"
