@@ -43,7 +43,7 @@ export const products = [
     image: prodBase,
     rating: 4.5,
     reviews: 120,
-    price: "R$ 24,90",
+    price: "R$ 20,00",
   },
   {
     name: "Lip Tint Melu",
@@ -51,7 +51,7 @@ export const products = [
     image: prodLipTint,
     rating: 4,
     reviews: 98,
-    price: "R$ 16,90",
+    price: "R$ 15,00",
   },
   {
     name: "Pó Translúcido",
@@ -59,7 +59,7 @@ export const products = [
     image: prodPo,
     rating: 4.5,
     reviews: 76,
-    price: "R$ 29,90",
+    price: "R$ 20,00",
   },
   {
     name: "Máscara de Cílios",
@@ -67,7 +67,7 @@ export const products = [
     image: prodMascara,
     rating: 4.5,
     reviews: 64,
-    price: "R$ 19,90",
+    price: "R$ 15,00",
   },
   {
     name: "Hidratante Labial",
@@ -75,7 +75,7 @@ export const products = [
     image: prodHidratante,
     rating: 4.5,
     reviews: 52,
-    price: "R$ 14,90",
+    price: "R$ 10,00",
   },
 ];
 
