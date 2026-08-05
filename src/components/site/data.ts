@@ -80,11 +80,11 @@ export const products = [
 ];
 
 export const instagramPosts = [
-  { image: "https://images.unsplash.com/photo-1594465919760-441fe5908ab0?q=80&w=2000&auto=format&fit=crop", alt: "Loja de maquiagem rosa" },
-  { image: "https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=2000&auto=format&fit=crop", alt: "Batons e cosméticos rosa" },
-  { image: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=2000&auto=format&fit=crop", alt: "Kits de presente de beleza" },
-  { image: "https://images.unsplash.com/photo-1515688594390-b649af70d282?q=80&w=2000&auto=format&fit=crop", alt: "Maquiagem e acessórios" },
-  { image: "https://images.unsplash.com/photo-1526045612212-70caf35c11bc?q=80&w=2000&auto=format&fit=crop", alt: "Produtos de beleza e flores" },
+  { image: "https://vdtitubyemidexqovgnd.supabase.co/storage/v1/object/public/lovable-uploads/87349942-887e-40d0-86ec-3162608490a6.png", alt: "Interior da loja Maakeup" },
+  { image: "https://vdtitubyemidexqovgnd.supabase.co/storage/v1/object/public/lovable-uploads/967d32c5-7a4c-47ea-bc9b-32f22b8265a0.png", alt: "Produtos de maquiagem" },
+  { image: "https://vdtitubyemidexqovgnd.supabase.co/storage/v1/object/public/lovable-uploads/273934f7-e455-4034-8c85-23c348f32247.png", alt: "Kits de presente" },
+  { image: "https://vdtitubyemidexqovgnd.supabase.co/storage/v1/object/public/lovable-uploads/64b54e3d-0ea1-4545-be0b-b530c3beed5b.png", alt: "Batons e gloss" },
+  { image: "https://vdtitubyemidexqovgnd.supabase.co/storage/v1/object/public/lovable-uploads/a681329c-a81d-4008-8e62-df2914ca3f1b.png", alt: "Novidades da loja" },
 ];
 
 export const footerColumns = [
