@@ -80,11 +80,11 @@ export const products = [
 ];
 
 export const instagramPosts = [
-  { image: ig1, alt: "Prateleiras da loja repletas de maquiagem" },
-  { image: ig2, alt: "Batons e lip glosses cor-de-rosa" },
-  { image: ig3, alt: "Kits de presente com produtos de beleza" },
-  { image: ig4, alt: "Pó compacto lilás na mão" },
-  { image: ig5, alt: "Atendente da loja Sua Lojinha Maakeup" },
+  { image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=2087&auto=format&fit=crop", alt: "Loja de maquiagem rosa" },
+  { image: "https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1780&auto=format&fit=crop", alt: "Batons e cosméticos rosa" },
+  { image: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=1935&auto=format&fit=crop", alt: "Kits de presente de beleza" },
+  { image: "https://images.unsplash.com/photo-1515688594390-b649af70d282?q=80&w=2006&auto=format&fit=crop", alt: "Maquiagem e acessórios" },
+  { image: "https://images.unsplash.com/photo-1526045612212-70caf35c11bc?q=80&w=2070&auto=format&fit=crop", alt: "Produtos de beleza e flores" },
 ];
 
 export const footerColumns = [
