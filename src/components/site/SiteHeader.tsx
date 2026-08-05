@@ -1,11 +1,23 @@
 import { Heart, Menu, Search, ShoppingBag, Truck, User, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 import logo from "@/assets/logo.png";
 import { navLinks } from "./data";
 
 export function SiteHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setIsMenuOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setIsMenuOpen(false);
+    }, 150);
+  };
 
   return (
     <header>
@@ -102,8 +114,8 @@ export function SiteHeader() {
         <div className="mx-auto flex max-w-[1200px] items-center px-4 py-3.5 text-[13px] font-medium sm:px-6">
           <div 
             className="flex items-center gap-2 cursor-pointer group shrink-0 relative z-20"
-            onMouseEnter={() => setIsMenuOpen(true)}
-            onMouseLeave={() => setIsMenuOpen(false)}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             <Menu className="size-4" />
@@ -116,10 +128,10 @@ export function SiteHeader() {
                   <a
                     key={link}
                     href={`#${link.toLowerCase()}`}
-                    className="flex items-center justify-between px-5 py-3 hover:bg-pink/5 hover:text-pink transition-all duration-300 translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
+                    className="flex items-center justify-between px-5 py-3 hover:bg-pink/5 hover:text-pink transition-all duration-300"
                     style={{ 
-                      transitionDelay: `${index * 50}ms`,
-                      animation: isMenuOpen ? `slideInRight 0.3s forwards ${index * 50}ms` : 'none'
+                      animation: isMenuOpen ? `slideInRight 0.3s forwards ${index * 50}ms` : 'none',
+                      opacity: 0 // Start hidden for animation
                     }}
                   >
                     {link}
@@ -130,7 +142,7 @@ export function SiteHeader() {
             </div>
           </div>
 
-          <div className="flex items-center gap-6 overflow-x-auto ml-6 whitespace-nowrap lg:gap-8 no-scrollbar">
+          <div className="hidden items-center gap-6 overflow-x-auto ml-6 whitespace-nowrap lg:gap-8 no-scrollbar">
             {navLinks.map((link) => (
               <a
                 key={link}
