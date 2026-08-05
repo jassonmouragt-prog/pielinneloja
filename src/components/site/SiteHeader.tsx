@@ -1,22 +1,22 @@
 import { Heart, Menu, Search, ShoppingBag, Truck, User, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 import logo from "@/assets/logo.png";
 import { navLinks } from "./data";
 
 export function SiteHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  let timeoutId: ReturnType<typeof setTimeout>;
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   const handleMouseEnter = () => {
-    if (timeoutId) clearTimeout(timeoutId);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setIsMenuOpen(true);
   };
 
   const handleMouseLeave = () => {
-    timeoutId = setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       setIsMenuOpen(false);
-    }, 100);
+    }, 150);
   };
 
   return (
