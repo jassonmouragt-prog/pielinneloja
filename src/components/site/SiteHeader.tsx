@@ -6,6 +6,18 @@ import { navLinks } from "./data";
 
 export function SiteHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  let timeoutId: ReturnType<typeof setTimeout>;
+
+  const handleMouseEnter = () => {
+    if (timeoutId) clearTimeout(timeoutId);
+    setIsMenuOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    timeoutId = setTimeout(() => {
+      setIsMenuOpen(false);
+    }, 100);
+  };
 
   return (
     <header>
@@ -102,8 +114,8 @@ export function SiteHeader() {
         <div className="mx-auto flex max-w-[1200px] items-center px-4 py-3.5 text-[13px] font-medium sm:px-6">
           <div 
             className="flex items-center gap-2 cursor-pointer group shrink-0 relative z-20"
-            onMouseEnter={() => setIsMenuOpen(true)}
-            onMouseLeave={() => setIsMenuOpen(false)}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             <Menu className="size-4" />
@@ -130,7 +142,7 @@ export function SiteHeader() {
             </div>
           </div>
 
-          <div className="flex items-center gap-6 overflow-x-auto ml-6 whitespace-nowrap lg:gap-8 no-scrollbar">
+          <div className="hidden items-center gap-6 overflow-x-auto ml-6 whitespace-nowrap lg:gap-8 no-scrollbar">
             {navLinks.map((link) => (
               <a
                 key={link}
