@@ -1,5 +1,6 @@
 import { Heart, Menu, Search, ShoppingBag, Truck, User, ChevronRight } from "lucide-react";
 import { useState, useRef } from "react";
+import { CartDrawer } from "./CartDrawer";
 
 import logo from "@/assets/logo.png";
 import { navLinks } from "./data";
@@ -95,16 +96,7 @@ export function SiteHeader() {
             >
               <Heart className="size-5 stroke-[1.5]" />
             </a>
-            <a
-              href="#carrinho"
-              aria-label="Carrinho"
-              className="relative text-foreground/80 transition-transform duration-300 hover:scale-110"
-            >
-              <ShoppingBag className="size-5 stroke-[1.5]" />
-              <span className="absolute -top-2 -right-2 grid size-4 place-items-center rounded-full bg-pink text-[10px] font-bold text-primary-foreground">
-                0
-              </span>
-            </a>
+            <CartDrawer />
           </div>
         </div>
       </div>
