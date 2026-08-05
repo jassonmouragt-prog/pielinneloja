@@ -8,14 +8,14 @@ export function InstagramSection() {
         <Reveal className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:items-center sm:justify-between">
           <div className="min-w-0">
             <h2 className="text-xl font-bold text-foreground sm:text-2xl">
-              Siga a <span className="text-pink">@sualojinhamaakeup</span>
+              Siga a <span className="text-pink">@sualojinhamakeup</span>
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Dicas, lançamentos, promoções e muito mais!
             </p>
           </div>
           <a
-            href="https://instagram.com/sualojinhamaakeup"
+            href="https://www.instagram.com/sualojinhamakeup/"
             target="_blank"
             rel="noreferrer"
             className="shrink-0 rounded-md border border-pink-soft px-4 py-2 text-xs font-medium text-pink transition-colors duration-300 hover:bg-blush"
@@ -28,7 +28,7 @@ export function InstagramSection() {
           {instagramPosts.map((post, index) => (
             <Reveal key={post.alt} delay={index * 60}>
               <a
-                href="https://instagram.com/sualojinhamaakeup"
+                href="https://www.instagram.com/sualojinhamakeup/"
                 target="_blank"
                 rel="noreferrer"
                 className="block overflow-hidden rounded-lg"
