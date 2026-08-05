@@ -4,7 +4,17 @@ export function Hero() {
   return (
     <section className="relative w-full overflow-hidden bg-background">
       <div className="w-full">
-        <div className="relative aspect-[16/9] w-full overflow-hidden sm:aspect-[21/9] lg:aspect-[3/1]">
+        {/* Desktop and Tablet */}
+        <div className="hidden md:block w-full">
+          <img
+            src={heroAsset.url}
+            alt="Banner Promocional: Sua beleza, seu brilho, sua escolha!"
+            className="w-full h-auto block"
+            loading="eager"
+          />
+        </div>
+        {/* Mobile */}
+        <div className="md:hidden relative aspect-[16/9] w-full overflow-hidden">
           <img
             src={heroAsset.url}
             alt="Banner Promocional: Sua beleza, seu brilho, sua escolha!"
