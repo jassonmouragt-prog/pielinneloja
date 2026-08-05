@@ -80,11 +80,11 @@ export const products = [
 ];
 
 export const instagramPosts = [
-  { image: "https://vdtitubyemidexqovgnd.supabase.co/storage/v1/object/public/lovable-uploads/6173b22b-2be1-43e7-88f5-44f2e9603099.png", alt: "Destaque de cores e produtos" },
-  { image: "https://vdtitubyemidexqovgnd.supabase.co/storage/v1/object/public/lovable-uploads/4523c6f4-c242-4f32-beeb-9d628eb58686.png", alt: "Organização e beleza na loja" },
-  { image: "https://vdtitubyemidexqovgnd.supabase.co/storage/v1/object/public/lovable-uploads/87349942-887e-40d0-86ec-3162608490a6.png", alt: "Ambiente da loja" },
-  { image: "https://vdtitubyemidexqovgnd.supabase.co/storage/v1/object/public/lovable-uploads/967d32c5-7a4c-47ea-bc9b-32f22b8265a0.png", alt: "Variedade de maquiagens" },
-  { image: "https://vdtitubyemidexqovgnd.supabase.co/storage/v1/object/public/lovable-uploads/273934f7-e455-4034-8c85-23c348f32247.png", alt: "Kits especiais" },
+  { image: ig1, alt: "Destaque de cores e produtos" },
+  { image: ig2, alt: "Organização e beleza na loja" },
+  { image: ig3, alt: "Ambiente da loja" },
+  { image: ig4, alt: "Variedade de maquiagens" },
+  { image: ig5, alt: "Kits especiais" },
 ];
 
 export const footerColumns = [

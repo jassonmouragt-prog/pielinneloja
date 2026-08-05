@@ -116,10 +116,10 @@ export function SiteHeader() {
                   <a
                     key={link}
                     href={`#${link.toLowerCase()}`}
-                    className="flex items-center justify-between px-5 py-3 hover:bg-pink/5 hover:text-pink transition-all duration-300 translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
+                    className="flex items-center justify-between px-5 py-3 hover:bg-pink/5 hover:text-pink transition-all duration-300"
                     style={{ 
-                      transitionDelay: `${index * 50}ms`,
-                      animation: isMenuOpen ? `slideInRight 0.3s forwards ${index * 50}ms` : 'none'
+                      animation: isMenuOpen ? `slideInRight 0.3s forwards ${index * 50}ms` : 'none',
+                      opacity: 0 // Start hidden for animation
                     }}
                   >
                     {link}
