@@ -15,7 +15,7 @@ export function InstagramSection() {
             </p>
           </div>
           <a
-            href="https://instagram.com/sualojinhamakeup"
+            href="https://instagram.com/sualojinhamaakeup"
             target="_blank"
             rel="noreferrer"
             className="shrink-0 rounded-md border border-pink-soft px-4 py-2 text-xs font-medium text-pink transition-colors duration-300 hover:bg-blush"
@@ -28,7 +28,7 @@ export function InstagramSection() {
           {instagramPosts.map((post, index) => (
             <Reveal key={post.alt} delay={index * 60}>
               <a
-                href="https://instagram.com/sualojinhamakeup"
+                href="https://instagram.com/sualojinhamaakeup"
                 target="_blank"
                 rel="noreferrer"
                 className="block overflow-hidden rounded-lg"
