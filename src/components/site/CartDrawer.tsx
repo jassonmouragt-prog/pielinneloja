@@ -40,7 +40,7 @@ export function CartDrawer() {
       <SheetTrigger asChild>
         <button
           aria-label="Carrinho"
-          className="relative text-foreground/80 transition-transform duration-300 hover:scale-110"
+          className="relative text-foreground/80 transition-transform duration-300 hover:scale-110 cursor-pointer"
         >
           <ShoppingBag className="size-5 stroke-[1.5]" />
           {totalItems() > 0 && (
@@ -50,7 +50,7 @@ export function CartDrawer() {
           )}
         </button>
       </SheetTrigger>
-      <SheetContent className="flex w-full flex-col p-0 sm:max-w-md">
+      <SheetContent className="flex w-full flex-col p-0 sm:max-w-md z-[100]" side="right">
         <SheetHeader className="border-b px-6 py-4">
           <SheetTitle className="flex items-center gap-2 text-pink">
             <ShoppingBag className="size-5" />
@@ -67,7 +67,7 @@ export function CartDrawer() {
             </p>
           </div>
         ) : (
-          <>
+          <div className="flex flex-1 flex-col overflow-hidden">
             <ScrollArea className="flex-1 px-6">
               <div className="divide-y divide-border py-4">
                 {items.map((item: CartItem) => (
@@ -85,7 +85,7 @@ export function CartDrawer() {
                           <h4 className="text-sm font-medium leading-tight">{item.name}</h4>
                           <button
                             onClick={() => removeItem(item.name)}
-                            className="text-muted-foreground hover:text-destructive"
+                            className="text-muted-foreground hover:text-destructive cursor-pointer"
                           >
                             <X className="size-4" />
                           </button>
@@ -97,7 +97,7 @@ export function CartDrawer() {
                         <div className="flex items-center gap-2 rounded-full border border-border px-2 py-1">
                           <button
                             onClick={() => updateQuantity(item.name, item.quantity - 1)}
-                            className="text-muted-foreground hover:text-pink"
+                            className="text-muted-foreground hover:text-pink cursor-pointer"
                           >
                             <Minus className="size-3" />
                           </button>
@@ -106,7 +106,7 @@ export function CartDrawer() {
                           </span>
                           <button
                             onClick={() => updateQuantity(item.name, item.quantity + 1)}
-                            className="text-muted-foreground hover:text-pink"
+                            className="text-muted-foreground hover:text-pink cursor-pointer"
                           >
                             <Plus className="size-3" />
                           </button>
@@ -119,7 +119,7 @@ export function CartDrawer() {
             </ScrollArea>
 
             <SheetFooter className="mt-auto border-t bg-muted/30 px-6 py-6 sm:flex-col">
-              <div className="mb-4 flex items-center justify-between text-lg font-bold">
+              <div className="mb-4 flex items-center justify-between text-lg font-bold w-full">
                 <span>Total</span>
                 <span className="text-pink">
                   R${" "}
@@ -134,13 +134,13 @@ export function CartDrawer() {
               </div>
               <Button
                 onClick={handleCheckout}
-                className="h-12 w-full gap-2 rounded-full gradient-pink text-primary-foreground hover:opacity-90"
+                className="h-12 w-full gap-2 rounded-full gradient-pink text-primary-foreground hover:opacity-90 cursor-pointer"
               >
                 <MessageSquare className="size-4" />
                 Finalizar Pedido no WhatsApp
               </Button>
             </SheetFooter>
-          </>
+          </div>
         )}
       </SheetContent>
     </Sheet>
