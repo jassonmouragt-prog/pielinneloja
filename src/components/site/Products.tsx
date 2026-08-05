@@ -1,4 +1,4 @@
-import { ArrowRight, Heart, ShoppingBag, Star } from "lucide-react";
+import { ArrowRight, Heart, MessageSquare, Star } from "lucide-react";
 
 import { products } from "./data";
 import { Reveal } from "./Reveal";
@@ -65,13 +65,15 @@ export function Products() {
                   <span className="text-[11px] text-muted-foreground">({product.reviews})</span>
                 </div>
                 <p className="mt-2 text-sm font-bold text-foreground">{product.price}</p>
-                <button
-                  type="button"
+                <a
+                  href={`https://wa.me/5500000000000?text=${encodeURIComponent(`Olá! Gostaria de comprar o produto: ${product.name} ${product.subtitle} por ${product.price}`)}`}
+                  target="_blank"
+                  rel="noreferrer"
                   className="mt-3 flex w-full items-center justify-center gap-2 rounded-md gradient-pink px-3 py-2 text-[11px] font-semibold text-primary-foreground transition-opacity duration-300 hover:opacity-90"
                 >
-                  <ShoppingBag className="size-3.5" />
-                  Adicionar ao carrinho
-                </button>
+                  <MessageSquare className="size-3.5" />
+                  Comprar pelo WhatsApp
+                </a>
               </article>
             </Reveal>
           ))}

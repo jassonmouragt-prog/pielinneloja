@@ -12,9 +12,9 @@ export function SiteHeader() {
       {/* announcement bar */}
       <div className="bg-cream text-[11px] text-foreground/80 sm:text-xs">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 overflow-x-auto px-4 py-2.5 whitespace-nowrap sm:px-6">
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1.5 font-bold">
             <Truck className="size-3.5 shrink-0 text-pink" />
-            Enviamos para todo o Brasil
+            PREÇO ÚNICO: R$10, R$15 e R$20
           </span>
           <span className="hidden items-center gap-1.5 sm:flex">
             <ShoppingBag className="size-3.5 shrink-0 text-pink" />

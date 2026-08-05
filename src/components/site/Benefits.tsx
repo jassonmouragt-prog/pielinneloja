@@ -3,8 +3,8 @@ import { CreditCard, Gem, ShieldCheck, Truck } from "lucide-react";
 import { Reveal } from "./Reveal";
 
 const benefits = [
-  { icon: Truck, title: "Frete Rápido", text: "Para todo o Brasil" },
-  { icon: CreditCard, title: "Parcele em até 6x", text: "Sem juros no cartão" },
+  { icon: Truck, title: "Preço Único", text: "R$10, R$15 e R$20" },
+  { icon: CreditCard, title: "Tudo Baratinho", text: "O melhor da make" },
   { icon: ShieldCheck, title: "Compra Segura", text: "Seus dados protegidos" },
   { icon: Gem, title: "5% de Desconto", text: "Pagando no PIX" },
 ];
