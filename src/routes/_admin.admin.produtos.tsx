@@ -299,7 +299,7 @@ function AdminProductsPage() {
                           <SelectContent>
                             {categories?.map((cat) => (
                               <SelectItem key={cat.id} value={cat.id}>
-                                {cat.name}
+                                {cat.name || ''}
                               </SelectItem>
                             ))}
                           </SelectContent>
