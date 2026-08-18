@@ -97,12 +97,12 @@ function AdminProductsPage() {
                   <div className="flex items-center gap-2">
                     {product.stock_quantity}
                     {(product.stock_quantity ?? 0) <= 5 && (
-                      <AlertCircle className="h-4 w-4 text-yellow-500" title="Estoque baixo" />
+                      <AlertCircle className="h-4 w-4 text-yellow-500" />
                     )}
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={product.status === 'active' ? 'success' : 'secondary'}>
+                  <Badge variant={product.status === 'active' ? 'default' : 'secondary'}>
                     {product.status === 'active' ? 'Ativo' : 'Inativo'}
                   </Badge>
                 </TableCell>
