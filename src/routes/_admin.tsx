@@ -7,7 +7,9 @@ import { toast } from 'sonner'
 export const Route = createFileRoute('/_admin')({
   beforeLoad: async () => {
     const { data: { session } } = await supabase.auth.getSession();
+    
     if (!session) {
+      console.log('Admin Guard: No session found, redirecting to login');
       throw redirect({ to: '/admin/login' });
     }
 

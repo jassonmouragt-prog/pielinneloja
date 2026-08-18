@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -19,6 +19,7 @@ export const Route = createFileRoute('/admin/login')({
 })
 
 function AdminLoginPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -113,9 +114,12 @@ function AdminLoginPage() {
 
         toast.success('Login realizado com sucesso!')
         // Aguardar um pequeno momento para o Supabase persistir o token no localStorage
-        setTimeout(() => {
-          window.location.assign('/admin/dashboard')
-        }, 500)
+        // Usar o router do TanStack para navegar, garantindo que o estado interno seja atualizado
+        toast.success('Login realizado com sucesso!')
+        setTimeout(async () => {
+          await router.invalidate()
+          router.navigate({ to: '/admin/dashboard' })
+        }, 300)
       }
     } catch (error: any) {
       console.error('Erro capturado no login:', error)
