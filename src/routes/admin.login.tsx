@@ -61,9 +61,18 @@ function AdminLoginPage() {
 
     try {
       console.log('Iniciando tentativa de login para:', email)
+      
+      // Sanitização básica
+      const cleanEmail = email.trim();
+      const cleanPassword = password.trim();
+
+      if (!cleanEmail || !cleanPassword) {
+        throw new Error('E-mail e senha são obrigatórios');
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: cleanEmail,
+        password: cleanPassword,
       })
 
       if (error) {
