@@ -43,17 +43,28 @@ export function SiteFooter() {
             <ul className="mt-4 space-y-2.5">
               {column.links.map((link) => (
                 <li key={link}>
-                  <a
-                    href={`#${link.toLowerCase().replace(/\s+/g, "-")}`}
-                    className="text-xs text-muted-foreground transition-colors duration-300 hover:text-pink"
-                  >
-                    {link}
-                  </a>
+                  {column.title === "Categorias" ? (
+                    <Link
+                      to="/categoria/$slug"
+                      params={{ slug: link.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-') }}
+                      className="text-xs text-muted-foreground transition-colors duration-300 hover:text-pink"
+                    >
+                      {link}
+                    </Link>
+                  ) : (
+                    <a
+                      href={`#${link.toLowerCase().replace(/\s+/g, "-")}`}
+                      className="text-xs text-muted-foreground transition-colors duration-300 hover:text-pink"
+                    >
+                      {link}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
           </div>
         ))}
+
 
         <div>
           <h3 className="text-sm font-semibold text-foreground">Newsletter</h3>
