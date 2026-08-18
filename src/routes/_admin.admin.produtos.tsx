@@ -386,7 +386,7 @@ function AdminProductsPage() {
                     )}
                   />
                   <div className="col-span-full space-y-2">
-                    <FormLabel>Imagem do Produto</FormLabel>
+                    <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Imagem do Produto</label>
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">
                         <Input
