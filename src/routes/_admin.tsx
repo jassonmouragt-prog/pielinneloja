@@ -9,14 +9,18 @@ import { useState } from 'react'
 export const Route = createFileRoute('/_admin')({
   beforeLoad: async () => {
     const { data: { session } } = await supabase.auth.getSession();
+    console.log('[AdminGuard] Session Check:', session?.user?.email);
     
     if (!session) {
-      console.log('Admin Guard: No session found, redirecting to login');
       throw redirect({ to: '/admin/login', replace: true });
     }
 
+    if (session.user.email === 'sualojinhaadmin@admin.com') {
+      console.log('[AdminGuard] Bypass for admin email');
+      return { session, role: 'admin' };
+    }
+
     try {
-      // Direct fetch to verify admin role
       const { data: roleData } = await supabase
         .from('user_roles')
         .select('role')
@@ -24,12 +28,6 @@ export const Route = createFileRoute('/_admin')({
         .maybeSingle();
 
       if (roleData?.role === 'admin') {
-        return { session, role: 'admin' };
-      }
-
-      // Fallback: Check user object for specific admin email (emergency access)
-      if (session.user.email === 'sualojinhaadmin@admin.com') {
-        console.warn('Admin Guard: Emergency access granted by email check');
         return { session, role: 'admin' };
       }
 
