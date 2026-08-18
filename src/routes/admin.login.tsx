@@ -72,7 +72,7 @@ function AdminLoginPage() {
 
       if (data.user) {
         console.log('Usuário autenticado, verificando role...')
-        // Check if user has admin role
+        // Check if user has admin role using a direct query first
         const { data: roleData, error: roleError } = await supabase
           .from('user_roles')
           .select('role')
@@ -81,7 +81,19 @@ function AdminLoginPage() {
 
         if (roleError) {
           console.error('Erro ao buscar role:', roleError)
-          throw new Error('Erro ao verificar permissões de acesso.')
+          // Se falhar o acesso direto, tentamos via RPC se existir
+          const { data: hasAdmin, error: rpcError } = await supabase.rpc('has_role', { 
+            _user_id: data.user.id, 
+            _role: 'admin' 
+          });
+          
+          if (rpcError || !hasAdmin) {
+            console.error('Erro no RPC has_role:', rpcError)
+            throw new Error('Erro ao verificar permissões de acesso. Por favor, contate o suporte.')
+          }
+          
+          // Se o RPC funcionou, simulamos o roleData
+          roleData = { role: 'admin' };
         }
 
         console.log('Dados da role:', roleData)
