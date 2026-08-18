@@ -232,9 +232,16 @@ function AdminProductsPage() {
         }
         setUploadProgress(100)
 
-        const { data: { publicUrl } } = supabase.storage
+        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
           .from('product-images')
-          .getPublicUrl(filePath)
+          .createSignedUrl(filePath, 315360000) // 10 years
+
+        if (signedUrlError) {
+          console.error('Error creating signed URL:', signedUrlError)
+          throw signedUrlError
+        }
+
+        const publicUrl = signedUrlData.signedUrl;
 
         console.log('Imagem carregada com sucesso, URL:', publicUrl)
 
