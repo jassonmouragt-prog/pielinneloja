@@ -16,33 +16,41 @@ export const Route = createFileRoute('/_admin')({
     }
 
     try {
-      // Tentar via RPC primeiro por ser SECURITY DEFINER e mais confiável para bypassar RLS
+      // Tentativa 1: RPC (Security Definer - ignora RLS)
       const { data: hasAdmin, error: rpcError } = await supabase.rpc('has_role', {
         _user_id: session.user.id,
         _role: 'admin'
       });
 
-      if (rpcError) {
-        console.error('Admin Layout: RPC error, falling back to direct query:', rpcError);
-        // Fallback para query direta se o RPC falhar por qualquer motivo
-        const { data: roleData, error: directError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
-
-        if (directError || roleData?.role !== 'admin') {
-          console.error('Admin Layout: Direct query also failed or not admin:', directError);
-          await supabase.auth.signOut();
-          throw redirect({ to: '/admin/login' });
-        }
-      } else if (!hasAdmin) {
-        console.warn('Admin Layout: User is not admin (via RPC)');
-        await supabase.auth.signOut();
-        throw redirect({ to: '/admin/login' });
+      if (!rpcError && hasAdmin === true) {
+        return { session, role: 'admin' };
       }
+
+      console.warn('Admin Layout: RPC check failed or returned false, trying direct query...', rpcError);
+
+      // Tentativa 2: Query Direta (Depende de RLS e GRANTS)
+      const { data: roleData, error: directError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (roleData?.role === 'admin') {
+        return { session, role: 'admin' };
+      }
+
+      console.error('Admin Layout: All role checks failed. Direct Error:', directError);
+      
+      // Se chegamos aqui, o usuário não é admin ou houve um erro crítico
+      // Em vez de dar signout imediato (que pode quebrar o preview), apenas redirecionamos
+      // Mas o signOut é mais seguro para evitar bypass
+      await supabase.auth.signOut();
+      throw redirect({ to: '/admin/login', replace: true });
+      
     } catch (e: any) {
-      if (e.status === 302 || e.redirect) throw e; // Preservar o redirect se já for um
+      // Se for um objeto de redirect do TanStack, relançamos
+      if (e.to || e.redirect) throw e;
+      
       console.error('Admin Layout: Unexpected auth verification error:', e);
       await supabase.auth.signOut();
       throw redirect({ to: '/admin/login', replace: true });
