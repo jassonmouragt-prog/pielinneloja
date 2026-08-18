@@ -46,6 +46,7 @@ export function Products() {
     const mainImage = product.product_images?.find((img: any) => img.is_main)?.url || product.product_images?.[0]?.url;
     
     addItem({
+      id: product.id,
       name: product.name,
       subtitle: product.subtitle || '',
       price: `R$ ${Number(product.price).toFixed(2)}`,

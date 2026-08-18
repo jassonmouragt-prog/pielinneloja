@@ -16,27 +16,53 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function CartDrawer() {
-  const { items, removeItem, updateQuantity, totalItems, isOpen, setIsOpen } = useCart();
+  const { items, removeItem, updateQuantity, totalItems, isOpen, setIsOpen, clearCart } = useCart();
+  const [isRegistering, setIsRegistering] = useState(false);
+  const registerSale = useServerFn(registerPendingSale);
   const WHATSAPP_NUMBER = "5584994085244";
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (items.length === 0) return;
+    setIsRegistering(true);
 
-    let message = "Olá! Gostaria de finalizar o pedido com os seguintes produtos:\n\n";
-    items.forEach((item: CartItem) => {
-      message += `• ${item.name} (${item.subtitle})\n`;
-      message += `  Qtd: ${item.quantity} x ${item.price}\n\n`;
-    });
+    try {
+      const totalPrice = items.reduce((acc: number, item: CartItem) => {
+        const priceVal = parseFloat(item.price.replace("R$", "").replace(",", "."));
+        return acc + (priceVal * item.quantity);
+      }, 0);
 
-    const totalPrice = items.reduce((acc: number, item: CartItem) => {
-      const priceVal = parseFloat(item.price.replace("R$", "").replace(",", "."));
-      return acc + (priceVal * item.quantity);
-    }, 0);
+      let message = "Olá! Gostaria de finalizar o pedido com os seguintes produtos:\n\n";
+      items.forEach((item: CartItem) => {
+        message += `• ${item.name} (${item.subtitle})\n`;
+        message += `  Qtd: ${item.quantity} x ${item.price}\n\n`;
+      });
+      message += `Total: R$ ${totalPrice.toFixed(2).replace(".", ",")}\n`;
 
-    message += `Total: R$ ${totalPrice.toFixed(2).replace(".", ",")}\n`;
+      // Register in Supabase first
+      await registerSale({
+        data: {
+          totalAmount: totalPrice,
+          whatsappMessage: message,
+          items: items.map(item => ({
+            productId: item.id || '',
+            quantity: item.quantity,
+            price: parseFloat(item.price.replace("R$", "").replace(",", "."))
+          }))
+        }
+      });
 
-    const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, "_blank");
+      const encodedMessage = encodeURIComponent(message);
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, "_blank");
+      
+      clearCart();
+      setIsOpen(false);
+      toast.success("Pedido enviado! Aguarde o contato no WhatsApp.");
+    } catch (error) {
+      console.error("Error registering sale:", error);
+      toast.error("Erro ao registrar pedido. Tente novamente.");
+    } finally {
+      setIsRegistering(false);
+    }
   };
 
   return (
