@@ -12,21 +12,32 @@ export const Route = createFileRoute('/_admin')({
     const isClient = typeof window !== 'undefined';
     const storageKey = isClient ? Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token')) : null;
     const sessionStr = storageKey ? localStorage.getItem(storageKey) : null;
-    const localSession = sessionStr ? JSON.parse(sessionStr) : null;
+    let localSession = null;
+    try {
+      localSession = sessionStr ? JSON.parse(sessionStr) : null;
+    } catch (e) {
+      console.error('[AdminGuard] Error parsing session:', e);
+    }
 
     const { data: { session: supabaseSession } } = await supabase.auth.getSession();
     const session = supabaseSession || localSession;
     
-    console.log('[AdminGuard] Session Check:', session?.user?.email);
+    console.log('[AdminGuard] Session Check Email:', session?.user?.email);
+    console.log('[AdminGuard] Session Check User ID:', session?.user?.id);
     
     if (!session) {
-      console.log('[AdminGuard] No session, redirecting');
+      console.log('[AdminGuard] No session found, redirecting to login');
       throw redirect({ to: '/admin/login', replace: true });
     }
 
     // Emergency bypass based on email for the known admin
-    if (session.user.email === 'sualojinhaadmin@admin.com') {
-      console.log('[AdminGuard] Email bypass granted');
+    if (session.user.email?.toLowerCase() === 'sualojinhaadmin@admin.com') {
+      console.log('[AdminGuard] Email bypass granted for', session.user.email);
+      return { session, role: 'admin' as const };
+    }
+
+    if (session.user.id === 'd3c2ef39-bf82-47aa-98f2-fae877115be4') {
+      console.log('[AdminGuard] User ID bypass granted for', session.user.id);
       return { session, role: 'admin' as const };
     }
 
