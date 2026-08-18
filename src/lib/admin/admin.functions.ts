@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
 
 export const getAdminProfile = createServerFn({ method: "GET" })
   .handler(async () => {
@@ -18,10 +19,15 @@ export const getAdminProfile = createServerFn({ method: "GET" })
   });
 
 export const updateProductStock = createServerFn({ method: "POST" })
-  .handler(async ({ data }: { data: { productId: string, quantity: number, type: string, notes?: string } }) => {
+  .validator((data: unknown) => z.object({
+    productId: z.string(),
+    quantity: z.number(),
+    type: z.string(),
+    notes: z.string().optional()
+  }).parse(data))
+  .handler(async ({ data }) => {
     const { productId, quantity, type, notes } = data;
     
-    // Auth check should be here, but using supabase client for now which has RLS
     const { data: product } = await supabase
       .from('products')
       .select('stock_quantity')
@@ -30,7 +36,8 @@ export const updateProductStock = createServerFn({ method: "POST" })
 
     if (!product) throw new Error("Product not found");
 
-    const newStock = product.stock_quantity + quantity;
+    const currentStock = product.stock_quantity ?? 0;
+    const newStock = currentStock + quantity;
 
     const { error: updateError } = await supabase
       .from('products')
@@ -45,7 +52,7 @@ export const updateProductStock = createServerFn({ method: "POST" })
         product_id: productId,
         quantity,
         type,
-        notes
+        notes: notes ?? null
       });
 
     if (movementError) throw movementError;
