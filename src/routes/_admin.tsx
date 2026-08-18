@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect, Link } from '@tanstack/react-router'
 import { supabase } from '@/integrations/supabase/client'
 import { LayoutDashboard, Package, Box, Settings, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -10,7 +10,7 @@ export const Route = createFileRoute('/_admin')({
     
     if (!session) {
       console.log('Admin Guard: No session found, redirecting to login');
-      throw redirect({ to: '/admin/login' });
+      throw redirect({ to: '/admin/login', replace: true });
     }
 
     try {
@@ -43,7 +43,7 @@ export const Route = createFileRoute('/_admin')({
       if (e.status === 302 || e.redirect) throw e; // Preservar o redirect se já for um
       console.error('Admin Layout: Unexpected auth verification error:', e);
       await supabase.auth.signOut();
-      throw redirect({ to: '/admin/login' });
+      throw redirect({ to: '/admin/login', replace: true });
     }
   },
   component: AdminLayout,
@@ -73,14 +73,14 @@ function AdminLayout() {
           
           <nav className="flex-1 space-y-1 px-3 py-4">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.label}
-                href={item.href}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-pink/5 hover:text-pink"
+                to={item.href as any}
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-pink/5 hover:text-pink [&.active]:bg-pink/10 [&.active]:text-pink"
               >
                 <item.icon className="h-5 w-5" />
                 {item.label}
-              </a>
+              </Link>
             ))}
           </nav>
 
