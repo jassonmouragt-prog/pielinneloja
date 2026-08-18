@@ -22,12 +22,13 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-export function Products() {
+export function Products({ products: initialProducts }: { products?: any[] }) {
   const { addItem } = useCart();
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['public-products'],
     queryFn: async () => {
+      if (initialProducts) return initialProducts;
       const { data, error } = await supabase
         .from('products')
         .select(`
@@ -40,8 +41,11 @@ export function Products() {
       
       if (error) throw error;
       return data;
-    }
+    },
+    enabled: !initialProducts
   });
+
+  const displayProducts = initialProducts || products;
 
   const handleAddToCart = (product: any) => {
     const mainImage = product.product_images?.find((img: any) => img.is_main)?.url || product.product_images?.[0]?.url;
@@ -75,7 +79,7 @@ export function Products() {
               <Loader2 className="h-8 w-8 animate-spin text-pink" />
             </div>
           )}
-          {products?.map((product, index) => (
+          {displayProducts?.map((product, index) => (
             <Reveal key={product.id} delay={index * 60}>
               <article className="group h-full overflow-hidden rounded-xl border border-border bg-card p-3 transition-shadow duration-300 hover:shadow-card">
                 <div className="relative">

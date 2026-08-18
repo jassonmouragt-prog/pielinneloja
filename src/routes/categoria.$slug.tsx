@@ -37,7 +37,10 @@ function CategoryPage() {
 
       const { data: prodData } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          product_images(url, is_main)
+        `)
         .eq('category_id', catData.id)
         .order('created_at', { ascending: false })
 
