@@ -8,16 +8,16 @@ import { useState } from 'react'
 
 export const Route = createFileRoute('/_admin')({
   beforeLoad: async () => {
+    // Use getSession() instead of direct localStorage for safety
     const { data: { session } } = await supabase.auth.getSession();
-    console.log('[AdminGuard] Session Check:', session?.user?.email);
     
     if (!session) {
       throw redirect({ to: '/admin/login', replace: true });
     }
 
+    // Emergency bypass based on email for the known admin
     if (session.user.email === 'sualojinhaadmin@admin.com') {
-      console.log('[AdminGuard] Bypass for admin email');
-      return { session, role: 'admin' };
+      return { session, role: 'admin' as const };
     }
 
     try {
@@ -28,14 +28,12 @@ export const Route = createFileRoute('/_admin')({
         .maybeSingle();
 
       if (roleData?.role === 'admin') {
-        return { session, role: 'admin' };
+        return { session, role: 'admin' as const };
       }
 
-      console.error('Admin Layout: User not authorized as admin');
       throw redirect({ to: '/admin/login', replace: true });
     } catch (e: any) {
       if (e.to || e.redirect) throw e;
-      console.error('Admin Layout: Auth verification error:', e);
       throw redirect({ to: '/admin/login', replace: true });
     }
   },
