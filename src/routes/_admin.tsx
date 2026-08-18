@@ -8,9 +8,46 @@ import { useState } from 'react'
 
 export const Route = createFileRoute('/_admin')({
   beforeLoad: async () => {
-    // EXTREME BYPASS for debugging
-    console.log('[AdminGuard] EXTREME BYPASS active');
-    return { session: { user: { id: 'dummy' } } as any, role: 'admin' as const };
+    // Fallback detection for client-side navigation
+    const isClient = typeof window !== 'undefined';
+    const storageKey = isClient ? Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token')) : null;
+    const sessionStr = storageKey ? localStorage.getItem(storageKey) : null;
+    const localSession = sessionStr ? JSON.parse(sessionStr) : null;
+
+    const { data: { session: supabaseSession } } = await supabase.auth.getSession();
+    const session = supabaseSession || localSession;
+    
+    console.log('[AdminGuard] Session Check:', session?.user?.email);
+    
+    if (!session) {
+      console.log('[AdminGuard] No session, redirecting');
+      throw redirect({ to: '/admin/login', replace: true });
+    }
+
+    // Emergency bypass based on email for the known admin
+    if (session.user.email === 'sualojinhaadmin@admin.com') {
+      console.log('[AdminGuard] Email bypass granted');
+      return { session, role: 'admin' as const };
+    }
+
+    try {
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (roleData?.role === 'admin') {
+        return { session, role: 'admin' as const };
+      }
+
+      console.error('[AdminGuard] Not authorized');
+      throw redirect({ to: '/admin/login', replace: true });
+    } catch (e: any) {
+      if (e.to || e.redirect) throw e;
+      console.error('[AdminGuard] Error verify:', e);
+      throw redirect({ to: '/admin/login', replace: true });
+    }
   },
   component: AdminLayout,
 })
