@@ -1,25 +1,29 @@
-# Plan - Fix Product Add/Edit Errors
+# Plan - Final Fix for Product Add/Edit Permissions and Redirection
 
-The user reports that an error persists when adding or editing products. Based on previous turns, we successfully created the `product-images` storage bucket and applied RLS policies. However, there might be a few remaining issues:
-1. **RLS Policies for Tables**: Ensure that the `authenticated` role (admin) has proper `GRANT` permissions on all relevant tables (`products`, `product_images`, `stock_movements`).
-2. **Missing `GRANT` statements**: Lovable Cloud requires explicit `GRANT` statements for the `authenticated` role to access tables in the `public` schema.
-3. **Storage Bucket Accessibility**: Ensure the `product-images` bucket is correctly configured and the frontend is handling errors gracefully.
+Despite setting up the storage bucket and RLS policies, the user still experiences errors when adding or editing products. My diagnosis reveals a potential authorization/redirection loop where even a valid admin session might be getting redirected to the login page during CRUD operations due to strict `beforeLoad` checks or missing permissions.
 
-## Technical Details
-- **Frontend**: Improve error logging in `src/routes/_admin.admin.produtos.tsx` to help identify the exact point of failure.
-- **Backend**: Update database permissions.
+## Diagnosis
+1. **Redirection Loop**: The automated test showed that even with a session injected, navigating to `/admin/produtos` results in a redirect to `/admin/login`. This suggests the `beforeLoad` guard in `_admin.tsx` is failing.
+2. **Missing GRANTs**: Lovable Cloud requires explicit `GRANT` statements for the `authenticated` role for both tables and sequences. While I added some, there might be subtle gaps (e.g., sequences, specific function execute permissions).
+3. **Session Persistence**: The diagnostic panel shows that session persistence might be getting interrupted if the `authenticated` role doesn't have permissions to read its own role or the products it's trying to edit.
 
-## Proposed Changes
+## Proposed Actions
 
-### 1. Database Permissions (`supabase/migrations/...`)
-- Add a new migration to ensure all admin-related tables have the correct `GRANT` permissions for the `authenticated` role.
-- Specifically: `GRANT SELECT, INSERT, UPDATE, DELETE ON public.products, public.product_images, public.stock_movements TO authenticated;`
-- Also ensure `service_role` has full access.
+### 1. Database - Final Permission Pass
+- Add a migration that:
+    - Re-grants all permissions on the `public` schema tables and sequences to `authenticated` and `service_role`.
+    - Ensures the `has_role` function is executable by `authenticated` users.
+    - Double-checks that `stock_movements` and `product_images` have the necessary grants.
 
-### 2. Frontend Debugging & Refinement (`src/routes/_admin.admin.produtos.tsx`)
-- Enhance the `onSubmit` handler to log the full Supabase error object to the console.
-- Check for potential null/undefined issues during the save process.
+### 2. Admin Guard - Robust Role Verification (`src/routes/_admin.tsx`)
+- Simplify the `beforeLoad` check to handle potential RPC failures more gracefully.
+- Add more logging to help identify why the redirect is happening.
+
+### 3. Product CRUD - Error Handling (`src/routes/_admin.admin.produtos.tsx`)
+- I have already added detailed logging, but I will ensure use of the RPC `has_role` if direct queries continue to fail due to RLS/Grant issues.
+- Verify the bucket name used in code matches exactly the one created.
 
 ## Validation Plan
-- I will attempt to reproduce the error or look for specific error logs in the browser.
-- Once permissions are applied, I will verify if the add/edit flow works.
+1. Apply the database migration.
+2. Run the automated test again with a fresh session to confirm the redirect loop is broken.
+3. Manually verify (if possible via logs/preview) that the "Novo Produto" dialog saves correctly.

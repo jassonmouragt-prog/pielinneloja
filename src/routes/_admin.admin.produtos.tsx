@@ -196,7 +196,8 @@ function AdminProductsPage() {
       form.reset()
       refetch()
     } catch (error: any) {
-      toast.error('Erro: ' + error.message)
+      console.error('Erro detalhado ao salvar produto:', error)
+      toast.error('Erro ao salvar produto: ' + (error.message || 'Erro desconhecido'))
     } finally {
       setIsSubmitting(false)
     }
