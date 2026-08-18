@@ -10,57 +10,39 @@ export const Route = createFileRoute('/_admin')({
   beforeLoad: async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
-    console.log('Admin Guard: Checking session...', session ? 'Present' : 'Absent');
-
     if (!session) {
       console.log('Admin Guard: No session found, redirecting to login');
       throw redirect({ to: '/admin/login', replace: true });
     }
 
     try {
-      console.log('Admin Guard: Verifying role for user:', session.user.id);
-      
-      // Tentativa 1: RPC (Security Definer - ignora RLS)
+      // Usar RPC has_role para bypass de RLS via SECURITY DEFINER
       const { data: hasAdmin, error: rpcError } = await supabase.rpc('has_role', {
         _user_id: session.user.id,
         _role: 'admin'
       });
 
       if (!rpcError && hasAdmin === true) {
-        console.log('Admin Guard: RPC check successful, user is admin');
         return { session, role: 'admin' };
       }
 
-      console.warn('Admin Layout: RPC check failed or returned false. RPC Error:', rpcError, 'Result:', hasAdmin);
+      console.warn('Admin Layout: RPC check failed, trying direct query...', rpcError);
 
-      // Tentativa 2: Query Direta (Depende de RLS e GRANTS)
       const { data: roleData, error: directError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', session.user.id)
         .maybeSingle();
 
-      console.log('Admin Layout: Direct query result:', roleData, 'Error:', directError);
-
       if (roleData?.role === 'admin') {
-        console.log('Admin Guard: Direct query successful, user is admin');
         return { session, role: 'admin' };
       }
 
-      console.error('Admin Layout: All role checks failed. Direct Error:', directError);
-      
-      // Se chegamos aqui, o usuário não é admin ou houve um erro crítico
-      // Em ambientes de desenvolvimento/preview, às vezes o signOut pode ser agressivo demais
-      // se houver algum erro de rede momentâneo. Mas para segurança é necessário.
-      // await supabase.auth.signOut();
+      console.error('Admin Layout: User not authorized as admin');
       throw redirect({ to: '/admin/login', replace: true });
-      
     } catch (e: any) {
-      // Se for um objeto de redirect do TanStack, relançamos
       if (e.to || e.redirect) throw e;
-      
-      console.error('Admin Layout: Unexpected auth verification error:', e);
-      // await supabase.auth.signOut();
+      console.error('Admin Layout: Auth verification error:', e);
       throw redirect({ to: '/admin/login', replace: true });
     }
   },
