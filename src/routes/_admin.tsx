@@ -13,32 +13,35 @@ export const Route = createFileRoute('/_admin')({
       throw redirect({ to: '/admin/login' });
     }
 
-    const { data: roleData, error } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', session.user.id)
-      .maybeSingle();
-
-    let userRole = roleData?.role;
-
-    if (error) {
-      console.error('Admin Layout: Error fetching role directly:', error);
-      // Try RPC if direct access fails (e.g. RLS issues)
+    try {
+      // Tentar via RPC primeiro por ser SECURITY DEFINER e mais confiável para bypassar RLS
       const { data: hasAdmin, error: rpcError } = await supabase.rpc('has_role', {
         _user_id: session.user.id,
         _role: 'admin'
       });
-      
-      if (rpcError || !hasAdmin) {
-        console.error('Admin Layout: RPC error or not admin:', rpcError);
+
+      if (rpcError) {
+        console.error('Admin Layout: RPC error, falling back to direct query:', rpcError);
+        // Fallback para query direta se o RPC falhar por qualquer motivo
+        const { data: roleData, error: directError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+
+        if (directError || roleData?.role !== 'admin') {
+          console.error('Admin Layout: Direct query also failed or not admin:', directError);
+          await supabase.auth.signOut();
+          throw redirect({ to: '/admin/login' });
+        }
+      } else if (!hasAdmin) {
+        console.warn('Admin Layout: User is not admin (via RPC)');
         await supabase.auth.signOut();
         throw redirect({ to: '/admin/login' });
       }
-      userRole = 'admin';
-    }
-
-    if (userRole !== 'admin') {
-      console.warn('Admin Layout: User is not admin:', userRole);
+    } catch (e: any) {
+      if (e.status === 302 || e.redirect) throw e; // Preservar o redirect se já for um
+      console.error('Admin Layout: Unexpected auth verification error:', e);
       await supabase.auth.signOut();
       throw redirect({ to: '/admin/login' });
     }
