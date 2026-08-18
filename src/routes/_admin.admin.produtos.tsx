@@ -385,63 +385,61 @@ function AdminProductsPage() {
                       </FormItem>
                     )}
                   />
-                  <FormItem className="col-span-full">
+                  <div className="col-span-full space-y-2">
                     <FormLabel>Imagem do Produto</FormLabel>
-                    <FormControl>
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-4">
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0] || null
-                              setImageFile(file)
-                              if (file) {
-                                const reader = new FileReader()
-                                reader.onloadend = () => {
-                                  setImagePreview(reader.result as string)
-                                }
-                                reader.readAsDataURL(file)
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null
+                            setImageFile(file)
+                            if (file) {
+                              const reader = new FileReader()
+                              reader.onloadend = () => {
+                                setImagePreview(reader.result as string)
                               }
+                              reader.readAsDataURL(file)
+                            }
+                          }}
+                          className="hidden"
+                          id="image-upload"
+                        />
+                        <label
+                          htmlFor="image-upload"
+                          className="flex h-10 cursor-pointer items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background hover:bg-accent hover:text-accent-foreground transition-colors"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          {imageFile ? 'Trocar Foto' : 'Upload Foto'}
+                        </label>
+                        {(imageFile || imagePreview) && (
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => {
+                              setImageFile(null)
+                              setImagePreview(null)
                             }}
-                            className="hidden"
-                            id="image-upload"
-                          />
-                          <label
-                            htmlFor="image-upload"
-                            className="flex h-10 cursor-pointer items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background hover:bg-accent hover:text-accent-foreground transition-colors"
+                            className="text-red-500"
                           >
-                            <Upload className="mr-2 h-4 w-4" />
-                            {imageFile ? 'Trocar Foto' : 'Upload Foto'}
-                          </label>
-                          {(imageFile || imagePreview) && (
-                            <Button 
-                              type="button" 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => {
-                                setImageFile(null)
-                                setImagePreview(null)
-                              }}
-                              className="text-red-500"
-                            >
-                              <X className="mr-1 h-4 w-4" /> Remover
-                            </Button>
-                          )}
-                        </div>
-                        
-                        {imagePreview && (
-                          <div className="relative aspect-square w-32 overflow-hidden rounded-lg border bg-gray-50">
-                            <img 
-                              src={imagePreview} 
-                              alt="Preview" 
-                              className="h-full w-full object-cover"
-                            />
-                          </div>
+                            <X className="mr-1 h-4 w-4" /> Remover
+                          </Button>
                         )}
                       </div>
-                    </FormControl>
-                  </FormItem>
+                      
+                      {imagePreview && (
+                        <div className="relative aspect-square w-32 overflow-hidden rounded-lg border bg-gray-50">
+                          <img 
+                            src={imagePreview} 
+                            alt="Preview" 
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <DialogFooter>
