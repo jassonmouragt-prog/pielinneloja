@@ -17,7 +17,7 @@ export const Route = createFileRoute('/_admin')({
     const { data: { session: supabaseSession } } = await supabase.auth.getSession();
     const session = supabaseSession || localSession;
     
-    console.log('[AdminGuard] Session Check:', session?.user?.email);
+    console.log('[AdminGuard] Session Check:', session?.user?.email, 'Storage Key:', storageKey);
     
     if (!session) {
       console.log('[AdminGuard] No session, redirecting');
