@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Edit2, Trash2, AlertCircle, Loader2, Upload } from 'lucide-react'
+import { Plus, Search, Edit2, Trash2, AlertCircle, Loader2, Upload, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -38,6 +38,7 @@ function AdminProductsPage() {
   const [editingProduct, setEditingProduct] = useState<any>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   const { data: products, refetch } = useQuery({
     queryKey: ['admin-products'],
@@ -92,6 +93,14 @@ function AdminProductsPage() {
       stock_quantity: product.stock_quantity,
       status: product.status as 'active' | 'inactive',
     })
+    
+    // Set preview if image exists
+    if (product.product_images?.[0]?.url) {
+      setImagePreview(product.product_images[0].url)
+    } else {
+      setImagePreview(null)
+    }
+    
     setIsDialogOpen(true)
   }
 
@@ -112,6 +121,7 @@ function AdminProductsPage() {
     setIsSubmitting(true)
     try {
       let productId = editingProduct?.id
+      const isNew = !editingProduct
 
       const payload = {
         name: values.name,
@@ -137,28 +147,39 @@ function AdminProductsPage() {
           .single()
         if (error) throw error
         productId = data.id
+        
+        // Record initial stock movement
+        if (values.stock_quantity > 0) {
+          await supabase.from('stock_movements').insert([{
+            product_id: productId,
+            quantity: values.stock_quantity,
+            type: 'in',
+            notes: 'Estoque inicial'
+          }])
+        }
       }
 
-      // Handle image upload if a file is selected
+      // Handle image upload if a new file is selected
       if (imageFile) {
         const fileExt = imageFile.name.split('.').pop()
-        const fileName = `${productId}-${Math.random()}.${fileExt}`
+        const fileName = `${productId}-${Date.now()}.${fileExt}`
         const filePath = `products/${fileName}`
 
         const { error: uploadError } = await supabase.storage
           .from('product-images')
           .upload(filePath, imageFile)
 
-        if (uploadError) throw uploadError
+        if (uploadError) {
+          console.error('Upload error details:', uploadError)
+          throw new Error('Falha ao fazer upload da imagem. Verifique se o bucket "product-images" existe.')
+        }
 
         const { data: { publicUrl } } = supabase.storage
           .from('product-images')
           .getPublicUrl(filePath)
 
-        // Delete old images if editing
-        if (editingProduct) {
-          await supabase.from('product_images').delete().eq('product_id', productId)
-        }
+        // Delete old image references
+        await supabase.from('product_images').delete().eq('product_id', productId)
 
         const { error: imageError } = await supabase
           .from('product_images')
@@ -171,6 +192,7 @@ function AdminProductsPage() {
       setIsDialogOpen(false)
       setEditingProduct(null)
       setImageFile(null)
+      setImagePreview(null)
       form.reset()
       refetch()
     } catch (error: any) {
@@ -197,6 +219,7 @@ function AdminProductsPage() {
             setEditingProduct(null)
             form.reset()
             setImageFile(null)
+            setImagePreview(null)
           }
         }}>
           <DialogTrigger asChild>
@@ -332,24 +355,60 @@ function AdminProductsPage() {
                       </FormItem>
                     )}
                   />
-                  <FormItem>
+                  <FormItem className="col-span-full">
                     <FormLabel>Imagem do Produto</FormLabel>
                     <FormControl>
-                      <div className="flex items-center gap-4">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                          className="hidden"
-                          id="image-upload"
-                        />
-                        <label
-                          htmlFor="image-upload"
-                          className="flex h-10 cursor-pointer items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background hover:bg-accent hover:text-accent-foreground"
-                        >
-                          <Upload className="mr-2 h-4 w-4" />
-                          {imageFile ? imageFile.name : 'Upload Foto'}
-                        </label>
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] || null
+                              setImageFile(file)
+                              if (file) {
+                                const reader = new FileReader()
+                                reader.onloadend = () => {
+                                  setImagePreview(reader.result as string)
+                                }
+                                reader.readAsDataURL(file)
+                              }
+                            }}
+                            className="hidden"
+                            id="image-upload"
+                          />
+                          <label
+                            htmlFor="image-upload"
+                            className="flex h-10 cursor-pointer items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background hover:bg-accent hover:text-accent-foreground transition-colors"
+                          >
+                            <Upload className="mr-2 h-4 w-4" />
+                            {imageFile ? 'Trocar Foto' : 'Upload Foto'}
+                          </label>
+                          {(imageFile || imagePreview) && (
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => {
+                                setImageFile(null)
+                                setImagePreview(null)
+                              }}
+                              className="text-red-500"
+                            >
+                              <X className="mr-1 h-4 w-4" /> Remover
+                            </Button>
+                          )}
+                        </div>
+                        
+                        {imagePreview && (
+                          <div className="relative aspect-square w-32 overflow-hidden rounded-lg border bg-gray-50">
+                            <img 
+                              src={imagePreview} 
+                              alt="Preview" 
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        )}
                       </div>
                     </FormControl>
                   </FormItem>
