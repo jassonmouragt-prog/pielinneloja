@@ -118,6 +118,11 @@ function AdminProductsPage() {
   }
 
   const onSubmit = async (values: ProductFormValues) => {
+    if (!imagePreview && !editingProduct) {
+      toast.error('Por favor, selecione uma imagem para o produto.')
+      return
+    }
+    
     setIsSubmitting(true)
     try {
       let productId = editingProduct?.id
