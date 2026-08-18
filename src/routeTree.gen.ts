@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
 import { Route as AdminAdminConfiguracoesRouteImport } from './routes/_admin.admin.configuracoes'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin.admin.dashboard'
 import { Route as AdminAdminEstoqueRouteImport } from './routes/_admin.admin.estoque'
@@ -30,6 +31,11 @@ const AdminRoute = AdminRouteImport.update({
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin/login',
   path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategoriaSlugRoute = CategoriaSlugRouteImport.update({
+  id: '/categoria/$slug',
+  path: '/categoria/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminAdminConfiguracoesRoute = AdminAdminConfiguracoesRouteImport.update({
@@ -61,6 +67,7 @@ const AdminAdminVendasRoute = AdminAdminVendasRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin/login': typeof AdminLoginRoute
+  '/categoria/$slug': typeof CategoriaSlugRoute
   '/admin/configuracoes': typeof AdminAdminConfiguracoesRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
   '/admin/estoque': typeof AdminAdminEstoqueRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin/login': typeof AdminLoginRoute
+  '/categoria/$slug': typeof CategoriaSlugRoute
   '/admin/configuracoes': typeof AdminAdminConfiguracoesRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
   '/admin/estoque': typeof AdminAdminEstoqueRoute
@@ -81,6 +89,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_admin': typeof AdminRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/categoria/$slug': typeof CategoriaSlugRoute
   '/_admin/admin/configuracoes': typeof AdminAdminConfiguracoesRoute
   '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
   '/_admin/admin/estoque': typeof AdminAdminEstoqueRoute
@@ -92,6 +101,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin/login'
+    | '/categoria/$slug'
     | '/admin/configuracoes'
     | '/admin/dashboard'
     | '/admin/estoque'
@@ -101,6 +111,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin/login'
+    | '/categoria/$slug'
     | '/admin/configuracoes'
     | '/admin/dashboard'
     | '/admin/estoque'
@@ -111,6 +122,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_admin'
     | '/admin/login'
+    | '/categoria/$slug'
     | '/_admin/admin/configuracoes'
     | '/_admin/admin/dashboard'
     | '/_admin/admin/estoque'
@@ -122,6 +134,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
+  CategoriaSlugRoute: typeof CategoriaSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -145,6 +158,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/login'
       fullPath: '/admin/login'
       preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/categoria/$slug': {
+      id: '/categoria/$slug'
+      path: '/categoria/$slug'
+      fullPath: '/categoria/$slug'
+      preLoaderRoute: typeof CategoriaSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_admin/admin/configuracoes': {
@@ -207,6 +227,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
+  CategoriaSlugRoute: CategoriaSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

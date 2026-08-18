@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { useState } from 'react'
+import logoAsset from "@/assets/logo.png.asset.json"
 
 export const Route = createFileRoute('/_admin')({
   beforeLoad: async () => {
@@ -81,8 +82,11 @@ function AdminLayout() {
 
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
-      <div className="flex h-16 items-center border-b border-gray-200 px-6">
-        <span className="text-xl font-bold text-pink">Admin Maakeup</span>
+      <div className="flex h-16 items-center border-b border-gray-200 px-6 py-2">
+        <Link to="/" className="flex items-center gap-2">
+          <img src={logoAsset.url} alt="Logo" className="h-10 w-auto" />
+          <span className="text-lg font-bold text-pink">Admin</span>
+        </Link>
       </div>
       
       <nav className="flex-1 space-y-1 px-3 py-4">
@@ -116,7 +120,10 @@ function AdminLayout() {
     <div className="flex min-h-screen bg-gray-50">
       {/* Mobile Header */}
       <header className="fixed top-0 left-0 right-0 z-40 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 lg:hidden">
-        <span className="text-xl font-bold text-pink">Admin Maakeup</span>
+        <Link to="/" className="flex items-center gap-2">
+          <img src={logoAsset.url} alt="Logo" className="h-8 w-auto" />
+          <span className="text-lg font-bold text-pink">Admin</span>
+        </Link>
         <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon">
