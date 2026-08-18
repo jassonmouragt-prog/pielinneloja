@@ -9,6 +9,7 @@ import { useState } from 'react'
 export const Route = createFileRoute('/_admin')({
   beforeLoad: async () => {
     const { data: { session } } = await supabase.auth.getSession();
+    console.log('Admin Guard: Session check:', session ? 'Session found' : 'No session');
     
     if (!session) {
       console.log('Admin Guard: No session found, redirecting to login');
