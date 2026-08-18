@@ -39,6 +39,7 @@ function AdminProductsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   const { data: products, refetch } = useQuery({
     queryKey: ['admin-products'],
@@ -185,12 +186,14 @@ function AdminProductsPage() {
         const fileName = `${productId}-${Date.now()}.${fileExt}`
         const filePath = `products/${fileName}`
 
+        setUploadProgress(10)
         const { error: uploadError } = await supabase.storage
           .from('product-images')
           .upload(filePath, imageFile, {
             cacheControl: '3600',
             upsert: false
           })
+        setUploadProgress(70)
 
         if (uploadError) {
           console.error('Upload error details:', uploadError)
@@ -198,8 +201,10 @@ function AdminProductsPage() {
           if (uploadError.message.includes('Permission denied') || uploadError.message.includes('42501')) {
             errorMsg = 'Permissão negada no storage. Contate o suporte.'
           }
+          setUploadProgress(0)
           throw new Error(errorMsg + ' (' + (uploadError.message || 'Erro no Storage') + ')')
         }
+        setUploadProgress(100)
 
         const { data: { publicUrl } } = supabase.storage
           .from('product-images')
@@ -458,6 +463,21 @@ function AdminProductsPage() {
                     </div>
                   </div>
                 </div>
+
+                {uploadProgress > 0 && uploadProgress < 100 && (
+                  <div className="w-full space-y-1">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Enviando imagem...</span>
+                      <span>{uploadProgress}%</span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+                      <div 
+                        className="h-full bg-pink transition-all duration-300" 
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
 
                 <DialogFooter>
                   <Button type="submit" className="bg-pink hover:bg-pink/90" disabled={isSubmitting}>
