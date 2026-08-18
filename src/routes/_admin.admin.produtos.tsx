@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -29,11 +29,21 @@ const productSchema = z.object({
 
 type ProductFormValues = z.infer<typeof productSchema>
 
+type ProductSearch = {
+  editId?: string | undefined
+}
+
 export const Route = createFileRoute('/_admin/admin/produtos')({
   component: AdminProductsPage,
+  validateSearch: (search: Record<string, unknown>): ProductSearch => {
+    return {
+      editId: (search['editId'] as string) || undefined,
+    }
+  },
 })
 
 function AdminProductsPage() {
+  const { editId } = Route.useSearch()
   const [searchTerm, setSearchTerm] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -107,6 +117,16 @@ function AdminProductsPage() {
     
     setIsDialogOpen(true)
   }
+
+  // Handle direct navigation to edit from dashboard
+  useEffect(() => {
+    if (editId && products) {
+      const product = products.find(p => p.id === editId)
+      if (product) {
+        handleEdit(product)
+      }
+    }
+  }, [editId, products])
 
   const handleDelete = async () => {
     if (!productToDelete) return
