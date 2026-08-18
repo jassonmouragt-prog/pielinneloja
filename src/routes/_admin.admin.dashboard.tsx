@@ -23,14 +23,20 @@ function AdminDashboard() {
       const [salesRes, productsRes] = await Promise.all([
         supabase
           .from('sales')
-          .select('total_amount, status')
-          .gte('created_at', firstDayOfMonth),
+          .select('*, sale_items(*, products(name))')
+          .order('created_at', { ascending: false })
+          .limit(5),
         supabase
           .from('products')
           .select('id, name, stock_quantity')
       ]);
 
-      const confirmedSales = salesRes.data?.filter(s => s.status === 'confirmed') || [];
+      const monthSalesRes = await supabase
+        .from('sales')
+        .select('total_amount, status')
+        .gte('created_at', firstDayOfMonth);
+
+      const confirmedSales = monthSalesRes.data?.filter(s => s.status === 'confirmed') || [];
       const revenue = confirmedSales.reduce((acc, s) => acc + Number(s.total_amount), 0);
       
       const lowStockProducts = productsRes.data?.filter(p => (p.stock_quantity ?? 0) <= 5) || [];
@@ -41,7 +47,8 @@ function AdminDashboard() {
         confirmedCount: confirmedSales.length,
         lowStockCount,
         lowStockProducts,
-        totalProducts: productsRes.data?.length || 0
+        totalProducts: productsRes.data?.length || 0,
+        recentSales: salesRes.data || []
       };
     }
   });
