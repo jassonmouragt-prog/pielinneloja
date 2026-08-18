@@ -11,7 +11,7 @@ const benefits = [
 export function Benefits() {
   return (
     <section className="bg-background">
-      <div className="mx-auto grid max-w-[1200px] grid-cols-2 gap-y-8 px-4 py-8 sm:px-6 lg:grid-cols-4 lg:py-9">
+      <div className="mx-auto flex max-w-[1200px] flex-wrap justify-center gap-x-12 gap-y-8 px-4 py-8 sm:px-6 lg:py-9">
         {benefits.map((benefit, index) => (
           <Reveal
             key={benefit.title}
