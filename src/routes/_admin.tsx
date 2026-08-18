@@ -1,0 +1,84 @@
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { supabase } from '@/integrations/supabase/client'
+import { LayoutDashboard, Package, Box, Settings, LogOut } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
+
+export const Route = createFileRoute('/_admin')({
+  beforeLoad: async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      throw redirect({ to: '/admin/login' });
+    }
+
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', session.user.id)
+      .single();
+
+    if (roleData?.role !== 'admin') {
+      await supabase.auth.signOut();
+      throw redirect({ to: '/admin/login' });
+    }
+  },
+  component: AdminLayout,
+})
+
+function AdminLayout() {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/admin/login';
+  };
+
+  const navItems = [
+    { label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
+    { label: 'Produtos', icon: Package, href: '/admin/produtos' },
+    { label: 'Estoque', icon: Box, href: '/admin/produtos' }, // Using same page for now per plan
+    { label: 'Configurações', icon: Settings, href: '/admin/dashboard' },
+  ];
+
+  return (
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <aside className="fixed left-0 top-0 hidden h-full w-64 border-r border-gray-200 bg-white lg:block">
+        <div className="flex h-full flex-col">
+          <div className="flex h-16 items-center border-b border-gray-200 px-6">
+            <span className="text-xl font-bold text-pink">Admin Maakeup</span>
+          </div>
+          
+          <nav className="flex-1 space-y-1 px-3 py-4">
+            {navItems.map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-pink/5 hover:text-pink"
+              >
+                <item.icon className="h-5 w-5" />
+                {item.label}
+              </a>
+            ))}
+          </nav>
+
+          <div className="border-t border-gray-200 p-4">
+            <Button
+              variant="ghost"
+              className="flex w-full items-center justify-start gap-3 text-gray-700 hover:text-red-600"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-5 w-5" />
+              Sair
+            </Button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <main className="flex-1 lg:pl-64">
+        <div className="min-h-screen p-4 sm:p-6 lg:p-8">
+          <Outlet />
+        </div>
+      </main>
+    </div>
+  )
+}
