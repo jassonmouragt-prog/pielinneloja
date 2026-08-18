@@ -12,7 +12,7 @@ export const Route = createFileRoute('/admin/login')({
   beforeLoad: async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      throw redirect({ to: '/admin/dashboard' as any });
+      throw redirect({ to: '/admin/dashboard' });
     }
   },
   component: AdminLoginPage,
