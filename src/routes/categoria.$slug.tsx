@@ -20,8 +20,18 @@ export const Route = createFileRoute('/categoria/$slug')({
 function CategoryPage() {
   const { slug } = Route.useParams()
   
-  // Format slug back to display name (e.g., "maquiagem" -> "Maquiagem")
-  const categoryName = slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' ')
+  const { data: categoryData } = useQuery({
+    queryKey: ['category-info', slug],
+    queryFn: async () => {
+      const { data } = await supabase.from('categories').select('*')
+      return data?.find(c => 
+        c.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-') === slug
+      )
+    }
+  })
+
+  const categoryName = categoryData?.name || slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' ')
+
 
   const { data: categoryProducts, isLoading } = useQuery({
     queryKey: ['category-products', slug],
