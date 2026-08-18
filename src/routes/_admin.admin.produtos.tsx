@@ -136,6 +136,7 @@ function AdminProductsPage() {
       console.log('Iniciando persistência do produto:', isNew ? 'Novo' : 'Edição', payload)
 
       if (editingProduct) {
+        console.log('Atualizando produto existente:', productId)
         const { error } = await supabase
           .from('products')
           .update(payload)
@@ -145,6 +146,7 @@ function AdminProductsPage() {
           throw error
         }
       } else {
+        console.log('Inserindo novo produto...')
         const { data, error } = await supabase
           .from('products')
           .insert([payload])
@@ -152,6 +154,9 @@ function AdminProductsPage() {
           .single()
         if (error) {
           console.error('Erro no insert do produto:', error)
+          if (error.code === '42501') {
+            throw new Error('Permissão negada ao inserir produto. Verifique se você é um administrador.')
+          }
           throw error
         }
         productId = data.id
