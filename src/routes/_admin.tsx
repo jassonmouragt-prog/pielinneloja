@@ -25,8 +25,8 @@ export const Route = createFileRoute('/_admin')({
     }
 
     // Emergency bypass based on email for the known admin
-    if (session.user.email === 'sualojinhaadmin@admin.com') {
-      console.log('[AdminGuard] Email bypass granted');
+    if (session.user.email?.toLowerCase() === 'sualojinhaadmin@admin.com') {
+      console.log('[AdminGuard] Email bypass granted for', session.user.email);
       return { session, role: 'admin' as const };
     }
 
