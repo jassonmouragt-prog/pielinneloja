@@ -12,15 +12,21 @@ export const Route = createFileRoute('/_admin')({
     const isClient = typeof window !== 'undefined';
     const storageKey = isClient ? Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token')) : null;
     const sessionStr = storageKey ? localStorage.getItem(storageKey) : null;
-    const localSession = sessionStr ? JSON.parse(sessionStr) : null;
+    let localSession = null;
+    try {
+      localSession = sessionStr ? JSON.parse(sessionStr) : null;
+    } catch (e) {
+      console.error('[AdminGuard] Error parsing session:', e);
+    }
 
     const { data: { session: supabaseSession } } = await supabase.auth.getSession();
     const session = supabaseSession || localSession;
     
-    console.log('[AdminGuard] Session Check:', session?.user?.email, 'Storage Key:', storageKey);
+    console.log('[AdminGuard] Session Check Email:', session?.user?.email);
+    console.log('[AdminGuard] Session Check User ID:', session?.user?.id);
     
     if (!session) {
-      console.log('[AdminGuard] No session, redirecting');
+      console.log('[AdminGuard] No session found, redirecting to login');
       throw redirect({ to: '/admin/login', replace: true });
     }
 
