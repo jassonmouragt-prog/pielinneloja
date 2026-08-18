@@ -1,5 +1,6 @@
 import { ShoppingBag, X, Plus, Minus, MessageSquare, Loader2 } from "lucide-react";
 import { useCart, type CartItem } from "@/hooks/useCart";
+import { useHydrated } from "@/hooks/useHydrated";
 import { registerPendingSale } from "@/lib/sales.functions";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
@@ -17,6 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function CartDrawer() {
   const { items, removeItem, updateQuantity, totalItems, isOpen, setIsOpen, clearCart } = useCart();
+  const hydrated = useHydrated();
   const [isRegistering, setIsRegistering] = useState(false);
   const registerSale = useServerFn(registerPendingSale);
   const WHATSAPP_NUMBER = "5584994085244";
@@ -73,7 +75,7 @@ export function CartDrawer() {
           className="relative text-foreground/80 transition-transform duration-300 hover:scale-110 cursor-pointer"
         >
           <ShoppingBag className="size-5 stroke-[1.5]" />
-          {totalItems() > 0 && (
+          {hydrated && totalItems() > 0 && (
             <span className="absolute -top-2 -right-2 grid size-4 place-items-center rounded-full bg-pink text-[10px] font-bold text-primary-foreground">
               {totalItems()}
             </span>
