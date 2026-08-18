@@ -70,7 +70,7 @@ export function Categories() {
                 <p className="mt-3 text-xs font-medium text-foreground sm:text-sm">
                   {category.name}
                 </p>
-              </a>
+              </Link>
             </Reveal>
           ))}
         </div>
