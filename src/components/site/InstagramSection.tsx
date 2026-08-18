@@ -1,9 +1,11 @@
 import { instagramPosts } from "./data";
 import { Reveal } from "./Reveal";
+import { Link } from "@tanstack/react-router";
+
 
 export function InstagramSection() {
   return (
-    <section id="novidades" className="bg-background">
+    <section id="favoritos" className="bg-background">
       <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:py-14">
         <Reveal className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:items-center sm:justify-between">
           <div className="min-w-0">

@@ -121,7 +121,10 @@ function AdminDashboard() {
                     </p>
                   </div>
                   <Button variant="outline" size="sm" asChild>
-                    <Link to="/admin/produtos" search={{ editId: product.id }}>
+                    <Link 
+                      to="/admin/produtos" 
+                      search={{ editId: product.id } as any}
+                    >
                       Gerenciar
                     </Link>
                   </Button>

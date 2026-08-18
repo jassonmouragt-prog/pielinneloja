@@ -1,7 +1,8 @@
 import { Heart, Instagram, Music2, Send } from "lucide-react";
-
-import logo from "@/assets/logo.png";
+import { Link } from "@tanstack/react-router";
+import logoAsset from "@/assets/logo.png.asset.json";
 import { footerColumns } from "./data";
+
 
 export function SiteFooter() {
   return (
@@ -9,7 +10,7 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-[1200px] gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.1fr_1fr_1fr_1fr_1.2fr] lg:gap-8">
         <div>
           <img
-            src={logo}
+            src={logoAsset.url}
             alt="Sua Lojinha Maakeup"
             loading="lazy"
             width={200}
@@ -42,17 +43,28 @@ export function SiteFooter() {
             <ul className="mt-4 space-y-2.5">
               {column.links.map((link) => (
                 <li key={link}>
-                  <a
-                    href={`#${link.toLowerCase().replace(/\s+/g, "-")}`}
-                    className="text-xs text-muted-foreground transition-colors duration-300 hover:text-pink"
-                  >
-                    {link}
-                  </a>
+                  {column.title === "Categorias" ? (
+                    <Link
+                      to="/categoria/$slug"
+                      params={{ slug: link.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-') }}
+                      className="text-xs text-muted-foreground transition-colors duration-300 hover:text-pink"
+                    >
+                      {link}
+                    </Link>
+                  ) : (
+                    <a
+                      href={`#${link.toLowerCase().replace(/\s+/g, "-")}`}
+                      className="text-xs text-muted-foreground transition-colors duration-300 hover:text-pink"
+                    >
+                      {link}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
           </div>
         ))}
+
 
         <div>
           <h3 className="text-sm font-semibold text-foreground">Newsletter</h3>
