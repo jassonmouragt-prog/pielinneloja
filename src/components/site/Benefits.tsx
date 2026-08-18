@@ -6,7 +6,6 @@ const benefits = [
   { icon: Truck, title: "Preço Único", text: "R$10, R$15 e R$20" },
   { icon: CreditCard, title: "Tudo Baratinho", text: "O melhor da make" },
   { icon: ShieldCheck, title: "Compra Segura", text: "Seus dados protegidos" },
-  { icon: Gem, title: "5% de Desconto", text: "Pagando no PIX" },
 ];
 
 export function Benefits() {

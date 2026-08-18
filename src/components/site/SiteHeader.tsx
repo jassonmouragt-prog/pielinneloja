@@ -29,14 +29,6 @@ export function SiteHeader() {
             <Truck className="size-3.5 shrink-0 text-pink" />
             PREÇO ÚNICO: R$10, R$15 e R$20
           </span>
-          <span className="hidden items-center gap-1.5 sm:flex">
-            <ShoppingBag className="size-3.5 shrink-0 text-pink" />
-            Frete grátis acima de R$199
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Heart className="size-3.5 shrink-0 text-pink" />
-            5% OFF no PIX
-          </span>
         </div>
       </div>
 
@@ -78,17 +70,6 @@ export function SiteHeader() {
           </div>
 
           <div className="flex items-center justify-end gap-4 sm:gap-6">
-            <a
-              href="#login"
-              className="flex items-center gap-2 text-xs leading-tight text-foreground/80 transition-colors duration-300 hover:text-pink"
-            >
-              <User className="size-5 shrink-0 stroke-[1.5]" />
-              <span className="hidden sm:block">
-                Entrar
-                <br />
-                <span className="text-muted-foreground">ou cadastrar</span>
-              </span>
-            </a>
             <a
               href="#favoritos"
               aria-label="Favoritos"
