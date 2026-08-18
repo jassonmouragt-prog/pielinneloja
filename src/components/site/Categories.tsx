@@ -49,7 +49,7 @@ export function Categories() {
               >
                 <div
                   className={`mx-auto grid aspect-square w-full max-w-[112px] place-items-center overflow-hidden rounded-full transition-transform duration-300 group-hover:scale-105 ${
-                    category.tone === "pink" ? "gradient-pink" : "bg-lilac-light"
+                    category.tone === "pink" ? "gradient-pink" : "bg-purple-100"
                   }`}
                 >
                   {category.image_url ? (
