@@ -11,13 +11,21 @@ export const Route = createFileRoute('/_admin')({
       throw redirect({ to: '/admin/login' });
     }
 
-    const { data: roleData } = await supabase
+    const { data: roleData, error } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', session.user.id)
-      .single();
+      .maybeSingle();
+
+    if (error) {
+      console.error('Admin Layout: Error fetching role:', error);
+      // In case of error, we sign out to be safe
+      await supabase.auth.signOut();
+      throw redirect({ to: '/admin/login' });
+    }
 
     if (roleData?.role !== 'admin') {
+      console.warn('Admin Layout: User is not admin:', roleData?.role);
       await supabase.auth.signOut();
       throw redirect({ to: '/admin/login' });
     }
