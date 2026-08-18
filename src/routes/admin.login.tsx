@@ -63,8 +63,10 @@ function AdminLoginPage() {
         }
 
         toast.success('Login realizado com sucesso!')
-        // Usar reload para garantir que o estado da sessão seja limpo/atualizado
-        window.location.assign('/admin/dashboard')
+        // Aguardar um pequeno momento para o Supabase persistir o token no localStorage
+        setTimeout(() => {
+          window.location.assign('/admin/dashboard')
+        }, 500)
       }
     } catch (error: any) {
       console.error('Erro capturado no login:', error)
