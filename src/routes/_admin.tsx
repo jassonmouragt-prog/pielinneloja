@@ -9,7 +9,6 @@ import { useState } from 'react'
 export const Route = createFileRoute('/_admin')({
   beforeLoad: async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    console.log('Admin Guard: Session check:', session ? 'Session found' : 'No session');
     
     if (!session) {
       console.log('Admin Guard: No session found, redirecting to login');
@@ -17,36 +16,28 @@ export const Route = createFileRoute('/_admin')({
     }
 
     try {
-      console.log('Admin Guard: Verificando role para usuário:', session.user.id);
-      
-      // Tentar busca direta primeiro (mais rápido)
-      const { data: roleData, error: directError } = await supabase
+      // Check if user has admin role - simple and direct
+      const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', session.user.id)
         .maybeSingle();
 
       if (roleData?.role === 'admin') {
-        console.log('Admin Guard: Acesso concedido via consulta direta');
         return { session, role: 'admin' };
       }
 
-      if (directError) {
-        console.warn('Admin Layout: Direct query failed, trying RPC...', directError);
-      }
-
-      // Fallback para RPC has_role
+      // Final fallback to RPC check
       const { data: hasAdmin, error: rpcError } = await supabase.rpc('has_role', {
         _user_id: session.user.id,
         _role: 'admin'
       });
 
       if (!rpcError && hasAdmin === true) {
-        console.log('Admin Guard: Acesso concedido via RPC');
         return { session, role: 'admin' };
       }
 
-      console.error('Admin Layout: User not authorized as admin. RPC Error:', rpcError);
+      console.error('Admin Layout: User not authorized as admin');
       throw redirect({ to: '/admin/login', replace: true });
     } catch (e: any) {
       if (e.to || e.redirect) throw e;
