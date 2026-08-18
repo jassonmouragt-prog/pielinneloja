@@ -30,6 +30,9 @@ export const Route = createFileRoute('/_admin/admin/configuracoes')({
 function AdminSettingsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+
 
   const { data: categories, refetch } = useQuery({
     queryKey: ['admin-categories-settings'],
