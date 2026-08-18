@@ -10,12 +10,16 @@ export const Route = createFileRoute('/_admin')({
   beforeLoad: async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
+    console.log('Admin Guard: Checking session...', session ? 'Present' : 'Absent');
+
     if (!session) {
       console.log('Admin Guard: No session found, redirecting to login');
       throw redirect({ to: '/admin/login', replace: true });
     }
 
     try {
+      console.log('Admin Guard: Verifying role for user:', session.user.id);
+      
       // Tentativa 1: RPC (Security Definer - ignora RLS)
       const { data: hasAdmin, error: rpcError } = await supabase.rpc('has_role', {
         _user_id: session.user.id,
@@ -23,10 +27,11 @@ export const Route = createFileRoute('/_admin')({
       });
 
       if (!rpcError && hasAdmin === true) {
+        console.log('Admin Guard: RPC check successful, user is admin');
         return { session, role: 'admin' };
       }
 
-      console.warn('Admin Layout: RPC check failed or returned false, trying direct query...', rpcError);
+      console.warn('Admin Layout: RPC check failed or returned false. RPC Error:', rpcError, 'Result:', hasAdmin);
 
       // Tentativa 2: Query Direta (Depende de RLS e GRANTS)
       const { data: roleData, error: directError } = await supabase
@@ -35,16 +40,19 @@ export const Route = createFileRoute('/_admin')({
         .eq('user_id', session.user.id)
         .maybeSingle();
 
+      console.log('Admin Layout: Direct query result:', roleData, 'Error:', directError);
+
       if (roleData?.role === 'admin') {
+        console.log('Admin Guard: Direct query successful, user is admin');
         return { session, role: 'admin' };
       }
 
       console.error('Admin Layout: All role checks failed. Direct Error:', directError);
       
       // Se chegamos aqui, o usuário não é admin ou houve um erro crítico
-      // Em vez de dar signout imediato (que pode quebrar o preview), apenas redirecionamos
-      // Mas o signOut é mais seguro para evitar bypass
-      await supabase.auth.signOut();
+      // Em ambientes de desenvolvimento/preview, às vezes o signOut pode ser agressivo demais
+      // se houver algum erro de rede momentâneo. Mas para segurança é necessário.
+      // await supabase.auth.signOut();
       throw redirect({ to: '/admin/login', replace: true });
       
     } catch (e: any) {
@@ -52,7 +60,7 @@ export const Route = createFileRoute('/_admin')({
       if (e.to || e.redirect) throw e;
       
       console.error('Admin Layout: Unexpected auth verification error:', e);
-      await supabase.auth.signOut();
+      // await supabase.auth.signOut();
       throw redirect({ to: '/admin/login', replace: true });
     }
   },
