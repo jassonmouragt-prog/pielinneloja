@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AdminAdminConfiguracoesRouteImport } from './routes/_admin.admin.configuracoes'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin.admin.dashboard'
 import { Route as AdminAdminEstoqueRouteImport } from './routes/_admin.admin.estoque'
 import { Route as AdminAdminProdutosRouteImport } from './routes/_admin.admin.produtos'
@@ -29,6 +30,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin/login',
   path: '/admin/login',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAdminConfiguracoesRoute = AdminAdminConfiguracoesRouteImport.update({
+  id: '/admin/configuracoes',
+  path: '/admin/configuracoes',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminAdminDashboardRoute = AdminAdminDashboardRouteImport.update({
   id: '/admin/dashboard',
@@ -49,6 +55,7 @@ const AdminAdminProdutosRoute = AdminAdminProdutosRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/configuracoes': typeof AdminAdminConfiguracoesRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
   '/admin/estoque': typeof AdminAdminEstoqueRoute
   '/admin/produtos': typeof AdminAdminProdutosRoute
@@ -56,6 +63,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/configuracoes': typeof AdminAdminConfiguracoesRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
   '/admin/estoque': typeof AdminAdminEstoqueRoute
   '/admin/produtos': typeof AdminAdminProdutosRoute
@@ -65,6 +73,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_admin': typeof AdminRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/_admin/admin/configuracoes': typeof AdminAdminConfiguracoesRoute
   '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
   '/_admin/admin/estoque': typeof AdminAdminEstoqueRoute
   '/_admin/admin/produtos': typeof AdminAdminProdutosRoute
@@ -74,6 +83,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin/login'
+    | '/admin/configuracoes'
     | '/admin/dashboard'
     | '/admin/estoque'
     | '/admin/produtos'
@@ -81,6 +91,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin/login'
+    | '/admin/configuracoes'
     | '/admin/dashboard'
     | '/admin/estoque'
     | '/admin/produtos'
@@ -89,6 +100,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_admin'
     | '/admin/login'
+    | '/_admin/admin/configuracoes'
     | '/_admin/admin/dashboard'
     | '/_admin/admin/estoque'
     | '/_admin/admin/produtos'
@@ -123,6 +135,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_admin/admin/configuracoes': {
+      id: '/_admin/admin/configuracoes'
+      path: '/admin/configuracoes'
+      fullPath: '/admin/configuracoes'
+      preLoaderRoute: typeof AdminAdminConfiguracoesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/admin/dashboard': {
       id: '/_admin/admin/dashboard'
       path: '/admin/dashboard'
@@ -148,12 +167,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminAdminConfiguracoesRoute: typeof AdminAdminConfiguracoesRoute
   AdminAdminDashboardRoute: typeof AdminAdminDashboardRoute
   AdminAdminEstoqueRoute: typeof AdminAdminEstoqueRoute
   AdminAdminProdutosRoute: typeof AdminAdminProdutosRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAdminConfiguracoesRoute: AdminAdminConfiguracoesRoute,
   AdminAdminDashboardRoute: AdminAdminDashboardRoute,
   AdminAdminEstoqueRoute: AdminAdminEstoqueRoute,
   AdminAdminProdutosRoute: AdminAdminProdutosRoute,
