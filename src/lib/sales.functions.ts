@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { z } from "zod";
 
 export const registerPendingSale = createServerFn({ method: "POST" })
@@ -15,8 +15,8 @@ export const registerPendingSale = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { totalAmount, whatsappMessage, items } = data;
 
-    // 1. Create sale record
-    const { data: sale, error: saleError } = await supabase
+    // 1. Create sale record using supabaseAdmin to bypass RLS for public checkout
+    const { data: sale, error: saleError } = await supabaseAdmin
       .from('sales')
       .insert({
         total_amount: totalAmount,
@@ -36,7 +36,7 @@ export const registerPendingSale = createServerFn({ method: "POST" })
       price_at_sale: item.price
     }));
 
-    const { error: itemsError } = await supabase
+    const { error: itemsError } = await supabaseAdmin
       .from('sale_items')
       .insert(saleItems);
 
