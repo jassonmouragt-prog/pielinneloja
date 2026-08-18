@@ -113,16 +113,26 @@ function AdminProductsPage() {
     try {
       let productId = editingProduct?.id
 
+      const payload = {
+        name: values.name,
+        subtitle: values.subtitle || null,
+        description: values.description || null,
+        price: values.price,
+        category_id: values.category_id || null,
+        stock_quantity: values.stock_quantity,
+        status: values.status,
+      }
+
       if (editingProduct) {
         const { error } = await supabase
           .from('products')
-          .update(values)
+          .update(payload)
           .eq('id', productId)
         if (error) throw error
       } else {
         const { data, error } = await supabase
           .from('products')
-          .insert([values])
+          .insert([payload])
           .select()
           .single()
         if (error) throw error
