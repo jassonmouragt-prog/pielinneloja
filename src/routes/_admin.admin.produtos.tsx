@@ -19,8 +19,8 @@ import * as z from 'zod'
 const productSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   subtitle: z.string().optional(),
-  description: z.string().optional(),
-  price: z.coerce.number().min(0, 'Preço deve ser maior ou igual a 0'),
+  description: z.string().min(5, 'Descrição deve ter pelo menos 5 caracteres'),
+  price: z.coerce.number().min(0.01, 'Preço deve ser maior que zero'),
   category_id: z.string().min(1, 'Selecione uma categoria'),
   stock_quantity: z.coerce.number().int().min(0, 'Estoque deve ser maior ou igual a 0'),
   status: z.enum(['active', 'inactive']),
@@ -118,6 +118,11 @@ function AdminProductsPage() {
   }
 
   const onSubmit = async (values: ProductFormValues) => {
+    if (!imagePreview && !editingProduct) {
+      toast.error('Por favor, selecione uma imagem para o produto.')
+      return
+    }
+    
     setIsSubmitting(true)
     try {
       let productId = editingProduct?.id
@@ -224,9 +229,21 @@ function AdminProductsPage() {
       form.reset()
       refetch()
     } catch (error: any) {
-      console.error('Erro capturado ao salvar produto:', error)
-      const details = error.details || error.hint || '';
-      toast.error('Erro ao salvar produto: ' + (error.message || 'Erro desconhecido') + (details ? ` (${details})` : ''))
+      console.error('Erro detalhado ao salvar produto:', error)
+      let errorMessage = 'Não foi possível salvar o produto. Verifique os dados e tente novamente.'
+      
+      if (error.message) {
+        if (error.message.includes('Permission denied') || error.code === '42501') {
+          errorMessage = 'Você não tem permissão para realizar esta ação.'
+        } else {
+          errorMessage = error.message
+        }
+      }
+
+      toast.error(errorMessage, {
+        description: error.details || error.hint || undefined,
+        duration: 5000
+      })
     } finally {
       setIsSubmitting(false)
     }
