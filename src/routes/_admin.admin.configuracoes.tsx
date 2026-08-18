@@ -59,15 +59,22 @@ function AdminSettingsPage() {
   const onSubmit = async (values: CategoryValues) => {
     setIsSubmitting(true)
     try {
+      const payload: any = {
+        name: values.name,
+        tone: values.tone,
+        image_url: values.image_url ?? null
+      }
+
       const { error } = await supabase
         .from('categories')
-        .insert([values])
+        .insert([payload])
       
       if (error) throw error
       
       toast.success('Categoria adicionada com sucesso!')
       setIsDialogOpen(false)
       form.reset()
+      setImagePreview(null)
       refetch()
     } catch (error: any) {
       toast.error('Erro: ' + error.message)
@@ -75,6 +82,45 @@ function AdminSettingsPage() {
       setIsSubmitting(false)
     }
   }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    try {
+      // Create preview
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Math.random()}.${fileExt}`
+      const filePath = `categories/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+        .from('product-images')
+        .createSignedUrl(filePath, 315360000) // 10 years
+
+      if (signedUrlError) throw signedUrlError
+
+      form.setValue('image_url', signedUrlData.signedUrl)
+      toast.success('Imagem enviada!')
+    } catch (error: any) {
+      toast.error('Erro no upload: ' + error.message)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
 
   const handleDeleteCategory = async (id: string) => {
     if (!confirm('Tem certeza? Isso pode afetar produtos vinculados a esta categoria.')) return
