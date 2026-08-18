@@ -133,34 +133,44 @@ function AdminProductsPage() {
         status: values.status,
       }
 
+      console.log('Iniciando persistência do produto:', isNew ? 'Novo' : 'Edição', payload)
+
       if (editingProduct) {
         const { error } = await supabase
           .from('products')
           .update(payload)
           .eq('id', productId)
-        if (error) throw error
+        if (error) {
+          console.error('Erro no update do produto:', error)
+          throw error
+        }
       } else {
         const { data, error } = await supabase
           .from('products')
           .insert([payload])
           .select()
           .single()
-        if (error) throw error
+        if (error) {
+          console.error('Erro no insert do produto:', error)
+          throw error
+        }
         productId = data.id
         
         // Record initial stock movement
         if (values.stock_quantity > 0) {
-          await supabase.from('stock_movements').insert([{
+          const { error: stockError } = await supabase.from('stock_movements').insert([{
             product_id: productId,
             quantity: values.stock_quantity,
             type: 'in',
             notes: 'Estoque inicial'
           }])
+          if (stockError) console.error('Erro ao registrar estoque inicial:', stockError)
         }
       }
 
       // Handle image upload if a new file is selected
       if (imageFile) {
+        console.log('Iniciando upload de imagem para o produto:', productId)
         const fileExt = imageFile.name.split('.').pop()
         const fileName = `${productId}-${Date.now()}.${fileExt}`
         const filePath = `products/${fileName}`
@@ -171,7 +181,7 @@ function AdminProductsPage() {
 
         if (uploadError) {
           console.error('Upload error details:', uploadError)
-          throw new Error('Falha ao fazer upload da imagem. Verifique se o bucket "product-images" existe.')
+          throw new Error('Falha ao fazer upload da imagem: ' + (uploadError.message || 'Erro no Storage'))
         }
 
         const { data: { publicUrl } } = supabase.storage
@@ -185,7 +195,10 @@ function AdminProductsPage() {
           .from('product_images')
           .insert([{ product_id: productId, url: publicUrl, is_main: true }])
         
-        if (imageError) throw imageError
+        if (imageError) {
+          console.error('Erro ao salvar referência da imagem:', imageError)
+          throw imageError
+        }
       }
 
       toast.success(editingProduct ? 'Produto atualizado!' : 'Produto criado!')
@@ -196,8 +209,9 @@ function AdminProductsPage() {
       form.reset()
       refetch()
     } catch (error: any) {
-      console.error('Erro detalhado ao salvar produto:', error)
-      toast.error('Erro ao salvar produto: ' + (error.message || 'Erro desconhecido'))
+      console.error('Erro capturado ao salvar produto:', error)
+      const details = error.details || error.hint || '';
+      toast.error('Erro ao salvar produto: ' + (error.message || 'Erro desconhecido') + (details ? ` (${details})` : ''))
     } finally {
       setIsSubmitting(false)
     }
