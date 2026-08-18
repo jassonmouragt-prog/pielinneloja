@@ -1,8 +1,9 @@
-import { ArrowRight, Heart, ShoppingBag, Star } from "lucide-react";
-import { products } from "./data";
+import { ArrowRight, Heart, ShoppingBag, Star, Loader2 } from "lucide-react";
 import { Reveal } from "./Reveal";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 function Stars({ rating }: { rating: number }) {
   return (
@@ -24,12 +25,32 @@ function Stars({ rating }: { rating: number }) {
 export function Products() {
   const { addItem } = useCart();
 
+  const { data: products, isLoading } = useQuery({
+    queryKey: ['public-products'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          product_images(url, is_main)
+        `)
+        .eq('status', 'active')
+        .limit(10);
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
   const handleAddToCart = (product: any) => {
+    const mainImage = product.product_images?.find((img: any) => img.is_main)?.url || product.product_images?.[0]?.url;
+    
     addItem({
+      id: product.id,
       name: product.name,
-      subtitle: product.subtitle,
-      price: product.price,
-      image: product.image,
+      subtitle: product.subtitle || '',
+      price: `R$ ${Number(product.price).toFixed(2)}`,
+      image: mainImage,
     });
     toast.success("Produto adicionado ao carrinho!");
   };
@@ -48,8 +69,13 @@ export function Products() {
         </Reveal>
 
         <div className="mt-7 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 lg:gap-5">
-          {products.map((product, index) => (
-            <Reveal key={product.name} delay={index * 60}>
+          {isLoading && (
+            <div className="col-span-full flex justify-center py-10">
+              <Loader2 className="h-8 w-8 animate-spin text-pink" />
+            </div>
+          )}
+          {products?.map((product, index) => (
+            <Reveal key={product.id} delay={index * 60}>
               <article className="group h-full overflow-hidden rounded-xl border border-border bg-card p-3 transition-shadow duration-300 hover:shadow-card">
                 <div className="relative">
                   <button
@@ -60,8 +86,8 @@ export function Products() {
                     <Heart className="size-3.5" />
                   </button>
                   <img
-                    src={product.image}
-                    alt={`${product.name} ${product.subtitle}`}
+                    src={product.product_images?.find((img: any) => img.is_main)?.url || product.product_images?.[0]?.url}
+                    alt={`${product.name} ${product.subtitle || ''}`}
                     loading="lazy"
                     width={600}
                     height={600}
@@ -71,13 +97,13 @@ export function Products() {
                 <h3 className="mt-4 text-[13px] leading-snug font-medium text-foreground">
                   {product.name}
                   <br />
-                  {product.subtitle}
+                  {product.subtitle || ''}
                 </h3>
                 <div className="mt-2 flex items-center gap-1.5">
-                  <Stars rating={product.rating} />
-                  <span className="text-[11px] text-muted-foreground">({product.reviews})</span>
+                   <Stars rating={4.5} />
+                  <span className="text-[11px] text-muted-foreground">(120)</span>
                 </div>
-                <p className="mt-2 text-sm font-bold text-foreground">{product.price}</p>
+                <p className="mt-2 text-sm font-bold text-foreground">R$ {Number(product.price).toFixed(2)}</p>
                 <button
                   onClick={() => handleAddToCart(product)}
                   className="mt-3 flex w-full items-center justify-center gap-2 rounded-md gradient-pink px-3 py-2 text-[11px] font-semibold text-primary-foreground transition-opacity duration-300 hover:opacity-90 cursor-pointer"
