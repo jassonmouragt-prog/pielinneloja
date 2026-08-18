@@ -23,14 +23,20 @@ function AdminDashboard() {
       const [salesRes, productsRes] = await Promise.all([
         supabase
           .from('sales')
-          .select('total_amount, status')
-          .gte('created_at', firstDayOfMonth),
+          .select('*, sale_items(*, products(name))')
+          .order('created_at', { ascending: false })
+          .limit(5),
         supabase
           .from('products')
           .select('id, name, stock_quantity')
       ]);
 
-      const confirmedSales = salesRes.data?.filter(s => s.status === 'confirmed') || [];
+      const monthSalesRes = await supabase
+        .from('sales')
+        .select('total_amount, status')
+        .gte('created_at', firstDayOfMonth);
+
+      const confirmedSales = monthSalesRes.data?.filter(s => s.status === 'confirmed') || [];
       const revenue = confirmedSales.reduce((acc, s) => acc + Number(s.total_amount), 0);
       
       const lowStockProducts = productsRes.data?.filter(p => (p.stock_quantity ?? 0) <= 5) || [];
@@ -41,7 +47,8 @@ function AdminDashboard() {
         confirmedCount: confirmedSales.length,
         lowStockCount,
         lowStockProducts,
-        totalProducts: productsRes.data?.length || 0
+        totalProducts: productsRes.data?.length || 0,
+        recentSales: salesRes.data || []
       };
     }
   });
@@ -131,7 +138,30 @@ function AdminDashboard() {
           <CardTitle>Últimas Vendas</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground italic">Gráficos e rankings serão implementados em breve.</p>
+          {stats?.recentSales && stats.recentSales.length > 0 ? (
+            <div className="space-y-4">
+              {stats.recentSales.map((sale: any) => (
+                <div key={sale.id} className="flex items-center justify-between border-b pb-2 last:border-0">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {sale.customer_name || 'Cliente WhatsApp'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {sale.sale_items?.map((i: any) => `${i.quantity}x ${i.products?.name}`).join(', ')}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold">R$ {sale.total_amount.toFixed(2)}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {new Date(sale.created_at).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground italic text-center py-4">Nenhuma venda registrada recentemente.</p>
+          )}
         </CardContent>
       </Card>
     </div>
