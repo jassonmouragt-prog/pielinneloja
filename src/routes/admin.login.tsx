@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
+import { createFileRoute, redirect, useRouter, Link } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
+import logoAsset from "@/assets/logo.png.asset.json"
 
 export const Route = createFileRoute('/admin/login')({
   beforeLoad: async () => {
@@ -142,7 +143,12 @@ function AdminLoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
+        <CardHeader className="space-y-4">
+          <div className="flex justify-center">
+            <Link to="/">
+              <img src={logoAsset.url} alt="Logo" className="h-20 w-auto" />
+            </Link>
+          </div>
           <CardTitle className="text-center text-2xl font-bold">Admin Sua Lojinha</CardTitle>
           <CardDescription className="text-center">
             Entre com suas credenciais para gerenciar a loja

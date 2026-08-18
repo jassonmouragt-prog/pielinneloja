@@ -1,8 +1,9 @@
 import { Heart, Menu, Search, ShoppingBag, Truck, User, ChevronRight } from "lucide-react";
 import { useState, useRef } from "react";
+import { Link } from "@tanstack/react-router";
 import { CartDrawer } from "./CartDrawer";
 
-import logo from "@/assets/logo.png";
+import logoAsset from "@/assets/logo.png.asset.json";
 import { navLinks } from "./data";
 
 export function SiteHeader() {
@@ -35,15 +36,15 @@ export function SiteHeader() {
       {/* main bar */}
       <div className="bg-background">
         <div className="mx-auto grid max-w-[1200px] grid-cols-[auto_1fr] items-center gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[200px_1fr_auto] lg:gap-8 lg:py-5">
-          <a href="/" className="shrink-0">
+          <Link to="/" className="shrink-0">
             <img
-              src={logo}
+              src={logoAsset.url}
               alt="Sua Lojinha Maakeup"
               width={200}
               height={147}
               className="h-12 w-auto lg:h-[68px]"
             />
-          </a>
+          </Link>
 
           <div className="order-3 col-span-2 lg:order-none lg:col-span-1">
             <form
@@ -98,9 +99,10 @@ export function SiteHeader() {
             <div className={`hidden lg:flex absolute top-full left-0 pt-4 transition-all duration-300 origin-top-left ${isMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
               <div className="bg-white text-foreground shadow-xl rounded-lg overflow-hidden border border-border min-w-[220px]">
                 {navLinks.map((link, index) => (
-                  <a
+                  <Link
                     key={link}
-                    href={`#${link.toLowerCase()}`}
+                    to="/categoria/$slug"
+                    params={{ slug: link.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-') }}
                     className="flex items-center justify-between px-5 py-3 hover:bg-pink/5 hover:text-pink transition-all duration-300"
                     style={{ 
                       animation: isMenuOpen ? `slideInRight 0.3s forwards ${index * 50}ms` : 'none',
@@ -109,7 +111,7 @@ export function SiteHeader() {
                   >
                     {link}
                     <ChevronRight className="size-3.5 opacity-50" />
-                  </a>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -117,13 +119,14 @@ export function SiteHeader() {
 
           <div className="hidden items-center gap-6 overflow-x-auto ml-6 whitespace-nowrap lg:gap-8 no-scrollbar">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link}
-                href={`#${link.toLowerCase()}`}
+                to="/categoria/$slug"
+                params={{ slug: link.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-') }}
                 className="shrink-0 transition-opacity duration-300 hover:opacity-75"
               >
                 {link}
-              </a>
+              </Link>
             ))}
           </div>
         </div>
@@ -141,9 +144,10 @@ export function SiteHeader() {
             </div>
             <div className="py-2">
               {navLinks.map((link, index) => (
-                <a
+                <Link
                   key={link}
-                  href={`#${link.toLowerCase()}`}
+                  to="/categoria/$slug"
+                  params={{ slug: link.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-') }}
                   className="flex items-center justify-between px-6 py-4 hover:bg-pink/5 border-b border-border/50 last:border-0"
                   style={{ 
                     transitionDelay: `${index * 50}ms`,
@@ -155,7 +159,7 @@ export function SiteHeader() {
                 >
                   <span className="font-medium">{link}</span>
                   <ChevronRight className="size-4 text-pink" />
-                </a>
+                </Link>
               ))}
             </div>
           </div>
