@@ -72,6 +72,9 @@ function AdminLoginPage() {
 
       if (data.user) {
         console.log('Usuário autenticado, verificando role...')
+        
+        let userRole: string | null = null;
+        
         // Check if user has admin role using a direct query first
         const { data: roleData, error: roleError } = await supabase
           .from('user_roles')
@@ -80,25 +83,28 @@ function AdminLoginPage() {
           .maybeSingle()
 
         if (roleError) {
-          console.error('Erro ao buscar role:', roleError)
-          // Se falhar o acesso direto, tentamos via RPC se existir
+          console.error('Erro ao buscar role diretamente:', roleError)
+          // Se falhar o acesso direto, tentamos via RPC (que ignora RLS por ser SECURITY DEFINER)
           const { data: hasAdmin, error: rpcError } = await supabase.rpc('has_role', { 
             _user_id: data.user.id, 
             _role: 'admin' 
           });
           
-          if (rpcError || !hasAdmin) {
+          if (rpcError) {
             console.error('Erro no RPC has_role:', rpcError)
             throw new Error('Erro ao verificar permissões de acesso. Por favor, contate o suporte.')
           }
           
-          // Se o RPC funcionou, simulamos o roleData
-          roleData = { role: 'admin' };
+          if (hasAdmin) {
+            userRole = 'admin';
+          }
+        } else {
+          userRole = roleData?.role || null;
         }
 
-        console.log('Dados da role:', roleData)
+        console.log('Role detectada:', userRole)
 
-        if (roleData?.role !== 'admin') {
+        if (userRole !== 'admin') {
           console.warn('Usuário não é admin:', roleData?.role)
           await supabase.auth.signOut()
           toast.error('Acesso negado. Apenas administradores podem acessar esta área.')
