@@ -117,7 +117,7 @@ export function SiteHeader() {
             </div>
           </div>
 
-          <div className="hidden items-center gap-6 overflow-x-auto ml-6 whitespace-nowrap lg:gap-8 no-scrollbar">
+          <div className="hidden lg:flex items-center gap-6 overflow-x-auto ml-6 whitespace-nowrap lg:gap-8 no-scrollbar">
             {navLinks.map((link) => (
               <Link
                 key={link}
@@ -129,6 +129,7 @@ export function SiteHeader() {
               </Link>
             ))}
           </div>
+
         </div>
 
         {/* Mobile Slide-in Menu */}
