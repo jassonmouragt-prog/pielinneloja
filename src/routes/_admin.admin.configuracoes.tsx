@@ -51,7 +51,9 @@ function AdminSettingsPage() {
     defaultValues: {
       name: '',
       tone: 'pink',
+      image_url: null,
     },
+
   })
 
   const onSubmit = async (values: CategoryValues) => {
