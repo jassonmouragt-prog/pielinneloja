@@ -11,7 +11,7 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 
 const title = "Sua Lojinha Maakeup | Maquiagem e Beleza com Preço que Você Ama";
 const description =
-  "Loja de maquiagem, skincare, cabelos e kits de beleza. Frete para todo o Brasil, parcele em até 6x e 5% de desconto no PIX.";
+  "Loja de maquiagem, skincare, cabelos e kits de beleza. Frete para todo o Brasil e parcele em até 6x.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
