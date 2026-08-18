@@ -8,34 +8,21 @@ import { useState } from 'react'
 
 export const Route = createFileRoute('/_admin')({
   beforeLoad: async () => {
-    // Use getSession() instead of direct localStorage for safety
-    const { data: { session } } = await supabase.auth.getSession();
+    // Check session from localStorage directly for debugging/guard
+    const storageKey = typeof window !== 'undefined' ? Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token')) : null;
+    const sessionStr = storageKey ? localStorage.getItem(storageKey) : null;
+    const session = sessionStr ? JSON.parse(sessionStr) : null;
     
     if (!session) {
       throw redirect({ to: '/admin/login', replace: true });
     }
 
-    // Emergency bypass based on email for the known admin
-    if (session.user.email === 'sualojinhaadmin@admin.com') {
+    // Direct email bypass
+    if (session.user?.email === 'sualojinhaadmin@admin.com') {
       return { session, role: 'admin' as const };
     }
 
-    try {
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (roleData?.role === 'admin') {
-        return { session, role: 'admin' as const };
-      }
-
-      throw redirect({ to: '/admin/login', replace: true });
-    } catch (e: any) {
-      if (e.to || e.redirect) throw e;
-      throw redirect({ to: '/admin/login', replace: true });
-    }
+    throw redirect({ to: '/admin/login', replace: true });
   },
   component: AdminLayout,
 })
