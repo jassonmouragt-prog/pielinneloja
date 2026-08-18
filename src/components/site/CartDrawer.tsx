@@ -1,5 +1,9 @@
-import { ShoppingBag, X, Plus, Minus, MessageSquare } from "lucide-react";
+import { ShoppingBag, X, Plus, Minus, MessageSquare, Loader2 } from "lucide-react";
 import { useCart, type CartItem } from "@/hooks/useCart";
+import { registerPendingSale } from "@/lib/sales.functions";
+import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -134,9 +138,10 @@ export function CartDrawer() {
               </div>
               <Button
                 onClick={handleCheckout}
+                disabled={isRegistering}
                 className="h-12 w-full gap-2 rounded-full gradient-pink text-primary-foreground hover:opacity-90 cursor-pointer"
               >
-                <MessageSquare className="size-4" />
+                {isRegistering ? <Loader2 className="size-4 animate-spin" /> : <MessageSquare className="size-4" />}
                 Finalizar Pedido no WhatsApp
               </Button>
             </SheetFooter>
