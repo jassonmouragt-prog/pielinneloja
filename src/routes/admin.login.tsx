@@ -125,7 +125,7 @@ function AdminLoginPage() {
         console.log('Role detectada:', userRole)
 
         if (userRole !== 'admin') {
-          console.warn('Usuário não é admin:', roleData?.role)
+          console.warn('Usuário não é admin')
           await supabase.auth.signOut()
           toast.error('Acesso negado. Apenas administradores podem acessar esta área.')
           return
