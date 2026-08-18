@@ -212,6 +212,7 @@ function AdminProductsPage() {
         const filePath = `products/${fileName}`
 
         setUploadProgress(10)
+        console.log('Tentando upload para bucket product-images, path:', filePath)
         const { error: uploadError } = await supabase.storage
           .from('product-images')
           .upload(filePath, imageFile, {
