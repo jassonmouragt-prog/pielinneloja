@@ -26,14 +26,17 @@ function CategoryPage() {
   const { data: categoryProducts, isLoading } = useQuery({
     queryKey: ['category-products', slug],
     queryFn: async () => {
-      // First find category ID
-      const { data: catData } = await supabase
+      // Try to find by slug-ified name
+      const { data: allCategories } = await supabase
         .from('categories')
-        .select('id')
-        .ilike('name', categoryName)
-        .maybeSingle()
+        .select('id, name')
+
+      const catData = allCategories?.find(c => 
+        c.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-') === slug
+      )
 
       if (!catData) return []
+
 
       const { data: prodData } = await supabase
         .from('products')
