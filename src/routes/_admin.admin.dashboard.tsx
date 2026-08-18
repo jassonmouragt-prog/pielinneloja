@@ -138,7 +138,30 @@ function AdminDashboard() {
           <CardTitle>Últimas Vendas</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground italic">Gráficos e rankings serão implementados em breve.</p>
+          {stats?.recentSales && stats.recentSales.length > 0 ? (
+            <div className="space-y-4">
+              {stats.recentSales.map((sale: any) => (
+                <div key={sale.id} className="flex items-center justify-between border-b pb-2 last:border-0">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {sale.customer_name || 'Cliente WhatsApp'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {sale.sale_items?.map((i: any) => `${i.quantity}x ${i.products?.name}`).join(', ')}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold">R$ {sale.total_amount.toFixed(2)}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {new Date(sale.created_at).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground italic text-center py-4">Nenhuma venda registrada recentemente.</p>
+          )}
         </CardContent>
       </Card>
     </div>
