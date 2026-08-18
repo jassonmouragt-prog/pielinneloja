@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin.admin.dashboard'
+import { Route as AdminAdminEstoqueRouteImport } from './routes/_admin.admin.estoque'
 import { Route as AdminAdminProdutosRouteImport } from './routes/_admin.admin.produtos'
 
 const IndexRoute = IndexRouteImport.update({
@@ -34,6 +35,11 @@ const AdminAdminDashboardRoute = AdminAdminDashboardRouteImport.update({
   path: '/admin/dashboard',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAdminEstoqueRoute = AdminAdminEstoqueRouteImport.update({
+  id: '/admin/estoque',
+  path: '/admin/estoque',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAdminProdutosRoute = AdminAdminProdutosRouteImport.update({
   id: '/admin/produtos',
   path: '/admin/produtos',
@@ -44,12 +50,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/admin/estoque': typeof AdminAdminEstoqueRoute
   '/admin/produtos': typeof AdminAdminProdutosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/admin/estoque': typeof AdminAdminEstoqueRoute
   '/admin/produtos': typeof AdminAdminProdutosRoute
 }
 export interface FileRoutesById {
@@ -58,19 +66,31 @@ export interface FileRoutesById {
   '/_admin': typeof AdminRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/_admin/admin/estoque': typeof AdminAdminEstoqueRoute
   '/_admin/admin/produtos': typeof AdminAdminProdutosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin/login' | '/admin/dashboard' | '/admin/produtos'
+  fullPaths:
+    | '/'
+    | '/admin/login'
+    | '/admin/dashboard'
+    | '/admin/estoque'
+    | '/admin/produtos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin/login' | '/admin/dashboard' | '/admin/produtos'
+  to:
+    | '/'
+    | '/admin/login'
+    | '/admin/dashboard'
+    | '/admin/estoque'
+    | '/admin/produtos'
   id:
     | '__root__'
     | '/'
     | '/_admin'
     | '/admin/login'
     | '/_admin/admin/dashboard'
+    | '/_admin/admin/estoque'
     | '/_admin/admin/produtos'
   fileRoutesById: FileRoutesById
 }
@@ -110,6 +130,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdminDashboardRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/admin/estoque': {
+      id: '/_admin/admin/estoque'
+      path: '/admin/estoque'
+      fullPath: '/admin/estoque'
+      preLoaderRoute: typeof AdminAdminEstoqueRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/admin/produtos': {
       id: '/_admin/admin/produtos'
       path: '/admin/produtos'
@@ -122,11 +149,13 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAdminDashboardRoute: typeof AdminAdminDashboardRoute
+  AdminAdminEstoqueRoute: typeof AdminAdminEstoqueRoute
   AdminAdminProdutosRoute: typeof AdminAdminProdutosRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAdminDashboardRoute: AdminAdminDashboardRoute,
+  AdminAdminEstoqueRoute: AdminAdminEstoqueRoute,
   AdminAdminProdutosRoute: AdminAdminProdutosRoute,
 }
 

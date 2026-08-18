@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Search, ArrowUpCircle, ArrowDownCircle, History, Loader2, AlertCircle } from 'lucide-react'
+import { Plus, Search, ArrowUpCircle, ArrowDownCircle, History, Loader2, AlertCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -246,7 +246,7 @@ function AdminStockPage() {
                       </FormControl>
                       <SelectContent>
                         {products?.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                          <SelectItem key={p.id} value={p.id}>{p.name || ''}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
