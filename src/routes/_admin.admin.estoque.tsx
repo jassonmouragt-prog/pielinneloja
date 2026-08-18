@@ -336,7 +336,7 @@ function AdminStockPage() {
                 {movements?.map((m) => (
                   <TableRow key={m.id}>
                     <TableCell className="text-xs">
-                      {new Date(m.created_at).toLocaleString('pt-BR')}
+                      {m.created_at ? new Date(m.created_at).toLocaleString('pt-BR') : ''}
                     </TableCell>
                     <TableCell className="font-medium">{m.products?.name}</TableCell>
                     <TableCell>
