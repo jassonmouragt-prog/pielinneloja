@@ -16,7 +16,9 @@ import * as z from 'zod'
 const categorySchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   tone: z.enum(['pink', 'lilac']),
+  image_url: z.string().optional(),
 })
+
 
 type CategoryValues = z.infer<typeof categorySchema>
 
