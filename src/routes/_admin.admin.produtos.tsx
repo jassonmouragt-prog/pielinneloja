@@ -30,14 +30,14 @@ const productSchema = z.object({
 type ProductFormValues = z.infer<typeof productSchema>
 
 type ProductSearch = {
-  editId?: string
+  editId?: string | undefined
 }
 
 export const Route = createFileRoute('/_admin/admin/produtos')({
   component: AdminProductsPage,
   validateSearch: (search: Record<string, unknown>): ProductSearch => {
     return {
-      editId: search.editId as string | undefined,
+      editId: (search['editId'] as string) || undefined,
     }
   },
 })
