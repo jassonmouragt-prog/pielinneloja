@@ -205,6 +205,37 @@ function AdminSettingsPage() {
                         </FormItem>
                       )}
                     />
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Ícone da Categoria</label>
+                      <div className="flex items-center gap-4">
+                        <div className={`relative flex size-20 items-center justify-center overflow-hidden rounded-full border border-dashed border-border bg-muted ${form.watch('tone') === 'pink' ? 'bg-pink/10' : 'bg-purple-100'}`}>
+                          {imagePreview ? (
+                            <img src={imagePreview} alt="Preview" className="h-full w-full object-contain" />
+                          ) : (
+                            <Upload className="size-6 text-muted-foreground" />
+                          )}
+                          {isUploading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                              <Loader2 className="size-6 animate-spin text-white" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            disabled={isUploading}
+                            className="cursor-pointer"
+                          />
+                          <p className="mt-1 text-[10px] text-muted-foreground">
+                            Formatos: PNG, JPG ou WEBP. Recomendado: 128x128px.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
                     <DialogFooter>
                       <Button type="submit" disabled={isSubmitting} className="bg-pink">
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
