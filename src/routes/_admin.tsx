@@ -16,18 +16,9 @@ export const Route = createFileRoute('/_admin')({
     }
 
     try {
-      // Usar RPC has_role para bypass de RLS via SECURITY DEFINER
-      const { data: hasAdmin, error: rpcError } = await supabase.rpc('has_role', {
-        _user_id: session.user.id,
-        _role: 'admin'
-      });
-
-      if (!rpcError && hasAdmin === true) {
-        return { session, role: 'admin' };
-      }
-
-      console.warn('Admin Layout: RPC check failed, trying direct query...', rpcError);
-
+      console.log('Admin Guard: Verificando role para usuário:', session.user.id);
+      
+      // Tentar busca direta primeiro (mais rápido)
       const { data: roleData, error: directError } = await supabase
         .from('user_roles')
         .select('role')
@@ -35,10 +26,26 @@ export const Route = createFileRoute('/_admin')({
         .maybeSingle();
 
       if (roleData?.role === 'admin') {
+        console.log('Admin Guard: Acesso concedido via consulta direta');
         return { session, role: 'admin' };
       }
 
-      console.error('Admin Layout: User not authorized as admin');
+      if (directError) {
+        console.warn('Admin Layout: Direct query failed, trying RPC...', directError);
+      }
+
+      // Fallback para RPC has_role
+      const { data: hasAdmin, error: rpcError } = await supabase.rpc('has_role', {
+        _user_id: session.user.id,
+        _role: 'admin'
+      });
+
+      if (!rpcError && hasAdmin === true) {
+        console.log('Admin Guard: Acesso concedido via RPC');
+        return { session, role: 'admin' };
+      }
+
+      console.error('Admin Layout: User not authorized as admin. RPC Error:', rpcError);
       throw redirect({ to: '/admin/login', replace: true });
     } catch (e: any) {
       if (e.to || e.redirect) throw e;
