@@ -42,7 +42,11 @@ export function Categories() {
           )}
           {categories?.map((category, index) => (
             <Reveal key={category.id} delay={index * 60}>
-              <a href={`#${category.name.toLowerCase()}`} className="group block text-center">
+              <Link 
+                to="/categoria/$slug" 
+                params={{ slug: category.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-') }}
+                className="group block text-center"
+              >
                 <div
                   className={`mx-auto grid aspect-square w-full max-w-[112px] place-items-center overflow-hidden rounded-full transition-transform duration-300 group-hover:scale-105 ${
                     category.tone === "pink" ? "gradient-pink" : "bg-lilac-light"
