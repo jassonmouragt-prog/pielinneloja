@@ -19,8 +19,8 @@ export const Route = createFileRoute('/admin/login')({
 })
 
 function AdminLoginPage() {
-  const [email, setEmail] = useState('sualojinhaadmin@admin.com')
-  const [password, setPassword] = useState('raysl26')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -28,31 +28,46 @@ function AdminLoginPage() {
     setIsLoading(true)
 
     try {
+      console.log('Iniciando tentativa de login para:', email)
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      if (error) throw error
+      if (error) {
+        console.error('Erro no signInWithPassword:', error)
+        throw error
+      }
 
       if (data.user) {
+        console.log('Usuário autenticado, verificando role...')
         // Check if user has admin role
-        const { data: roleData } = await supabase
+        const { data: roleData, error: roleError } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', data.user.id)
-          .single()
+          .maybeSingle()
+
+        if (roleError) {
+          console.error('Erro ao buscar role:', roleError)
+          throw new Error('Erro ao verificar permissões de acesso.')
+        }
+
+        console.log('Dados da role:', roleData)
 
         if (roleData?.role !== 'admin') {
+          console.warn('Usuário não é admin:', roleData?.role)
           await supabase.auth.signOut()
           toast.error('Acesso negado. Apenas administradores podem acessar esta área.')
           return
         }
 
         toast.success('Login realizado com sucesso!')
-        window.location.href = '/admin/dashboard'
+        // Usar reload para garantir que o estado da sessão seja limpo/atualizado
+        window.location.assign('/admin/dashboard')
       }
     } catch (error: any) {
+      console.error('Erro capturado no login:', error)
       toast.error(error.message || 'Erro ao realizar login')
     } finally {
       setIsLoading(false)
