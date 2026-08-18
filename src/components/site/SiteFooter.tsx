@@ -1,7 +1,8 @@
 import { Heart, Instagram, Music2, Send } from "lucide-react";
-
-import logo from "@/assets/logo.png";
+import { Link } from "@tanstack/react-router";
+import logoAsset from "@/assets/logo.png.asset.json";
 import { footerColumns } from "./data";
+
 
 export function SiteFooter() {
   return (
