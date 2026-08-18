@@ -17,15 +17,26 @@ export const Route = createFileRoute('/_admin')({
       .eq('user_id', session.user.id)
       .maybeSingle();
 
+    let userRole = roleData?.role;
+
     if (error) {
-      console.error('Admin Layout: Error fetching role:', error);
-      // In case of error, we sign out to be safe
-      await supabase.auth.signOut();
-      throw redirect({ to: '/admin/login' });
+      console.error('Admin Layout: Error fetching role directly:', error);
+      // Try RPC if direct access fails (e.g. RLS issues)
+      const { data: hasAdmin, error: rpcError } = await supabase.rpc('has_role', {
+        _user_id: session.user.id,
+        _role: 'admin'
+      });
+      
+      if (rpcError || !hasAdmin) {
+        console.error('Admin Layout: RPC error or not admin:', rpcError);
+        await supabase.auth.signOut();
+        throw redirect({ to: '/admin/login' });
+      }
+      userRole = 'admin';
     }
 
-    if (roleData?.role !== 'admin') {
-      console.warn('Admin Layout: User is not admin:', roleData?.role);
+    if (userRole !== 'admin') {
+      console.warn('Admin Layout: User is not admin:', userRole);
       await supabase.auth.signOut();
       throw redirect({ to: '/admin/login' });
     }
