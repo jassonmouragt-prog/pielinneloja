@@ -182,26 +182,36 @@ function AdminProductsPage() {
 
         const { error: uploadError } = await supabase.storage
           .from('product-images')
-          .upload(filePath, imageFile)
+          .upload(filePath, imageFile, {
+            cacheControl: '3600',
+            upsert: false
+          })
 
         if (uploadError) {
           console.error('Upload error details:', uploadError)
-          throw new Error('Falha ao fazer upload da imagem: ' + (uploadError.message || 'Erro no Storage'))
+          let errorMsg = 'Falha ao fazer upload da imagem.'
+          if (uploadError.message.includes('Permission denied') || uploadError.message.includes('42501')) {
+            errorMsg = 'Permissão negada no storage. Contate o suporte.'
+          }
+          throw new Error(errorMsg + ' (' + (uploadError.message || 'Erro no Storage') + ')')
         }
 
         const { data: { publicUrl } } = supabase.storage
           .from('product-images')
           .getPublicUrl(filePath)
 
+        console.log('Imagem carregada com sucesso, URL:', publicUrl)
+
         // Delete old image references
-        await supabase.from('product_images').delete().eq('product_id', productId)
+        const { error: deleteError } = await supabase.from('product_images').delete().eq('product_id', productId)
+        if (deleteError) console.warn('Erro (não crítico) ao deletar imagens antigas:', deleteError)
 
         const { error: imageError } = await supabase
           .from('product_images')
           .insert([{ product_id: productId, url: publicUrl, is_main: true }])
         
         if (imageError) {
-          console.error('Erro ao salvar referência da imagem:', imageError)
+          console.error('Erro ao salvar referência da imagem no banco:', imageError)
           throw imageError
         }
       }
