@@ -19,8 +19,8 @@ import * as z from 'zod'
 const productSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   subtitle: z.string().optional(),
-  description: z.string().optional(),
-  price: z.coerce.number().min(0, 'Preço deve ser maior ou igual a 0'),
+  description: z.string().min(5, 'Descrição deve ter pelo menos 5 caracteres'),
+  price: z.coerce.number().min(0.01, 'Preço deve ser maior que zero'),
   category_id: z.string().min(1, 'Selecione uma categoria'),
   stock_quantity: z.coerce.number().int().min(0, 'Estoque deve ser maior ou igual a 0'),
   status: z.enum(['active', 'inactive']),
