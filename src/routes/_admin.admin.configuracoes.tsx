@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Trash2, Loader2, Save, Upload } from 'lucide-react'
+import { Plus, Trash2, Loader2, Save, Upload, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -29,6 +29,7 @@ export const Route = createFileRoute('/_admin/admin/configuracoes')({
 
 function AdminSettingsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<any>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -65,14 +66,23 @@ function AdminSettingsPage() {
         image_url: values.image_url ?? null
       }
 
-      const { error } = await supabase
-        .from('categories')
-        .insert([payload])
+      if (editingCategory) {
+        const { error } = await supabase
+          .from('categories')
+          .update(payload)
+          .eq('id', editingCategory.id)
+        if (error) throw error
+        toast.success('Categoria atualizada com sucesso!')
+      } else {
+        const { error } = await supabase
+          .from('categories')
+          .insert([payload])
+        if (error) throw error
+        toast.success('Categoria adicionada com sucesso!')
+      }
       
-      if (error) throw error
-      
-      toast.success('Categoria adicionada com sucesso!')
       setIsDialogOpen(false)
+      setEditingCategory(null)
       form.reset()
       setImagePreview(null)
       refetch()
@@ -122,6 +132,17 @@ function AdminSettingsPage() {
   }
 
 
+  const handleEditCategory = (category: any) => {
+    setEditingCategory(category)
+    form.reset({
+      name: category.name,
+      tone: category.tone as 'pink' | 'lilac',
+      image_url: category.image_url,
+    })
+    setImagePreview(category.image_url)
+    setIsDialogOpen(true)
+  }
+
   const handleDeleteCategory = async (id: string) => {
     if (!confirm('Tem certeza? Isso pode afetar produtos vinculados a esta categoria.')) return
     
@@ -150,7 +171,14 @@ function AdminSettingsPage() {
               <CardTitle>Categorias</CardTitle>
               <CardDescription>Gerencie as categorias de produtos.</CardDescription>
             </div>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+              setIsDialogOpen(open)
+              if (!open) {
+                setEditingCategory(null)
+                form.reset({ name: '', tone: 'pink', image_url: null })
+                setImagePreview(null)
+              }
+            }}>
               <DialogTrigger asChild>
                 <Button size="sm" className="bg-pink hover:bg-pink/90">
                   <Plus className="h-4 w-4 mr-1" />
@@ -159,7 +187,7 @@ function AdminSettingsPage() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Nova Categoria</DialogTitle>
+                  <DialogTitle>{editingCategory ? 'Editar Categoria' : 'Nova Categoria'}</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -262,9 +290,14 @@ function AdminSettingsPage() {
                     <span className="font-medium">{cat.name}</span>
                   </div>
 
-                  <Button variant="ghost" size="icon" className="text-red-500 h-8 w-8" onClick={() => handleDeleteCategory(cat.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="text-blue-500 h-8 w-8" onClick={() => handleEditCategory(cat)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="text-red-500 h-8 w-8" onClick={() => handleDeleteCategory(cat.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
