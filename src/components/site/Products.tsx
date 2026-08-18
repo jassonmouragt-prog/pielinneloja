@@ -27,6 +27,7 @@ function Stars({ rating }: { rating: number }) {
 
 export function Products({ products: initialProducts }: { products?: any[] }) {
   const { addItem } = useCart();
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['public-products'],
@@ -50,7 +51,8 @@ export function Products({ products: initialProducts }: { products?: any[] }) {
 
   const displayProducts = initialProducts || products;
 
-  const handleAddToCart = (product: any) => {
+  const handleAddToCart = (e: React.MouseEvent, product: any) => {
+    e.stopPropagation();
     const mainImage = product.product_images?.find((img: any) => img.is_main)?.url || product.product_images?.[0]?.url;
     
     addItem({
@@ -84,28 +86,39 @@ export function Products({ products: initialProducts }: { products?: any[] }) {
           )}
           {displayProducts?.map((product, index) => (
             <Reveal key={product.id} delay={index * 60}>
-              <article className="group h-full overflow-hidden rounded-xl border border-border bg-card p-3 transition-shadow duration-300 hover:shadow-card">
+              <article 
+                onClick={() => setSelectedProduct(product)}
+                className="group h-full overflow-hidden rounded-xl border border-border bg-card p-3 transition-shadow duration-300 hover:shadow-card cursor-pointer"
+              >
                 <div className="relative">
                   <button
                     type="button"
                     aria-label={`Favoritar ${product.name}`}
-                    className="absolute top-0 right-0 grid size-7 place-items-center rounded-full border border-border text-pink transition-colors duration-300 hover:bg-blush"
+                    className="absolute top-0 right-0 z-10 grid size-7 place-items-center rounded-full border border-border bg-white/80 text-pink transition-colors duration-300 hover:bg-blush"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <Heart className="size-3.5" />
                   </button>
-                  <img
-                    src={product.product_images?.find((img: any) => img.is_main)?.url || product.product_images?.[0]?.url}
-                    alt={`${product.name} ${product.subtitle || ''}`}
-                    loading="lazy"
-                    width={600}
-                    height={600}
-                    className="mx-auto h-32 w-auto object-contain transition-transform duration-300 group-hover:scale-105 sm:h-36"
-                  />
+                  <div className="relative overflow-hidden rounded-lg bg-cream/30 p-2">
+                    <img
+                      src={product.product_images?.find((img: any) => img.is_main)?.url || product.product_images?.[0]?.url}
+                      alt={`${product.name} ${product.subtitle || ''}`}
+                      loading="lazy"
+                      width={600}
+                      height={600}
+                      className="mx-auto h-32 w-auto object-contain transition-transform duration-300 group-hover:scale-105 sm:h-36"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                      <div className="rounded-full bg-white/90 p-2 text-pink shadow-md">
+                        <Eye className="size-4" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <h3 className="mt-4 text-[13px] leading-snug font-medium text-foreground">
                   {product.name}
                   <br />
-                  {product.subtitle || ''}
+                  <span className="text-muted-foreground font-normal">{product.subtitle || ''}</span>
                 </h3>
                 <div className="mt-2 flex items-center gap-1.5">
                    <Stars rating={4.5} />
@@ -113,17 +126,24 @@ export function Products({ products: initialProducts }: { products?: any[] }) {
                 </div>
                 <p className="mt-2 text-sm font-bold text-foreground">R$ {Number(product.price).toFixed(2)}</p>
                 <button
-                  onClick={() => handleAddToCart(product)}
+                  onClick={(e) => handleAddToCart(e, product)}
                   className="mt-3 flex w-full items-center justify-center gap-2 rounded-md gradient-pink px-3 py-2 text-[11px] font-semibold text-primary-foreground transition-opacity duration-300 hover:opacity-90 cursor-pointer"
                 >
                   <ShoppingBag className="size-3.5" />
-                  Adicionar ao Carrinho
+                  Adicionar
                 </button>
               </article>
             </Reveal>
           ))}
         </div>
       </div>
+
+      <ProductModal 
+        product={selectedProduct} 
+        isOpen={!!selectedProduct} 
+        onClose={() => setSelectedProduct(null)} 
+      />
     </section>
+
   );
 }
