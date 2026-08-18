@@ -166,6 +166,7 @@ export type Database = {
         Row: {
           confirmed_at: string | null
           created_at: string | null
+          customer_name: string | null
           id: string
           status: string | null
           total_amount: number
@@ -174,6 +175,7 @@ export type Database = {
         Insert: {
           confirmed_at?: string | null
           created_at?: string | null
+          customer_name?: string | null
           id?: string
           status?: string | null
           total_amount: number
@@ -182,6 +184,7 @@ export type Database = {
         Update: {
           confirmed_at?: string | null
           created_at?: string | null
+          customer_name?: string | null
           id?: string
           status?: string | null
           total_amount?: number
