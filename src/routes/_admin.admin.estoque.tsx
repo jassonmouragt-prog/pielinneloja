@@ -338,7 +338,7 @@ function AdminStockPage() {
                     <TableCell className="text-xs">
                       {m.created_at ? new Date(m.created_at).toLocaleString('pt-BR') : ''}
                     </TableCell>
-                    <TableCell className="font-medium">{m.products?.name}</TableCell>
+                    <TableCell className="font-medium">{m.products?.name || ''}</TableCell>
                     <TableCell>
                       <Badge variant={m.type === 'entry' ? 'default' : m.type === 'exit' ? 'destructive' : 'secondary'}>
                         {m.type === 'entry' ? 'Entrada' : m.type === 'exit' ? 'Saída' : 'Ajuste'}
