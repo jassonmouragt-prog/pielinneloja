@@ -9,6 +9,7 @@ import { Plus, Search, Edit2, Trash2, AlertCircle, Loader2, Upload, X } from 'lu
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -35,6 +36,8 @@ export const Route = createFileRoute('/_admin/admin/produtos')({
 function AdminProductsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [productToDelete, setProductToDelete] = useState<string | null>(null)
   const [editingProduct, setEditingProduct] = useState<any>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
@@ -105,13 +108,15 @@ function AdminProductsPage() {
     setIsDialogOpen(true)
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este produto?')) return
+  const handleDelete = async () => {
+    if (!productToDelete) return
 
     try {
-      const { error } = await supabase.from('products').delete().eq('id', id)
+      const { error } = await supabase.from('products').delete().eq('id', productToDelete)
       if (error) throw error
       toast.success('Produto excluído com sucesso!')
+      setIsDeleteDialogOpen(false)
+      setProductToDelete(null)
       refetch()
     } catch (error: any) {
       toast.error('Erro ao excluir produto: ' + error.message)
@@ -556,7 +561,15 @@ function AdminProductsPage() {
                       <Button variant="ghost" size="icon" onClick={() => handleEdit(product)}>
                         <Edit2 className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="text-red-500" onClick={() => handleDelete(product.id)}>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="text-red-500" 
+                        onClick={() => {
+                          setProductToDelete(product.id)
+                          setIsDeleteDialogOpen(true)
+                        }}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -574,6 +587,23 @@ function AdminProductsPage() {
           </Table>
         </div>
       </div>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente o produto
+              de nosso catálogo e removerá os dados de estoque associados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setProductToDelete(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
