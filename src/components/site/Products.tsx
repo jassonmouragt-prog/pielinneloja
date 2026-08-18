@@ -35,6 +35,7 @@ export function Products() {
           product_images(url, is_main)
         `)
         .eq('status', 'active')
+        .order('created_at', { ascending: false })
         .limit(10);
       
       if (error) throw error;
