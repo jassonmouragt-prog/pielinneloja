@@ -252,9 +252,16 @@ function AdminSettingsPage() {
               {categories?.map((cat) => (
                 <div key={cat.id} className="flex items-center justify-between p-2 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${cat.tone === 'pink' ? 'bg-pink' : 'bg-purple-400'}`} />
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden border border-border ${cat.tone === 'pink' ? 'bg-pink/10' : 'bg-purple-100'}`}>
+                      {cat.image_url ? (
+                        <img src={cat.image_url} alt={cat.name} className="w-full h-full object-contain" />
+                      ) : (
+                        <div className={`w-3 h-3 rounded-full ${cat.tone === 'pink' ? 'bg-pink' : 'bg-purple-400'}`} />
+                      )}
+                    </div>
                     <span className="font-medium">{cat.name}</span>
                   </div>
+
                   <Button variant="ghost" size="icon" className="text-red-500 h-8 w-8" onClick={() => handleDeleteCategory(cat.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
