@@ -1,9 +1,12 @@
-import { ArrowRight, Heart, ShoppingBag, Star, Loader2 } from "lucide-react";
+import { ArrowRight, Heart, ShoppingBag, Star, Loader2, Eye } from "lucide-react";
 import { Reveal } from "./Reveal";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { ProductModal } from "./ProductModal";
+
 
 function Stars({ rating }: { rating: number }) {
   return (
