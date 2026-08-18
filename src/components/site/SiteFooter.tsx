@@ -10,7 +10,7 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-[1200px] gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.1fr_1fr_1fr_1fr_1.2fr] lg:gap-8">
         <div>
           <img
-            src={logo}
+            src={logoAsset.url}
             alt="Sua Lojinha Maakeup"
             loading="lazy"
             width={200}
