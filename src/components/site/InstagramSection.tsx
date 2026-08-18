@@ -1,5 +1,7 @@
 import { instagramPosts } from "./data";
 import { Reveal } from "./Reveal";
+import { Link } from "@tanstack/react-router";
+
 
 export function InstagramSection() {
   return (
