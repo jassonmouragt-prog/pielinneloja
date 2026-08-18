@@ -229,9 +229,21 @@ function AdminProductsPage() {
       form.reset()
       refetch()
     } catch (error: any) {
-      console.error('Erro capturado ao salvar produto:', error)
-      const details = error.details || error.hint || '';
-      toast.error('Erro ao salvar produto: ' + (error.message || 'Erro desconhecido') + (details ? ` (${details})` : ''))
+      console.error('Erro detalhado ao salvar produto:', error)
+      let errorMessage = 'Não foi possível salvar o produto. Verifique os dados e tente novamente.'
+      
+      if (error.message) {
+        if (error.message.includes('Permission denied') || error.code === '42501') {
+          errorMessage = 'Você não tem permissão para realizar esta ação.'
+        } else {
+          errorMessage = error.message
+        }
+      }
+
+      toast.error(errorMessage, {
+        description: error.details || error.hint || undefined,
+        duration: 5000
+      })
     } finally {
       setIsSubmitting(false)
     }
