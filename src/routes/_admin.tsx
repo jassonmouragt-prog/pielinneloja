@@ -12,21 +12,17 @@ export const Route = createFileRoute('/_admin')({
     // Basic guard for SSR
     if (typeof window === 'undefined') return;
 
-    // 1. Check direct Supabase session (most reliable)
-    const { data: { session: supabaseSession } } = await supabase.auth.getSession();
+    // 1. Get current session with a small retry logic for hydration
+    let { data: { session } } = await supabase.auth.getSession();
     
-    // 2. Fallback to localStorage if Supabase client hasn't hydrated yet
-    const storageKey = Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
-    const sessionStr = storageKey ? localStorage.getItem(storageKey) : null;
-    let localSession = null;
-    try {
-      localSession = sessionStr ? JSON.parse(sessionStr) : null;
-    } catch (e) {
-      console.error('[AdminGuard] Error parsing session:', e);
+    // Fallback: If no session from client, wait a bit and try one more time 
+    // to handle hydration race conditions on some browsers/machines
+    if (!session) {
+      await new Promise(resolve => setTimeout(resolve, 150));
+      const secondCheck = await supabase.auth.getSession();
+      session = secondCheck.data.session;
     }
 
-    const session = supabaseSession || localSession;
-    
     if (!session) {
       console.log('[AdminGuard] No session found, redirecting to login');
       throw redirect({ 
@@ -36,13 +32,15 @@ export const Route = createFileRoute('/_admin')({
       });
     }
 
-    // Emergency bypass based on email for the known admin
-    if (session.user.email?.toLowerCase() === 'sualojinhaadmin@admin.com') {
+    const userEmail = session.user.email?.toLowerCase();
+    
+    // Emergency bypass for the known admin to ensure access even if DB query fails
+    if (userEmail === 'sualojinhaadmin@admin.com') {
       return { session, role: 'admin' as const };
     }
 
     try {
-      // Check role in database
+      // Check role in database via user_roles table
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
@@ -51,9 +49,8 @@ export const Route = createFileRoute('/_admin')({
 
       if (roleError) {
         console.error('[AdminGuard] Role check error:', roleError);
-        // If query fails but we have a session, allow the request to proceed 
-        // if we are already in an admin session to avoid "locking out" on transient errors
-        if (supabaseSession) return { session, role: 'admin' as const };
+        // If we have a session and it's the admin email, we already returned above.
+        // For others, if the query fails, we redirect to login for safety.
         throw redirect({ to: '/admin/login', replace: true });
       }
 
@@ -61,12 +58,10 @@ export const Route = createFileRoute('/_admin')({
         return { session, role: 'admin' as const };
       }
 
-      console.error('[AdminGuard] Not authorized');
+      console.error('[AdminGuard] Not authorized:', userEmail);
       throw redirect({ to: '/admin/login', replace: true });
     } catch (e: any) {
-      // Don't intercept redirects
       if (e.to || e.redirect || [301, 302, 303, 307, 308].includes(e.status)) throw e;
-      
       console.error('[AdminGuard] Unexpected error:', e);
       throw redirect({ to: '/admin/login', replace: true });
     }

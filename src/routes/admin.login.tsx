@@ -101,13 +101,22 @@ function AdminLoginPage() {
         }
 
         toast.success('Login realizado com sucesso!')
-        // Aguardar um pequeno momento para o Supabase persistir o token no localStorage
-        // Usar o router do TanStack para navegar, garantindo que o estado interno seja atualizado
-        toast.success('Login realizado com sucesso!')
-        setTimeout(async () => {
+        
+        // Ensure session is fully hydrated in the client before navigating
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          console.log('Sessão confirmada pós-login, navegando para dashboard...')
+          setTimeout(async () => {
+            await router.invalidate()
+            router.navigate({ to: '/admin/dashboard' })
+          }, 100)
+        } else {
+          // Fallback if session isn't immediately available
+          console.warn('Sessão não detectada imediatamente, tentando router.invalidate...')
           await router.invalidate()
           router.navigate({ to: '/admin/dashboard' })
-        }, 300)
+        }
       }
     } catch (error: any) {
       console.error('Erro capturado no login:', error)
