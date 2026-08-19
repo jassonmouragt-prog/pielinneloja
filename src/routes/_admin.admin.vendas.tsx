@@ -30,7 +30,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select'
-import { Plus, Search, Trash2, ShoppingCart, Calendar, Tag } from 'lucide-react'
+import { Plus, Search, Trash2, ShoppingCart, Calendar, Tag, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -216,6 +216,41 @@ function SalesPage() {
     ));
   };
 
+  const exportToCSV = () => {
+    if (!sales || sales.length === 0) {
+      toast.error('Não há vendas para exportar');
+      return;
+    }
+
+    // Header
+    const headers = ['ID', 'Cliente', 'Data', 'Itens', 'Total', 'Status'];
+    
+    // Rows
+    const rows = filteredSales?.map(sale => [
+      sale.id,
+      sale.customer_name || 'Cliente WhatsApp',
+      sale.created_at ? format(new Date(sale.created_at), 'dd/MM/yyyy HH:mm') : '',
+      sale.sale_items?.map((item: any) => `${item.quantity}x ${item.products?.name}`).join('; '),
+      sale.total_amount.toFixed(2),
+      sale.status === 'confirmed' ? 'Concluída' : sale.status === 'cancelled' ? 'Cancelada' : 'Pendente'
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...(rows?.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')) || [])
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `vendas_${format(new Date(), 'dd-MM-yyyy')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('Relatório exportado com sucesso!');
+  };
+
   const filteredSales = sales?.filter(sale => 
     (sale.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
      sale.id.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -229,13 +264,19 @@ function SalesPage() {
           <p className="text-muted-foreground">Registre e gerencie as vendas realizadas via WhatsApp.</p>
         </div>
         
-        <Dialog open={isNewSaleOpen} onOpenChange={setIsNewSaleOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-pink hover:bg-pink/90">
-              <Plus className="mr-2 h-4 w-4" />
-              Nova Venda
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={exportToCSV}>
+            <Download className="mr-2 h-4 w-4" />
+            Exportar CSV
+          </Button>
+          
+          <Dialog open={isNewSaleOpen} onOpenChange={setIsNewSaleOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-pink hover:bg-pink/90">
+                <Plus className="mr-2 h-4 w-4" />
+                Nova Venda
+              </Button>
+            </DialogTrigger>
           <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Registrar Nova Venda</DialogTitle>
@@ -328,7 +369,8 @@ function SalesPage() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       <div className="flex items-center gap-2 max-w-sm">
