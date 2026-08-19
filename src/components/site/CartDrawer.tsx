@@ -15,16 +15,23 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function CartDrawer() {
   const { items, removeItem, updateQuantity, totalItems, isOpen, setIsOpen, clearCart } = useCart();
   const hydrated = useHydrated();
   const [isRegistering, setIsRegistering] = useState(false);
+  const [customerName, setCustomerName] = useState("");
   const registerSale = useServerFn(registerPendingSale);
   const WHATSAPP_NUMBER = "5584994085244";
 
   const handleCheckout = async () => {
     if (items.length === 0) return;
+    if (!customerName.trim()) {
+      toast.error("Por favor, informe seu nome para finalizar o pedido.");
+      return;
+    }
     setIsRegistering(true);
 
     try {
@@ -33,7 +40,7 @@ export function CartDrawer() {
         return acc + (priceVal * item.quantity);
       }, 0);
 
-      let message = "Olá! Gostaria de finalizar o pedido com os seguintes produtos:\n\n";
+      let message = `Olá! Meu nome é ${customerName}. Gostaria de finalizar o pedido com os seguintes produtos:\n\n`;
       items.forEach((item: CartItem) => {
         message += `• ${item.name} (${item.subtitle})\n`;
         message += `  Qtd: ${item.quantity} x ${item.price}\n\n`;
@@ -43,6 +50,7 @@ export function CartDrawer() {
       // Register in Supabase first
       await registerSale({
         data: {
+          customerName,
           totalAmount: totalPrice,
           whatsappMessage: message,
           items: items.map(item => ({
@@ -163,6 +171,16 @@ export function CartDrawer() {
                     .toFixed(2)
                     .replace(".", ",")}
                 </span>
+              </div>
+              <div className="mb-6 space-y-2 w-full">
+                <Label htmlFor="customerName" className="text-sm font-medium">Seu Nome</Label>
+                <Input
+                  id="customerName"
+                  placeholder="Como gostaria de ser chamado(a)?"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="rounded-full border-pink/30 focus-visible:ring-pink"
+                />
               </div>
               <Button
                 onClick={handleCheckout}

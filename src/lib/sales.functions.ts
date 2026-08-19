@@ -4,6 +4,7 @@ import { z } from "zod";
 
 export const registerPendingSale = createServerFn({ method: "POST" })
   .validator((data: unknown) => z.object({
+    customerName: z.string().optional(),
     totalAmount: z.number(),
     whatsappMessage: z.string(),
     items: z.array(z.object({
@@ -13,14 +14,15 @@ export const registerPendingSale = createServerFn({ method: "POST" })
     }))
   }).parse(data))
   .handler(async ({ data }) => {
-    const { totalAmount, whatsappMessage, items } = data;
+    const { customerName, totalAmount, whatsappMessage, items } = data;
 
     const { data: sale, error: saleError } = await supabaseAdmin
       .from('sales')
       .insert({
         total_amount: totalAmount,
         status: 'pending',
-        whatsapp_message: whatsappMessage
+        whatsapp_message: whatsappMessage,
+        customer_name: customerName || null
       })
       .select()
       .single();
