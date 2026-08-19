@@ -28,7 +28,7 @@ const productSchema = z.object({
   variations: z.array(z.object({
     name: z.string().min(1, 'Nome da variação é obrigatório'),
     options: z.array(z.string().min(1, 'Opção não pode ser vazia'))
-  })).default([]),
+  })),
 })
 
 type ProductFormValues = z.infer<typeof productSchema>
@@ -318,7 +318,16 @@ function AdminProductsPage() {
           setIsDialogOpen(open)
           if (!open) {
             setEditingProduct(null)
-            form.reset()
+            form.reset({
+              name: '',
+              subtitle: '',
+              description: '',
+              price: 0,
+              category_id: '',
+              stock_quantity: 0,
+              status: 'active',
+              variations: [],
+            })
             setImageFile(null)
             setImagePreview(null)
           }
