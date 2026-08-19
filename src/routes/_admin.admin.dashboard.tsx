@@ -57,12 +57,19 @@ function AdminDashboard() {
 
   const cards = [
     { title: 'Faturamento (Mês)', value: `R$ ${stats?.revenue?.toFixed(2) || '0.00'}`, icon: DollarSign, color: 'text-green-600', onClick: () => window.location.href = '/admin/faturamento' },
-    { title: 'Vendas Confirmadas', value: stats?.confirmedCount || 0, icon: ShoppingCart, color: 'text-blue-600', onClick: undefined },
+    { 
+      title: 'Vendas Pendentes', 
+      value: stats?.pendingSalesCount || 0, 
+      icon: ShoppingCart, 
+      color: 'text-yellow-600', 
+      onClick: () => window.location.href = '/admin/vendas',
+      highlight: (stats?.pendingSalesCount || 0) > 0
+    },
     { 
       title: 'Estoque Baixo', 
       value: stats?.lowStockCount || 0, 
       icon: AlertTriangle, 
-      color: 'text-yellow-600',
+      color: 'text-red-600',
       onClick: () => setShowLowStock(!showLowStock),
       highlight: (stats?.lowStockCount || 0) > 0
     },
