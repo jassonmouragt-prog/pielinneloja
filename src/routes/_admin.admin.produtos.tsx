@@ -15,7 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { useForm, useFieldArray } from 'react-hook-form'
 import * as z from 'zod'
 
 const productSchema = z.object({
@@ -33,6 +33,43 @@ const productSchema = z.object({
 })
 
 type ProductFormValues = z.infer<typeof productSchema>
+
+function VariationOptionInput({ onAdd }: { onAdd: (val: string) => void }) {
+  const [value, setValue] = useState('');
+
+  const handleAdd = () => {
+    const trimmed = value.trim();
+    if (trimmed) {
+      onAdd(trimmed);
+      setValue('');
+    }
+  };
+
+  return (
+    <div className="flex gap-2">
+      <Input
+        placeholder="Nova opção..."
+        className="h-9"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleAdd();
+          }
+        }}
+      />
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        onClick={handleAdd}
+      >
+        Adicionar
+      </Button>
+    </div>
+  );
+}
 
 type ProductSearch = {
   editId?: string | undefined
@@ -102,6 +139,11 @@ function AdminProductsPage() {
       variations: [],
     },
   })
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "variations",
+  });
 
   const handleEdit = (product: any) => {
     setEditingProduct(product)
@@ -479,10 +521,7 @@ function AdminProductsPage() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => {
-                          const current = form.getValues('variations') || [];
-                          form.setValue('variations', [...current, { name: '', options: [''] }]);
-                        }}
+                        onClick={() => append({ name: '', options: [] })}
                       >
                         <Plus className="size-4 mr-1" />
                         Add Variação
@@ -490,50 +529,43 @@ function AdminProductsPage() {
                     </div>
 
                     <div className="space-y-4">
-                      {form.watch('variations')?.map((variation, vIndex) => (
-                        <div key={vIndex} className="p-4 rounded-lg border bg-muted/30 relative space-y-4">
+                      {fields.map((field, vIndex) => (
+                        <div key={field.id} className="p-4 rounded-lg border bg-muted/30 relative space-y-4">
                           <Button
                             type="button"
                             variant="ghost"
                             size="icon"
                             className="absolute right-2 top-2 text-muted-foreground hover:text-destructive"
-                            onClick={() => {
-                              const current = form.getValues('variations') || [];
-                              form.setValue('variations', current.filter((_, i) => i !== vIndex));
-                            }}
+                            onClick={() => remove(vIndex)}
                           >
                             <X className="size-4" />
                           </Button>
 
-                          <div className="space-y-2">
-                            <Label>Nome da Variação (Ex: Cor)</Label>
-                            <Input
-                              placeholder="Nome da variação..."
-                              value={variation.name}
-                              onChange={(e) => {
-                                const current = form.getValues('variations') || [];
-                                if (current[vIndex]) {
-                                  current[vIndex].name = e.target.value;
-                                  form.setValue('variations', [...current]);
-                                }
-                              }}
-                            />
-                          </div>
+                          <FormField
+                            control={form.control}
+                            name={`variations.${vIndex}.name`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Nome da Variação (Ex: Cor)</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="Nome da variação..." />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
                           <div className="space-y-2">
                             <Label>Opções (Separe por vírgula ou adicione individualmente)</Label>
                             <div className="flex flex-wrap gap-2 mb-2">
-                              {variation.options.map((opt, oIndex) => (
+                              {form.watch(`variations.${vIndex}.options`)?.map((opt, oIndex) => (
                                 <div key={oIndex} className="flex items-center gap-1 bg-white border rounded-md pl-2 pr-1 py-1">
                                   <span className="text-xs">{opt}</span>
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      const current = form.getValues('variations') || [];
-                                      if (current[vIndex]) {
-                                        current[vIndex].options = current[vIndex].options.filter((_, i) => i !== oIndex);
-                                        form.setValue('variations', [...current]);
-                                      }
+                                      const currentOptions = form.getValues(`variations.${vIndex}.options`);
+                                      form.setValue(`variations.${vIndex}.options`, currentOptions.filter((_, i) => i !== oIndex));
                                     }}
                                     className="text-muted-foreground hover:text-destructive"
                                   >
@@ -542,47 +574,14 @@ function AdminProductsPage() {
                                 </div>
                               ))}
                             </div>
-                            <div className="flex gap-2">
-                              <Input
-                                placeholder="Nova opção..."
-                                className="h-9"
-                                id={`new-option-${vIndex}`}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    const input = e.currentTarget;
-                                    const val = input.value.trim();
-                                    if (val) {
-                                      const current = form.getValues('variations') || [];
-                                      if (current[vIndex] && !current[vIndex].options.includes(val)) {
-                                        current[vIndex].options.push(val);
-                                        form.setValue('variations', [...current]);
-                                      }
-                                      input.value = '';
-                                    }
-                                  }
-                                }}
-                              />
-                              <Button
-                                type="button"
-                                variant="secondary"
-                                size="sm"
-                                onClick={() => {
-                                  const input = document.getElementById(`new-option-${vIndex}`) as HTMLInputElement;
-                                  const val = input?.value.trim();
-                                  if (val) {
-                                    const current = form.getValues('variations') || [];
-                                    if (current[vIndex] && !current[vIndex].options.includes(val)) {
-                                      current[vIndex].options.push(val);
-                                      form.setValue('variations', [...current]);
-                                    }
-                                    if (input) input.value = '';
-                                  }
-                                }}
-                              >
-                                Adicionar
-                              </Button>
-                            </div>
+                            <VariationOptionInput 
+                              onAdd={(val) => {
+                                const currentOptions = form.getValues(`variations.${vIndex}.options`) || [];
+                                if (!currentOptions.includes(val)) {
+                                  form.setValue(`variations.${vIndex}.options`, [...currentOptions, val]);
+                                }
+                              }} 
+                            />
                           </div>
                         </div>
                       ))}
