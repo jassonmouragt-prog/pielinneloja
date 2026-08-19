@@ -97,6 +97,22 @@ function AdminSettingsPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
+    // 1. Validar formato do arquivo
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Formato inválido! Use PNG, JPG ou WEBP.')
+      e.target.value = ''
+      return
+    }
+
+    // 2. Validar tamanho do arquivo (limite de 2MB)
+    const maxSize = 2 * 1024 * 1024 // 2MB
+    if (file.size > maxSize) {
+      toast.error('O arquivo é muito grande! O limite é 2MB.')
+      e.target.value = ''
+      return
+    }
+
     setIsUploading(true)
     try {
       // Create preview
@@ -114,7 +130,12 @@ function AdminSettingsPage() {
         .from('product-images')
         .upload(filePath, file)
 
-      if (uploadError) throw uploadError
+      if (uploadError) {
+        if (uploadError.message.includes('permission denied')) {
+          throw new Error('Sem permissão para upload. Verifique as políticas do bucket.')
+        }
+        throw uploadError
+      }
 
       const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('product-images')
@@ -125,7 +146,9 @@ function AdminSettingsPage() {
       form.setValue('image_url', signedUrlData.signedUrl)
       toast.success('Imagem enviada!')
     } catch (error: any) {
+      console.error('Upload error:', error)
       toast.error('Erro no upload: ' + error.message)
+      setImagePreview(null)
     } finally {
       setIsUploading(false)
     }
