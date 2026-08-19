@@ -30,7 +30,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select'
-import { Plus, Search, Trash2, ShoppingCart, Calendar } from 'lucide-react'
+import { Plus, Search, Trash2, ShoppingCart, Calendar, Tag } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -444,9 +444,21 @@ function SalesPage() {
                             <Label className="text-xs text-muted-foreground uppercase mb-2 block">Itens do Pedido</Label>
                             <div className="space-y-2">
                               {sale.sale_items?.map((item: any) => (
-                                <div key={item.id} className="flex justify-between text-sm">
-                                  <span>{item.quantity}x {item.products?.name}</span>
-                                  <span>R$ {(item.price_at_sale * item.quantity).toFixed(2)}</span>
+                                <div key={item.id} className="border-b last:border-0 py-2">
+                                  <div className="flex justify-between text-sm">
+                                    <span className="font-medium">{item.quantity}x {item.products?.name}</span>
+                                    <span>R$ {(item.price_at_sale * item.quantity).toFixed(2)}</span>
+                                  </div>
+                                  {item.variations && Object.keys(item.variations).length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                      {Object.entries(item.variations).map(([key, value]) => (
+                                        <span key={key} className="inline-flex items-center gap-1 bg-pink/5 text-[10px] text-pink px-2 py-0.5 rounded-full border border-pink/10 font-medium">
+                                          <Tag className="size-2" />
+                                          {key}: {value}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                             </div>
