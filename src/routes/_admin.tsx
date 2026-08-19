@@ -9,54 +9,56 @@ import logoAsset from "@/assets/logo.png.asset.json"
 
 export const Route = createFileRoute('/_admin')({
   beforeLoad: async ({ location }) => {
-    // Basic guard for SSR
+    // Basic guard for SSR - if we are on the server, we just pass
+    // The client-side will run this again and handle the redirect if needed
     if (typeof window === 'undefined') return;
 
-    // 1. Get current session with a small retry logic for hydration
-    let sessionResponse = await supabase.auth.getSession();
-    let session = sessionResponse.data.session;
-    
-    // Fallback: If no session from client, wait a bit and try one more time 
-    // to handle hydration race conditions on some browsers/machines
-    if (!session) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      sessionResponse = await supabase.auth.getSession();
-      session = sessionResponse.data.session;
-    }
+    try {
+      // 1. Get current session with a small retry logic for hydration
+      let sessionResponse = await supabase.auth.getSession();
+      let session = sessionResponse.data.session;
+      
+      // Fallback: If no session from client, wait a bit and try one more time 
+      // to handle hydration race conditions on some browsers/machines
+      if (!session) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        sessionResponse = await supabase.auth.getSession();
+        session = sessionResponse.data.session;
+      }
 
-    // Secondary fallback: check localStorage directly if Supabase is being stubborn
-    if (!session && typeof localStorage !== 'undefined') {
-      const storageKey = Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
-      const sessionStr = storageKey ? localStorage.getItem(storageKey) : null;
-      if (sessionStr) {
-        try {
-          const localSession = JSON.parse(sessionStr);
-          if (localSession && localSession.access_token) {
-            session = localSession;
+      // Secondary fallback: check localStorage directly if Supabase is being stubborn
+      // ONLY if we are in the browser
+      if (!session && typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        const storageKey = Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+        const sessionStr = storageKey ? localStorage.getItem(storageKey) : null;
+        if (sessionStr) {
+          try {
+            const localSession = JSON.parse(sessionStr);
+            if (localSession && localSession.access_token) {
+              session = localSession;
+            }
+          } catch (e) {
+            console.error('[AdminGuard] Error parsing fallback session:', e);
           }
-        } catch (e) {
-          console.error('[AdminGuard] Error parsing fallback session:', e);
         }
       }
-    }
 
-    if (!session) {
-      console.log('[AdminGuard] No session found, redirecting to login');
-      throw redirect({ 
-        to: '/admin/login', 
-        search: { redirect: location.href },
-        replace: true 
-      });
-    }
+      if (!session) {
+        console.log('[AdminGuard] No session found, redirecting to login');
+        throw redirect({ 
+          to: '/admin/login', 
+          search: { redirect: location.href },
+          replace: true 
+        });
+      }
 
-    const userEmail = session.user.email?.toLowerCase();
-    
-    // Emergency bypass for the known admin to ensure access even if DB query fails
-    if (userEmail === 'sualojinhaadmin@admin.com') {
-      return { session, role: 'admin' as const };
-    }
+      const userEmail = session.user.email?.toLowerCase();
+      
+      // Emergency bypass for the known admin to ensure access even if DB query fails
+      if (userEmail === 'sualojinhaadmin@admin.com') {
+        return { session, role: 'admin' as const };
+      }
 
-    try {
       // Check role in database via user_roles table
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
@@ -66,8 +68,6 @@ export const Route = createFileRoute('/_admin')({
 
       if (roleError) {
         console.error('[AdminGuard] Role check error:', roleError);
-        // If we have a session and it's the admin email, we already returned above.
-        // For others, if the query fails, we redirect to login for safety.
         throw redirect({ to: '/admin/login', replace: true });
       }
 
@@ -78,8 +78,11 @@ export const Route = createFileRoute('/_admin')({
       console.error('[AdminGuard] Not authorized:', userEmail);
       throw redirect({ to: '/admin/login', replace: true });
     } catch (e: any) {
+      // Re-throw redirect errors so TanStack Router can handle them
       if (e.to || e.redirect || [301, 302, 303, 307, 308].includes(e.status)) throw e;
+      
       console.error('[AdminGuard] Unexpected error:', e);
+      // In case of any other unexpected error, redirect to login
       throw redirect({ to: '/admin/login', replace: true });
     }
   },

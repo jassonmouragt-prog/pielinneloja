@@ -11,6 +11,9 @@ import logoAsset from "@/assets/logo.png.asset.json"
 
 export const Route = createFileRoute('/admin/login')({
   beforeLoad: async () => {
+    // Skip on SSR to avoid hydration mismatches
+    if (typeof window === 'undefined') return;
+    
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
       throw redirect({ to: '/admin/dashboard' });
