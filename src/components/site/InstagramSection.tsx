@@ -1,7 +1,5 @@
-import { instagramPosts } from "./data";
 import { Reveal } from "./Reveal";
-import { Link } from "@tanstack/react-router";
-
+import feedAsset from "@/assets/instagram/feed.png.asset.json";
 
 export function InstagramSection() {
   return (
@@ -26,27 +24,21 @@ export function InstagramSection() {
           </a>
         </Reveal>
 
-        <div className="mt-7 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 lg:gap-5">
-          {instagramPosts.map((post, index) => (
-            <Reveal key={post.alt} delay={index * 60}>
-              <a
-                href="https://www.instagram.com/sualojinhamakeup/"
-                target="_blank"
-                rel="noreferrer"
-                className="block overflow-hidden rounded-lg"
-              >
-                <img
-                  src={post.image}
-                  alt={post.alt}
-                  loading="lazy"
-                  width={560}
-                  height={700}
-                  className="aspect-[4/5] w-full object-cover transition-transform duration-300 hover:scale-105"
-                />
-              </a>
-            </Reveal>
-          ))}
-        </div>
+        <Reveal delay={100} className="mt-7">
+          <a
+            href="https://www.instagram.com/sualojinhamakeup/"
+            target="_blank"
+            rel="noreferrer"
+            className="block overflow-hidden rounded-xl border border-border/50 shadow-sm transition-all duration-300 hover:shadow-md"
+          >
+            <img
+              src={feedAsset.url}
+              alt="Instagram Feed @sualojinhamakeup"
+              loading="lazy"
+              className="w-full object-cover"
+            />
+          </a>
+        </Reveal>
       </div>
     </section>
   );
