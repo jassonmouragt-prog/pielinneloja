@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect, Link } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect, Link, useRouter } from '@tanstack/react-router'
 import { supabase } from '@/integrations/supabase/client'
 import { LayoutDashboard, Package, Box, Settings, LogOut, Menu, ShoppingCart, DollarSign } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -16,17 +16,15 @@ export const Route = createFileRoute('/_admin')({
     try {
       console.log('[AdminGuard] Verificando autenticação para:', location.pathname);
       
-      // 1. Get current session with a small retry logic for hydration
-      let sessionResponse = await supabase.auth.getSession();
-      let session = sessionResponse.data.session;
-      
-      // Fallback: If no session from client, wait a bit and try one more time 
-      // to handle hydration race conditions on some browsers/machines
-      if (!session) {
-        console.log('[AdminGuard] Aguardando hidratação da sessão...');
-        await new Promise(resolve => setTimeout(resolve, 500));
-        sessionResponse = await supabase.auth.getSession();
-        session = sessionResponse.data.session;
+      // 1. Get current session with retry logic for hydration.
+      // Mobile browsers (Safari/Chrome iOS/Android) can take longer to
+      // rehydrate the persisted session from storage, so we retry a few
+      // times with small back-off before concluding there is no session.
+      let session = (await supabase.auth.getSession()).data.session;
+      for (let attempt = 1; !session && attempt <= 4; attempt++) {
+        console.log(`[AdminGuard] Aguardando hidratação da sessão (tentativa ${attempt}/4)...`);
+        await new Promise(resolve => setTimeout(resolve, 350 * attempt));
+        session = (await supabase.auth.getSession()).data.session;
       }
 
       // Secondary fallback: check localStorage directly if Supabase is being stubborn
@@ -93,6 +91,7 @@ export const Route = createFileRoute('/_admin')({
 })
 
 function AdminLayout() {
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -100,11 +99,18 @@ function AdminLayout() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // Retry session detection to tolerate slow storage hydration on mobile
+        let session = (await supabase.auth.getSession()).data.session;
+        for (let attempt = 1; !session && attempt <= 3; attempt++) {
+          await new Promise(resolve => setTimeout(resolve, 300 * attempt));
+          session = (await supabase.auth.getSession()).data.session;
+        }
+
         if (!session) {
           setIsAuthorized(false);
+          // Safety net: never leave the user on a blank screen — send to login
+          router.navigate({ to: '/admin/login', replace: true });
         } else {
-          // Check role if needed, but beforeLoad already handles initial gate
           setIsAuthorized(true);
         }
       } catch (error) {
@@ -114,7 +120,7 @@ function AdminLayout() {
       }
     };
     checkAuth();
-  }, []);
+  }, [router]);
 
   const handleLogout = async () => {
     if (typeof window !== 'undefined') {
