@@ -32,6 +32,10 @@ export function CartDrawer() {
       toast.error("Por favor, informe seu nome para finalizar o pedido.");
       return;
     }
+    if (customerName.length > 100) {
+      toast.error("O nome deve ter no máximo 100 caracteres.");
+      return;
+    }
     setIsRegistering(true);
 
     try {

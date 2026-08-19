@@ -91,6 +91,7 @@ function SalesPage() {
 
   const createSaleMutation = useMutation({
     mutationFn: async () => {
+      if (!customerName.trim()) throw new Error('O nome do cliente é obrigatório');
       if (saleItems.length === 0) throw new Error('Adicione pelo menos um produto');
 
       const totalAmount = saleItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
@@ -242,12 +243,13 @@ function SalesPage() {
             
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="customer">Nome do Cliente (opcional)</Label>
+                <Label htmlFor="customer">Nome do Cliente</Label>
                 <Input 
                   id="customer" 
                   placeholder="Ex: Maria Oliveira" 
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
+                  maxLength={100}
                 />
               </div>
 
@@ -350,6 +352,7 @@ function SalesPage() {
               <TableHead>Itens</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -407,6 +410,59 @@ function SalesPage() {
                         {sale.status === 'confirmed' ? 'Concluída' : sale.status === 'cancelled' ? 'Cancelada' : sale.status}
                       </Badge>
                     )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="sm">Ver Detalhes</Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Detalhes da Venda</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div className="grid grid-cols-2 gap-4 border-b pb-4">
+                            <div>
+                              <Label className="text-xs text-muted-foreground uppercase">Cliente</Label>
+                              <p className="font-medium">{sale.customer_name || 'Não informado'}</p>
+                            </div>
+                            <div>
+                              <Label className="text-xs text-muted-foreground uppercase">Data</Label>
+                              <p className="font-medium">{sale.created_at ? format(new Date(sale.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR }) : '-'}</p>
+                            </div>
+                            <div>
+                              <Label className="text-xs text-muted-foreground uppercase">Status</Label>
+                              <p className="font-medium capitalize">{sale.status === 'confirmed' ? 'Concluída' : sale.status === 'cancelled' ? 'Cancelada' : 'Pendente'}</p>
+                            </div>
+                            <div>
+                              <Label className="text-xs text-muted-foreground uppercase">Total</Label>
+                              <p className="font-medium text-pink">R$ {sale.total_amount.toFixed(2)}</p>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <Label className="text-xs text-muted-foreground uppercase mb-2 block">Itens do Pedido</Label>
+                            <div className="space-y-2">
+                              {sale.sale_items?.map((item: any) => (
+                                <div key={item.id} className="flex justify-between text-sm">
+                                  <span>{item.quantity}x {item.products?.name}</span>
+                                  <span>R$ {(item.price_at_sale * item.quantity).toFixed(2)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {sale.whatsapp_message && (
+                            <div>
+                              <Label className="text-xs text-muted-foreground uppercase mb-2 block">Mensagem do WhatsApp</Label>
+                              <div className="bg-muted p-3 rounded text-xs whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                {sale.whatsapp_message}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </TableCell>
                 </TableRow>
               ))
