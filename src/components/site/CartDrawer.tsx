@@ -63,8 +63,6 @@ export function CartDrawer() {
       });
       message += `Total: R$ ${totalPrice.toFixed(2).replace(".", ",")}\n`;
 
-      const encodedMessage = encodeURIComponent(message);
-      
       // 1. Registra no dashboard PRIMEIRO
       await registerSale({
         data: {
