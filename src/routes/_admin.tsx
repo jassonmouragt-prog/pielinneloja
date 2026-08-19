@@ -117,8 +117,10 @@ function AdminLayout() {
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/admin/login';
+    if (typeof window !== 'undefined') {
+      await supabase.auth.signOut();
+      window.location.href = '/admin/login';
+    }
   };
 
   const navItems = [

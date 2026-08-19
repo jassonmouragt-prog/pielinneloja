@@ -56,13 +56,13 @@ function AdminDashboard() {
   });
 
   const cards = [
-    { title: 'Faturamento (Mês)', value: `R$ ${stats?.revenue?.toFixed(2) || '0.00'}`, icon: DollarSign, color: 'text-green-600', onClick: () => window.location.href = '/admin/faturamento' },
+    { title: 'Faturamento (Mês)', value: `R$ ${stats?.revenue?.toFixed(2) || '0.00'}`, icon: DollarSign, color: 'text-green-600', onClick: () => { if (typeof window !== 'undefined') window.location.href = '/admin/faturamento' } },
     { 
       title: 'Vendas Pendentes', 
       value: stats?.pendingSalesCount || 0, 
       icon: ShoppingCart, 
       color: 'text-yellow-600', 
-      onClick: () => window.location.href = '/admin/vendas',
+      onClick: () => { if (typeof window !== 'undefined') window.location.href = '/admin/vendas' },
       highlight: (stats?.pendingSalesCount || 0) > 0
     },
     { 

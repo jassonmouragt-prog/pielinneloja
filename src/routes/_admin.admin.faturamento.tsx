@@ -15,6 +15,7 @@ import {
 import { DollarSign, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { format, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { ClientOnly } from '@/components/ui/ClientOnly'
 
 export const Route = createFileRoute('/_admin/admin/faturamento')({
   component: BillingPage,
@@ -151,38 +152,40 @@ function BillingPage() {
         </CardHeader>
         <CardContent className="pl-2">
           <div className="h-[300px] sm:h-[350px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={billingData?.chartData || []}>
-                < CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-                <XAxis 
-                  dataKey="name" 
-                  stroke="#888888" 
-                  fontSize={12} 
-                  tickLine={false} 
-                  axisLine={false} 
-                />
-                <YAxis
-                  stroke="#888888"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => `R$${value}`}
-                />
-                <Tooltip 
-                  formatter={(value: any) => [`R$ ${Number(value).toFixed(2)}`, 'Faturamento']}
-                  labelFormatter={(label: any, payload: any) => payload[0]?.payload?.fullName || label}
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                />
-                <Bar dataKey="total" radius={[4, 4, 0, 0]}>
-                  {billingData?.chartData.map((entry: any, index: number) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={index === (billingData?.chartData.length || 0) - 1 ? '#E84688' : '#F0629280'} 
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <ClientOnly fallback={<div className="h-full w-full bg-gray-100 animate-pulse rounded-md" />}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={billingData?.chartData || []}>
+                  < CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="#888888" 
+                    fontSize={12} 
+                    tickLine={false} 
+                    axisLine={false} 
+                  />
+                  <YAxis
+                    stroke="#888888"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `R$${value}`}
+                  />
+                  <Tooltip 
+                    formatter={(value: any) => [`R$ ${Number(value).toFixed(2)}`, 'Faturamento']}
+                    labelFormatter={(label: any, payload: any) => payload[0]?.payload?.fullName || label}
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  />
+                  <Bar dataKey="total" radius={[4, 4, 0, 0]}>
+                    {billingData?.chartData.map((entry: any, index: number) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={index === (billingData?.chartData.length || 0) - 1 ? '#E84688' : '#F0629280'} 
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ClientOnly>
           </div>
         </CardContent>
       </Card>
