@@ -24,7 +24,6 @@ function BillingPage() {
   const { data: billingData, isLoading } = useQuery({
     queryKey: ['admin-billing-stats'],
     queryFn: async () => {
-      // Fetch all confirmed sales from the last 12 months
       const twelveMonthsAgo = startOfMonth(subMonths(new Date(), 11)).toISOString();
       
       const { data: sales, error } = await supabase
@@ -35,9 +34,8 @@ function BillingPage() {
 
       if (error) throw error;
 
-      // Group sales by month
       const months = eachMonthOfInterval({
-        start: subMonths(new Date(), 5), // Show last 6 months in chart
+        start: subMonths(new Date(), 5),
         end: new Date()
       });
 
@@ -58,18 +56,19 @@ function BillingPage() {
         };
       });
 
-      // Stats calculations
       const currentMonth = chartData[chartData.length - 1];
       const lastMonth = chartData[chartData.length - 2];
       
-      const diff = lastMonth.total > 0 
-        ? ((currentMonth.total - lastMonth.total) / lastMonth.total) * 100 
-        : currentMonth.total > 0 ? 100 : 0;
+      const lastMonthTotal = lastMonth?.total || 0;
+      const currentMonthTotal = currentMonth?.total || 0;
+      
+      const diff = lastMonthTotal > 0 
+        ? ((currentMonthTotal - lastMonthTotal) / lastMonthTotal) * 100 
+        : currentMonthTotal > 0 ? 100 : 0;
 
       return {
         chartData,
-        currentMonth,
-        lastMonth,
+        currentMonth: currentMonth || { total: 0, count: 0, fullName: '', name: '' },
         growth: diff,
         totalYear: chartData.reduce((acc, m) => acc + m.total, 0)
       };
@@ -99,7 +98,7 @@ function BillingPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-pink">
-              R$ {billingData?.currentMonth.total.toFixed(2)}
+              R$ {billingData?.currentMonth.total.toFixed(2) || '0.00'}
             </div>
             <div className="flex items-center pt-1">
               {billingData && billingData.growth >= 0 ? (
@@ -123,7 +122,7 @@ function BillingPage() {
             <TrendingUp className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{billingData?.currentMonth.count}</div>
+            <div className="text-2xl font-bold">{billingData?.currentMonth.count || 0}</div>
             <p className="text-xs text-muted-foreground pt-1">
               Pedidos finalizados com sucesso
             </p>
@@ -153,8 +152,8 @@ function BillingPage() {
         <CardContent className="pl-2">
           <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={billingData?.chartData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+              <BarChart data={billingData?.chartData || []}>
+                < CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
                 <XAxis 
                   dataKey="name" 
                   stroke="#888888" 
@@ -170,15 +169,15 @@ function BillingPage() {
                   tickFormatter={(value) => `R$${value}`}
                 />
                 <Tooltip 
-                  formatter={(value: number) => [`R$ ${value.toFixed(2)}`, 'Faturamento']}
-                  labelFormatter={(label, payload) => payload[0]?.payload?.fullName || label}
+                  formatter={(value: any) => [`R$ ${Number(value).toFixed(2)}`, 'Faturamento']}
+                  labelFormatter={(label: any, payload: any[]) => payload[0]?.payload?.fullName || label}
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                 />
                 <Bar dataKey="total" radius={[4, 4, 0, 0]}>
-                  {billingData?.chartData.map((entry, index) => (
+                  {billingData?.chartData.map((entry: any, index: number) => (
                     <Cell 
                       key={`cell-${index}`} 
-                      fill={index === billingData.chartData.length - 1 ? '#E84688' : '#F0629280'} 
+                      fill={index === (billingData?.chartData.length || 0) - 1 ? '#E84688' : '#F0629280'} 
                     />
                   ))}
                 </Bar>
@@ -193,7 +192,7 @@ function BillingPage() {
           <h3 className="font-semibold">Resumo Mensal</h3>
         </div>
         <div className="divide-y">
-          {billingData?.chartData.slice().reverse().map((month) => (
+          {billingData?.chartData.slice().reverse().map((month: any) => (
             <div key={month.fullName} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
               <div>
                 <p className="font-medium text-gray-900">{month.fullName}</p>

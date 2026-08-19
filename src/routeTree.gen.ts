@@ -26,6 +26,7 @@ import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
 import { Route as AdminAdminConfiguracoesRouteImport } from './routes/_admin.admin.configuracoes'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin.admin.dashboard'
 import { Route as AdminAdminEstoqueRouteImport } from './routes/_admin.admin.estoque'
+import { Route as AdminAdminFaturamentoRouteImport } from './routes/_admin.admin.faturamento'
 import { Route as AdminAdminProdutosRouteImport } from './routes/_admin.admin.produtos'
 import { Route as AdminAdminVendasRouteImport } from './routes/_admin.admin.vendas'
 
@@ -113,6 +114,11 @@ const AdminAdminEstoqueRoute = AdminAdminEstoqueRouteImport.update({
   path: '/admin/estoque',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAdminFaturamentoRoute = AdminAdminFaturamentoRouteImport.update({
+  id: '/admin/faturamento',
+  path: '/admin/faturamento',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAdminProdutosRoute = AdminAdminProdutosRouteImport.update({
   id: '/admin/produtos',
   path: '/admin/produtos',
@@ -141,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/admin/configuracoes': typeof AdminAdminConfiguracoesRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
   '/admin/estoque': typeof AdminAdminEstoqueRoute
+  '/admin/faturamento': typeof AdminAdminFaturamentoRoute
   '/admin/produtos': typeof AdminAdminProdutosRoute
   '/admin/vendas': typeof AdminAdminVendasRoute
 }
@@ -161,6 +168,7 @@ export interface FileRoutesByTo {
   '/admin/configuracoes': typeof AdminAdminConfiguracoesRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
   '/admin/estoque': typeof AdminAdminEstoqueRoute
+  '/admin/faturamento': typeof AdminAdminFaturamentoRoute
   '/admin/produtos': typeof AdminAdminProdutosRoute
   '/admin/vendas': typeof AdminAdminVendasRoute
 }
@@ -183,6 +191,7 @@ export interface FileRoutesById {
   '/_admin/admin/configuracoes': typeof AdminAdminConfiguracoesRoute
   '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
   '/_admin/admin/estoque': typeof AdminAdminEstoqueRoute
+  '/_admin/admin/faturamento': typeof AdminAdminFaturamentoRoute
   '/_admin/admin/produtos': typeof AdminAdminProdutosRoute
   '/_admin/admin/vendas': typeof AdminAdminVendasRoute
 }
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/admin/configuracoes'
     | '/admin/dashboard'
     | '/admin/estoque'
+    | '/admin/faturamento'
     | '/admin/produtos'
     | '/admin/vendas'
   fileRoutesByTo: FileRoutesByTo
@@ -225,6 +235,7 @@ export interface FileRouteTypes {
     | '/admin/configuracoes'
     | '/admin/dashboard'
     | '/admin/estoque'
+    | '/admin/faturamento'
     | '/admin/produtos'
     | '/admin/vendas'
   id:
@@ -246,6 +257,7 @@ export interface FileRouteTypes {
     | '/_admin/admin/configuracoes'
     | '/_admin/admin/dashboard'
     | '/_admin/admin/estoque'
+    | '/_admin/admin/faturamento'
     | '/_admin/admin/produtos'
     | '/_admin/admin/vendas'
   fileRoutesById: FileRoutesById
@@ -388,6 +400,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdminEstoqueRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/admin/faturamento': {
+      id: '/_admin/admin/faturamento'
+      path: '/admin/faturamento'
+      fullPath: '/admin/faturamento'
+      preLoaderRoute: typeof AdminAdminFaturamentoRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/admin/produtos': {
       id: '/_admin/admin/produtos'
       path: '/admin/produtos'
@@ -409,6 +428,7 @@ interface AdminRouteChildren {
   AdminAdminConfiguracoesRoute: typeof AdminAdminConfiguracoesRoute
   AdminAdminDashboardRoute: typeof AdminAdminDashboardRoute
   AdminAdminEstoqueRoute: typeof AdminAdminEstoqueRoute
+  AdminAdminFaturamentoRoute: typeof AdminAdminFaturamentoRoute
   AdminAdminProdutosRoute: typeof AdminAdminProdutosRoute
   AdminAdminVendasRoute: typeof AdminAdminVendasRoute
 }
@@ -417,6 +437,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAdminConfiguracoesRoute: AdminAdminConfiguracoesRoute,
   AdminAdminDashboardRoute: AdminAdminDashboardRoute,
   AdminAdminEstoqueRoute: AdminAdminEstoqueRoute,
+  AdminAdminFaturamentoRoute: AdminAdminFaturamentoRoute,
   AdminAdminProdutosRoute: AdminAdminProdutosRoute,
   AdminAdminVendasRoute: AdminAdminVendasRoute,
 }
