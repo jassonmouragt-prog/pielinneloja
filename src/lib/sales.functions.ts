@@ -15,7 +15,6 @@ export const registerPendingSale = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { totalAmount, whatsappMessage, items } = data;
 
-    // 1. Create sale record using supabaseAdmin to bypass RLS for public checkout
     const { data: sale, error: saleError } = await supabaseAdmin
       .from('sales')
       .insert({
@@ -28,7 +27,6 @@ export const registerPendingSale = createServerFn({ method: "POST" })
 
     if (saleError) throw saleError;
 
-    // 2. Create sale items
     const saleItems = items.map(item => ({
       sale_id: sale.id,
       product_id: item.productId,
@@ -53,23 +51,20 @@ export const updateSaleStatus = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { saleId, status } = data;
 
-    // 1. Update sale status
     const { data: sale, error: saleError } = await supabaseAdmin
       .from('sales')
       .update({ status })
       .eq('id', saleId)
       .select(`
         *,
-        sale_items (*)
+        sale_items (product_id, quantity)
       `)
       .single();
 
     if (saleError) throw saleError;
 
-    // 2. If confirming, adjust stock
     if (status === 'confirmed') {
       for (const item of sale.sale_items) {
-        // Record stock movement
         await supabaseAdmin
           .from('stock_movements')
           .insert({
@@ -77,10 +72,9 @@ export const updateSaleStatus = createServerFn({ method: "POST" })
             sale_id: sale.id,
             quantity: -item.quantity,
             type: 'sale',
-            notes: `Venda confirmada (WhatsApp Checkout)`
+            notes: `Venda confirmada via Admin`
           });
 
-        // Update product table
         const { data: product } = await supabaseAdmin
           .from('products')
           .select('stock_quantity')
