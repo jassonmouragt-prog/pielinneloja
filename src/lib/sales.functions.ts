@@ -95,6 +95,34 @@ export const updateSaleStatus = createServerFn({ method: "POST" })
         }
       }
     }
+    return { success: true };
+  });
+
+export const resetAllSales = createServerFn({ method: "POST" })
+  .handler(async () => {
+    // 1. Delete all sale items
+    const { error: itemsError } = await supabaseAdmin
+      .from('sale_items')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000'); 
+
+    if (itemsError) throw itemsError;
+
+    // 2. Delete all stock movements related to sales
+    const { error: movementsError } = await supabaseAdmin
+      .from('stock_movements')
+      .delete()
+      .eq('type', 'sale');
+
+    if (movementsError) throw movementsError;
+
+    // 3. Delete all sales
+    const { error: salesError } = await supabaseAdmin
+      .from('sales')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000'); 
+
+    if (salesError) throw salesError;
 
     return { success: true };
   });
