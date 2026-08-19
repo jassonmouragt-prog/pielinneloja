@@ -14,7 +14,7 @@ export function Hero() {
           />
         </div>
         {/* Mobile */}
-        <div className="md:hidden relative aspect-[16/9] w-full overflow-hidden">
+        <div className="md:hidden relative aspect-[4/3] w-full overflow-hidden">
           <img
             src={heroAsset.url}
             alt="Banner Promocional: Sua beleza, seu brilho, sua escolha!"

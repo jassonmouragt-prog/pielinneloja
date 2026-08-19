@@ -48,7 +48,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl p-0 overflow-hidden sm:rounded-2xl">
+      <DialogContent className="w-[95vw] max-w-4xl p-0 overflow-hidden sm:rounded-2xl max-h-[90vh] overflow-y-auto">
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* Imagem do Produto */}
           <div className="bg-cream/30 p-8 flex items-center justify-center relative min-h-[300px] md:min-h-[500px]">

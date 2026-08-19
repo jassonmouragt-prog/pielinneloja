@@ -150,7 +150,7 @@ function BillingPage() {
           <CardTitle>Histórico de Faturamento (6 meses)</CardTitle>
         </CardHeader>
         <CardContent className="pl-2">
-          <div className="h-[350px] w-full">
+          <div className="h-[300px] sm:h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={billingData?.chartData || []}>
                 < CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
