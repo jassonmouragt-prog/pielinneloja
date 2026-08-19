@@ -51,20 +51,33 @@ export function Categories() {
                   className="mx-auto grid aspect-square w-full max-w-[112px] place-items-center overflow-hidden rounded-full transition-transform duration-300 group-hover:scale-105"
                   style={{ backgroundColor: '#F062921A' }}
                 >
-                  {category.image_url ? (
-                    <img
-                      src={category.image_url}
-                      alt={category.name}
-                      loading="lazy"
-                      width={512}
-                      height={512}
-                      className="size-[78%] object-contain transition-transform duration-300 group-hover:scale-105"
-                    />
-                  ) : (
-                    <span className="font-display text-lg font-bold text-primary-foreground italic">
-                      NEW
-                    </span>
-                  )}
+                  {(() => {
+                    const icons: Record<string, string> = {
+                      'maquiagem': '/src/assets/cat-maquiagem.png',
+                      'skincare': '/src/assets/cat-skincare.png',
+                      'cabelos': '/src/assets/cat-cabelos.png',
+                      'corpo': '/src/assets/cat-corpo.png',
+                      'kits': '/src/assets/cat-kits.png',
+                      'acessorios': '/src/assets/cat-acessorios.png'
+                    };
+                    const slug = category.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
+                    const iconUrl = category.image_url || icons[slug];
+                    
+                    return iconUrl ? (
+                      <img
+                        src={iconUrl}
+                        alt={category.name}
+                        loading="lazy"
+                        width={512}
+                        height={512}
+                        className="size-[78%] object-contain transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <span className="font-display text-lg font-bold text-primary-foreground italic">
+                        NEW
+                      </span>
+                    );
+                  })()}
                 </div>
                 <p className="mt-3 text-xs font-medium text-foreground sm:text-sm">
                   {category.name}
