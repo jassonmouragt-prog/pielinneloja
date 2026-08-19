@@ -15,7 +15,7 @@ import * as z from 'zod'
 
 const categorySchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  tone: z.enum(['pink', 'lilac']),
+  tone: z.string().min(4, 'Selecione uma cor válida'),
   image_url: z.string().nullable().optional(),
 })
 
@@ -159,7 +159,7 @@ function AdminSettingsPage() {
     setEditingCategory(category)
     form.reset({
       name: category.name,
-      tone: category.tone as 'pink' | 'lilac',
+      tone: category.tone || '#FF69B4',
       image_url: category.image_url,
     })
     setImagePreview(category.image_url)
@@ -232,27 +232,27 @@ function AdminSettingsPage() {
                       name="tone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tom visual</FormLabel>
-                          <div className="flex gap-4">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input 
-                                type="radio" 
-                                value="pink" 
-                                checked={field.value === 'pink'} 
-                                onChange={() => field.onChange('pink')}
+                          <FormLabel>Cor da Categoria (RGB)</FormLabel>
+                          <div className="flex items-center gap-3">
+                            <FormControl>
+                              <Input 
+                                type="color" 
+                                {...field} 
+                                className="w-12 h-10 p-1 cursor-pointer"
                               />
-                              Pink
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input 
-                                type="radio" 
-                                value="lilac" 
-                                checked={field.value === 'lilac'} 
-                                onChange={() => field.onChange('lilac')}
-                              />
-                              Lilás
-                            </label>
+                            </FormControl>
+                            <Input 
+                              value={field.value} 
+                              onChange={(e) => field.onChange(e.target.value)}
+                              placeholder="#000000"
+                              className="font-mono"
+                            />
+                            <div 
+                              className="w-10 h-10 rounded border" 
+                              style={{ backgroundColor: field.value }}
+                            />
                           </div>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -260,7 +260,10 @@ function AdminSettingsPage() {
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Ícone da Categoria</label>
                       <div className="flex items-center gap-4">
-                        <div className={`relative flex size-20 items-center justify-center overflow-hidden rounded-full border border-dashed border-border bg-muted ${form.watch('tone') === 'pink' ? 'bg-pink/10' : 'bg-purple-100'}`}>
+                        <div 
+                          className="relative flex size-20 items-center justify-center overflow-hidden rounded-full border border-dashed border-border transition-colors"
+                          style={{ backgroundColor: `${form.watch('tone')}1A` }} // 10% opacity
+                        >
                           {imagePreview ? (
                             <img src={imagePreview} alt="Preview" className="h-full w-full object-contain" />
                           ) : (
@@ -303,11 +306,17 @@ function AdminSettingsPage() {
               {categories?.map((cat) => (
                 <div key={cat.id} className="flex items-center justify-between p-2 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden border border-border ${cat.tone === 'pink' ? 'bg-pink/10' : 'bg-purple-100'}`}>
+                    <div 
+                      className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden border border-border"
+                      style={{ backgroundColor: cat.tone ? `${cat.tone}1A` : undefined }}
+                    >
                       {cat.image_url ? (
                         <img src={cat.image_url} alt={cat.name} className="w-full h-full object-contain" />
                       ) : (
-                        <div className={`w-3 h-3 rounded-full ${cat.tone === 'pink' ? 'bg-pink' : 'bg-purple-400'}`} />
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: cat.tone || '#FF69B4' }} 
+                        />
                       )}
                     </div>
                     <span className="font-medium">{cat.name}</span>
