@@ -37,7 +37,6 @@ function createSupabaseClient() {
     hasUrl: !!SUPABASE_URL,
     hasKey: !!SUPABASE_PUBLISHABLE_KEY,
     url: SUPABASE_URL ? `${SUPABASE_URL.substring(0, 10)}...` : 'undefined',
-    key: SUPABASE_PUBLISHABLE_KEY ? `${SUPABASE_PUBLISHABLE_KEY.substring(0, 10)}...` : 'undefined',
     isBrowser: typeof window !== 'undefined'
   });
 
@@ -48,10 +47,6 @@ function createSupabaseClient() {
     ];
     const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
     console.error(`[Supabase] ${message}`);
-    // No browser, don't throw to avoid crashing SSR entirely if possible, but it will fail later
-    if (typeof window !== 'undefined') {
-      alert(message);
-    }
     throw new Error(message);
   }
 
