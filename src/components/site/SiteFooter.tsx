@@ -52,12 +52,12 @@ export function SiteFooter() {
                       {link}
                     </Link>
                   ) : (
-                    <a
-                      href={`#${link.toLowerCase().replace(/\s+/g, "-")}`}
+                    <Link
+                      to={`/${link.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`}
                       className="text-xs text-muted-foreground transition-colors duration-300 hover:text-pink"
                     >
                       {link}
-                    </a>
+                    </Link>
                   )}
                 </li>
               ))}
