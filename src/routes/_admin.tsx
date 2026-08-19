@@ -137,10 +137,7 @@ function AdminLayout() {
           <img src={logoAsset.url} alt="Logo" className="h-8 w-auto" />
           <span className="text-lg font-bold text-pink">Admin</span>
         </Link>
-        <Sheet open={isMobileMenuOpen} onOpenChange={(open) => {
-          console.log('[AdminLayout] Sheet onOpenChange:', open);
-          setIsMobileMenuOpen(open);
-        }}>
+        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon">
               <Menu className="h-6 w-6" />
