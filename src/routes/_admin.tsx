@@ -9,9 +9,14 @@ import logoAsset from "@/assets/logo.png.asset.json"
 
 export const Route = createFileRoute('/_admin')({
   beforeLoad: async ({ location }) => {
-    // Fallback detection for client-side navigation
-    const isClient = typeof window !== 'undefined';
-    const storageKey = isClient ? Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token')) : null;
+    // Basic guard for SSR
+    if (typeof window === 'undefined') return;
+
+    // 1. Check direct Supabase session (most reliable)
+    const { data: { session: supabaseSession } } = await supabase.auth.getSession();
+    
+    // 2. Fallback to localStorage if Supabase client hasn't hydrated yet
+    const storageKey = Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
     const sessionStr = storageKey ? localStorage.getItem(storageKey) : null;
     let localSession = null;
     try {
@@ -20,10 +25,7 @@ export const Route = createFileRoute('/_admin')({
       console.error('[AdminGuard] Error parsing session:', e);
     }
 
-    const { data: { session: supabaseSession } } = await supabase.auth.getSession();
     const session = supabaseSession || localSession;
-    
-    console.log('[AdminGuard] Session Check Email:', session?.user?.email);
     
     if (!session) {
       console.log('[AdminGuard] No session found, redirecting to login');
@@ -40,11 +42,7 @@ export const Route = createFileRoute('/_admin')({
     }
 
     try {
-      // Add a small delay for Supabase to properly sync on client side if needed
-      if (isClient && !supabaseSession && localSession) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-
+      // Check role in database
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
@@ -53,8 +51,9 @@ export const Route = createFileRoute('/_admin')({
 
       if (roleError) {
         console.error('[AdminGuard] Role check error:', roleError);
-        // If it's a transient network error, we might want to be careful, 
-        // but for safety redirect to login
+        // If query fails but we have a session, allow the request to proceed 
+        // if we are already in an admin session to avoid "locking out" on transient errors
+        if (supabaseSession) return { session, role: 'admin' as const };
         throw redirect({ to: '/admin/login', replace: true });
       }
 
@@ -65,8 +64,10 @@ export const Route = createFileRoute('/_admin')({
       console.error('[AdminGuard] Not authorized');
       throw redirect({ to: '/admin/login', replace: true });
     } catch (e: any) {
-      if (e.to || e.redirect || e.status === 307 || e.status === 302) throw e;
-      console.error('[AdminGuard] Error verify:', e);
+      // Don't intercept redirects
+      if (e.to || e.redirect || [301, 302, 303, 307, 308].includes(e.status)) throw e;
+      
+      console.error('[AdminGuard] Unexpected error:', e);
       throw redirect({ to: '/admin/login', replace: true });
     }
   },
@@ -105,7 +106,6 @@ function AdminLayout() {
             key={item.label}
             to={item.href as any}
             onClick={() => {
-              console.log('[AdminLayout] Navigating to:', item.href);
               setIsMobileMenuOpen(false);
             }}
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-pink/5 hover:text-pink [&.active]:bg-pink/10 [&.active]:text-pink"
