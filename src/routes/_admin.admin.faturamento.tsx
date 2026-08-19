@@ -15,7 +15,7 @@ import {
 import { DollarSign, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { format, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { ClientOnly } from '@/components/site/ClientOnly'
+import { ClientOnly } from '@/components/ui/ClientOnly'
 
 export const Route = createFileRoute('/_admin/admin/faturamento')({
   component: BillingPage,
