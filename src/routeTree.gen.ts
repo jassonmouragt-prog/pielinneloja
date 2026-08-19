@@ -11,6 +11,16 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/_admin'
+import { Route as CancelamentosRouteImport } from './routes/cancelamentos'
+import { Route as ComoComprarRouteImport } from './routes/como-comprar'
+import { Route as FaleConoscoRouteImport } from './routes/fale-conosco'
+import { Route as FormasDePagamentoRouteImport } from './routes/formas-de-pagamento'
+import { Route as PerguntasFrequentesRouteImport } from './routes/perguntas-frequentes'
+import { Route as PoliticaDePrivacidadeRouteImport } from './routes/politica-de-privacidade'
+import { Route as PrazoDeEntregaRouteImport } from './routes/prazo-de-entrega'
+import { Route as RastreamentoRouteImport } from './routes/rastreamento'
+import { Route as SobreNosRouteImport } from './routes/sobre-nos'
+import { Route as TrocasEDevolucoesRouteImport } from './routes/trocas-e-devolucoes'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
 import { Route as AdminAdminConfiguracoesRouteImport } from './routes/_admin.admin.configuracoes'
@@ -26,6 +36,56 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/_admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CancelamentosRoute = CancelamentosRouteImport.update({
+  id: '/cancelamentos',
+  path: '/cancelamentos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComoComprarRoute = ComoComprarRouteImport.update({
+  id: '/como-comprar',
+  path: '/como-comprar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaleConoscoRoute = FaleConoscoRouteImport.update({
+  id: '/fale-conosco',
+  path: '/fale-conosco',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FormasDePagamentoRoute = FormasDePagamentoRouteImport.update({
+  id: '/formas-de-pagamento',
+  path: '/formas-de-pagamento',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerguntasFrequentesRoute = PerguntasFrequentesRouteImport.update({
+  id: '/perguntas-frequentes',
+  path: '/perguntas-frequentes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PoliticaDePrivacidadeRoute = PoliticaDePrivacidadeRouteImport.update({
+  id: '/politica-de-privacidade',
+  path: '/politica-de-privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrazoDeEntregaRoute = PrazoDeEntregaRouteImport.update({
+  id: '/prazo-de-entrega',
+  path: '/prazo-de-entrega',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RastreamentoRoute = RastreamentoRouteImport.update({
+  id: '/rastreamento',
+  path: '/rastreamento',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SobreNosRoute = SobreNosRouteImport.update({
+  id: '/sobre-nos',
+  path: '/sobre-nos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrocasEDevolucoesRoute = TrocasEDevolucoesRouteImport.update({
+  id: '/trocas-e-devolucoes',
+  path: '/trocas-e-devolucoes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
@@ -66,6 +126,16 @@ const AdminAdminVendasRoute = AdminAdminVendasRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cancelamentos': typeof CancelamentosRoute
+  '/como-comprar': typeof ComoComprarRoute
+  '/fale-conosco': typeof FaleConoscoRoute
+  '/formas-de-pagamento': typeof FormasDePagamentoRoute
+  '/perguntas-frequentes': typeof PerguntasFrequentesRoute
+  '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
+  '/prazo-de-entrega': typeof PrazoDeEntregaRoute
+  '/rastreamento': typeof RastreamentoRoute
+  '/sobre-nos': typeof SobreNosRoute
+  '/trocas-e-devolucoes': typeof TrocasEDevolucoesRoute
   '/admin/login': typeof AdminLoginRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/admin/configuracoes': typeof AdminAdminConfiguracoesRoute
@@ -76,6 +146,16 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cancelamentos': typeof CancelamentosRoute
+  '/como-comprar': typeof ComoComprarRoute
+  '/fale-conosco': typeof FaleConoscoRoute
+  '/formas-de-pagamento': typeof FormasDePagamentoRoute
+  '/perguntas-frequentes': typeof PerguntasFrequentesRoute
+  '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
+  '/prazo-de-entrega': typeof PrazoDeEntregaRoute
+  '/rastreamento': typeof RastreamentoRoute
+  '/sobre-nos': typeof SobreNosRoute
+  '/trocas-e-devolucoes': typeof TrocasEDevolucoesRoute
   '/admin/login': typeof AdminLoginRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/admin/configuracoes': typeof AdminAdminConfiguracoesRoute
@@ -88,6 +168,16 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_admin': typeof AdminRouteWithChildren
+  '/cancelamentos': typeof CancelamentosRoute
+  '/como-comprar': typeof ComoComprarRoute
+  '/fale-conosco': typeof FaleConoscoRoute
+  '/formas-de-pagamento': typeof FormasDePagamentoRoute
+  '/perguntas-frequentes': typeof PerguntasFrequentesRoute
+  '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
+  '/prazo-de-entrega': typeof PrazoDeEntregaRoute
+  '/rastreamento': typeof RastreamentoRoute
+  '/sobre-nos': typeof SobreNosRoute
+  '/trocas-e-devolucoes': typeof TrocasEDevolucoesRoute
   '/admin/login': typeof AdminLoginRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/_admin/admin/configuracoes': typeof AdminAdminConfiguracoesRoute
@@ -100,6 +190,16 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/cancelamentos'
+    | '/como-comprar'
+    | '/fale-conosco'
+    | '/formas-de-pagamento'
+    | '/perguntas-frequentes'
+    | '/politica-de-privacidade'
+    | '/prazo-de-entrega'
+    | '/rastreamento'
+    | '/sobre-nos'
+    | '/trocas-e-devolucoes'
     | '/admin/login'
     | '/categoria/$slug'
     | '/admin/configuracoes'
@@ -110,6 +210,16 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/cancelamentos'
+    | '/como-comprar'
+    | '/fale-conosco'
+    | '/formas-de-pagamento'
+    | '/perguntas-frequentes'
+    | '/politica-de-privacidade'
+    | '/prazo-de-entrega'
+    | '/rastreamento'
+    | '/sobre-nos'
+    | '/trocas-e-devolucoes'
     | '/admin/login'
     | '/categoria/$slug'
     | '/admin/configuracoes'
@@ -121,6 +231,16 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_admin'
+    | '/cancelamentos'
+    | '/como-comprar'
+    | '/fale-conosco'
+    | '/formas-de-pagamento'
+    | '/perguntas-frequentes'
+    | '/politica-de-privacidade'
+    | '/prazo-de-entrega'
+    | '/rastreamento'
+    | '/sobre-nos'
+    | '/trocas-e-devolucoes'
     | '/admin/login'
     | '/categoria/$slug'
     | '/_admin/admin/configuracoes'
@@ -133,6 +253,16 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  CancelamentosRoute: typeof CancelamentosRoute
+  ComoComprarRoute: typeof ComoComprarRoute
+  FaleConoscoRoute: typeof FaleConoscoRoute
+  FormasDePagamentoRoute: typeof FormasDePagamentoRoute
+  PerguntasFrequentesRoute: typeof PerguntasFrequentesRoute
+  PoliticaDePrivacidadeRoute: typeof PoliticaDePrivacidadeRoute
+  PrazoDeEntregaRoute: typeof PrazoDeEntregaRoute
+  RastreamentoRoute: typeof RastreamentoRoute
+  SobreNosRoute: typeof SobreNosRoute
+  TrocasEDevolucoesRoute: typeof TrocasEDevolucoesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   CategoriaSlugRoute: typeof CategoriaSlugRoute
 }
@@ -151,6 +281,76 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cancelamentos': {
+      id: '/cancelamentos'
+      path: '/cancelamentos'
+      fullPath: '/cancelamentos'
+      preLoaderRoute: typeof CancelamentosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/como-comprar': {
+      id: '/como-comprar'
+      path: '/como-comprar'
+      fullPath: '/como-comprar'
+      preLoaderRoute: typeof ComoComprarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fale-conosco': {
+      id: '/fale-conosco'
+      path: '/fale-conosco'
+      fullPath: '/fale-conosco'
+      preLoaderRoute: typeof FaleConoscoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/formas-de-pagamento': {
+      id: '/formas-de-pagamento'
+      path: '/formas-de-pagamento'
+      fullPath: '/formas-de-pagamento'
+      preLoaderRoute: typeof FormasDePagamentoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perguntas-frequentes': {
+      id: '/perguntas-frequentes'
+      path: '/perguntas-frequentes'
+      fullPath: '/perguntas-frequentes'
+      preLoaderRoute: typeof PerguntasFrequentesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/politica-de-privacidade': {
+      id: '/politica-de-privacidade'
+      path: '/politica-de-privacidade'
+      fullPath: '/politica-de-privacidade'
+      preLoaderRoute: typeof PoliticaDePrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/prazo-de-entrega': {
+      id: '/prazo-de-entrega'
+      path: '/prazo-de-entrega'
+      fullPath: '/prazo-de-entrega'
+      preLoaderRoute: typeof PrazoDeEntregaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rastreamento': {
+      id: '/rastreamento'
+      path: '/rastreamento'
+      fullPath: '/rastreamento'
+      preLoaderRoute: typeof RastreamentoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sobre-nos': {
+      id: '/sobre-nos'
+      path: '/sobre-nos'
+      fullPath: '/sobre-nos'
+      preLoaderRoute: typeof SobreNosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trocas-e-devolucoes': {
+      id: '/trocas-e-devolucoes'
+      path: '/trocas-e-devolucoes'
+      fullPath: '/trocas-e-devolucoes'
+      preLoaderRoute: typeof TrocasEDevolucoesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/login': {
@@ -226,6 +426,16 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  CancelamentosRoute: CancelamentosRoute,
+  ComoComprarRoute: ComoComprarRoute,
+  FaleConoscoRoute: FaleConoscoRoute,
+  FormasDePagamentoRoute: FormasDePagamentoRoute,
+  PerguntasFrequentesRoute: PerguntasFrequentesRoute,
+  PoliticaDePrivacidadeRoute: PoliticaDePrivacidadeRoute,
+  PrazoDeEntregaRoute: PrazoDeEntregaRoute,
+  RastreamentoRoute: RastreamentoRoute,
+  SobreNosRoute: SobreNosRoute,
+  TrocasEDevolucoesRoute: TrocasEDevolucoesRoute,
   AdminLoginRoute: AdminLoginRoute,
   CategoriaSlugRoute: CategoriaSlugRoute,
 }
