@@ -51,7 +51,7 @@ function AdminProductsPage() {
   const { editId } = Route.useSearch()
   const [searchTerm, setSearchTerm] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  
   const [productToDelete, setProductToDelete] = useState<string | null>(null)
   const [editingProduct, setEditingProduct] = useState<any>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
