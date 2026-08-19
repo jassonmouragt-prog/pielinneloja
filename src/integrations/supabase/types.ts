@@ -131,6 +131,7 @@ export type Database = {
           product_id: string | null
           quantity: number
           sale_id: string
+          variations: Json | null
         }
         Insert: {
           created_at?: string | null
@@ -139,6 +140,7 @@ export type Database = {
           product_id?: string | null
           quantity: number
           sale_id: string
+          variations?: Json | null
         }
         Update: {
           created_at?: string | null
@@ -147,6 +149,7 @@ export type Database = {
           product_id?: string | null
           quantity?: number
           sale_id?: string
+          variations?: Json | null
         }
         Relationships: [
           {
