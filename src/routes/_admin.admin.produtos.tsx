@@ -545,22 +545,43 @@ function AdminProductsPage() {
                             <div className="flex gap-2">
                               <Input
                                 placeholder="Nova opção..."
-                                className="h-8"
+                                className="h-9"
+                                id={`new-option-${vIndex}`}
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter') {
                                     e.preventDefault();
-                                    const val = e.currentTarget.value.trim();
+                                    const input = e.currentTarget;
+                                    const val = input.value.trim();
                                     if (val) {
                                       const current = form.getValues('variations') || [];
                                       if (current[vIndex] && !current[vIndex].options.includes(val)) {
                                         current[vIndex].options.push(val);
                                         form.setValue('variations', [...current]);
                                       }
-                                      e.currentTarget.value = '';
+                                      input.value = '';
                                     }
                                   }
                                 }}
                               />
+                              <Button
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => {
+                                  const input = document.getElementById(`new-option-${vIndex}`) as HTMLInputElement;
+                                  const val = input?.value.trim();
+                                  if (val) {
+                                    const current = form.getValues('variations') || [];
+                                    if (current[vIndex] && !current[vIndex].options.includes(val)) {
+                                      current[vIndex].options.push(val);
+                                      form.setValue('variations', [...current]);
+                                    }
+                                    if (input) input.value = '';
+                                  }
+                                }}
+                              >
+                                Adicionar
+                              </Button>
                             </div>
                           </div>
                         </div>
