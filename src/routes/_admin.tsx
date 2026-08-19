@@ -2,10 +2,10 @@ import { createFileRoute, Outlet, redirect, Link } from '@tanstack/react-router'
 import { supabase } from '@/integrations/supabase/client'
 import { LayoutDashboard, Package, Box, Settings, LogOut, Menu, ShoppingCart, DollarSign } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { toast } from 'sonner'
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import logoAsset from "@/assets/logo.png.asset.json"
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_admin')({
   beforeLoad: async ({ location }) => {
@@ -94,6 +94,27 @@ export const Route = createFileRoute('/_admin')({
 
 function AdminLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setIsAuthorized(false);
+        } else {
+          // Check role if needed, but beforeLoad already handles initial gate
+          setIsAuthorized(true);
+        }
+      } catch (error) {
+        console.error('Error checking auth in layout:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    checkAuth();
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -146,6 +167,23 @@ function AdminLayout() {
       </div>
     </div>
   );
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-pink border-t-transparent mx-auto"></div>
+          <p className="mt-4 text-gray-600">Carregando painel...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthorized && typeof window !== 'undefined') {
+    // If we reached here but are not authorized, something is wrong
+    // The beforeLoad should have caught it, but this is a safety net
+    return null;
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
