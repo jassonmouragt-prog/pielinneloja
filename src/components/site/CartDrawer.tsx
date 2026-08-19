@@ -23,19 +23,25 @@ export function CartDrawer() {
   const hydrated = useHydrated();
   const [isRegistering, setIsRegistering] = useState(false);
   const [customerName, setCustomerName] = useState("");
+  const [nameError, setNameError] = useState(false);
   const registerSale = useServerFn(registerPendingSale);
   const WHATSAPP_NUMBER = "5584994085244";
 
   const handleCheckout = async () => {
+    setNameError(false);
     if (items.length === 0) return;
+    
     if (!customerName.trim()) {
+      setNameError(true);
       toast.error("Por favor, informe seu nome para finalizar o pedido.");
       return;
     }
+    
     if (customerName.length > 100) {
       toast.error("O nome deve ter no máximo 100 caracteres.");
       return;
     }
+
     setIsRegistering(true);
 
     try {
@@ -51,7 +57,12 @@ export function CartDrawer() {
       });
       message += `Total: R$ ${totalPrice.toFixed(2).replace(".", ",")}\n`;
 
-      // Register in Supabase first
+      const encodedMessage = encodeURIComponent(message);
+      
+      // Abre o WhatsApp primeiro para o usuário
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, "_blank");
+
+      // Registra no dashboard APENAS após o redirecionamento
       await registerSale({
         data: {
           customerName,
@@ -64,16 +75,13 @@ export function CartDrawer() {
           }))
         }
       });
-
-      const encodedMessage = encodeURIComponent(message);
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, "_blank");
       
       clearCart();
       setIsOpen(false);
       toast.success("Pedido enviado! Aguarde o contato no WhatsApp.");
     } catch (error) {
       console.error("Error registering sale:", error);
-      toast.error("Erro ao registrar pedido. Tente novamente.");
+      toast.error("Erro ao registrar pedido no sistema, mas você pode finalizar no WhatsApp.");
     } finally {
       setIsRegistering(false);
     }
@@ -182,9 +190,15 @@ export function CartDrawer() {
                   id="customerName"
                   placeholder="Como gostaria de ser chamado(a)?"
                   value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  className="rounded-full border-pink/30 focus-visible:ring-pink"
+                  onChange={(e) => {
+                    setCustomerName(e.target.value);
+                    if (e.target.value.trim()) setNameError(false);
+                  }}
+                  className={`rounded-full border-pink/30 focus-visible:ring-pink ${nameError ? "border-red-500 ring-1 ring-red-500" : ""}`}
                 />
+                {nameError && (
+                  <p className="text-[10px] text-red-500 mt-1 ml-2 italic">O nome é obrigatório para finalizar o pedido.</p>
+                )}
               </div>
               <Button
                 onClick={handleCheckout}
