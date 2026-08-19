@@ -1,4 +1,4 @@
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, Sparkles, Heart, Wind, Flower2, Gift, Scissors, ShoppingBag } from "lucide-react";
 import { Reveal } from "./Reveal";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,34 +50,34 @@ export function Categories() {
               >
                 <div
                   className="mx-auto grid aspect-square w-full max-w-[80px] xs:max-w-[100px] sm:max-w-[112px] place-items-center overflow-hidden rounded-full transition-transform duration-300 group-hover:scale-105"
-                  style={{ backgroundColor: '#E846881A' }}
+                  style={{ backgroundColor: '#E84688' }}
                 >
                   {(() => {
-                    const icons: Record<string, string> = {
-                      'maquiagem': '/src/assets/cat-maquiagem.png',
-                      'skincare': '/src/assets/cat-skincare.png',
-                      'cabelos': '/src/assets/cat-cabelos.png',
-                      'corpo': '/src/assets/cat-corpo.png',
-                      'kits': '/src/assets/cat-kits.png',
-                      'acessorios': '/src/assets/cat-acessorios.png'
+                    const icons: Record<string, React.ReactNode> = {
+                      'maquiagem': <Sparkles className="size-[50%] text-white" />,
+                      'skincare': <Heart className="size-[50%] text-white" />,
+                      'cabelos': <Wind className="size-[50%] text-white" />,
+                      'corpo': <Flower2 className="size-[50%] text-white" />,
+                      'kits': <Gift className="size-[50%] text-white" />,
+                      'acessorios': <Scissors className="size-[50%] text-white" />,
+                      'perfumaria': <ShoppingBag className="size-[50%] text-white" />
                     };
                     const slug = category.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '');
-                    const iconUrl = category.image_url || icons[slug];
                     
-                    return iconUrl ? (
-                      <img
-                        src={iconUrl}
-                        alt={category.name}
-                        loading="lazy"
-                        width={512}
-                        height={512}
-                        className="size-[78%] object-contain transition-transform duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <span className="font-display text-lg font-bold text-primary-foreground italic">
-                        NEW
-                      </span>
-                    );
+                    if (category.image_url) {
+                      return (
+                        <img
+                          src={category.image_url}
+                          alt={category.name}
+                          loading="lazy"
+                          width={512}
+                          height={512}
+                          className="size-[78%] object-contain transition-transform duration-300 group-hover:scale-105"
+                        />
+                      );
+                    }
+
+                    return icons[slug] || <Sparkles className="size-[50%] text-white" />;
                   })()}
                 </div>
                 <p className="mt-3 text-xs font-medium text-foreground sm:text-sm">
