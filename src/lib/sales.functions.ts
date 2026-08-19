@@ -4,7 +4,7 @@ import { z } from "zod";
 
 export const registerPendingSale = createServerFn({ method: "POST" })
   .validator((data: unknown) => z.object({
-    customerName: z.string().optional(),
+    customerName: z.string().min(1, "O nome é obrigatório").max(100, "O nome deve ter no máximo 100 caracteres"),
     totalAmount: z.number(),
     whatsappMessage: z.string(),
     items: z.array(z.object({
