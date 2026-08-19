@@ -59,10 +59,19 @@ export function CartDrawer() {
 
       const encodedMessage = encodeURIComponent(message);
       
-      // Abre o WhatsApp primeiro para o usuário
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, "_blank");
+      // 1. Tenta abrir o WhatsApp
+      const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+      const newWindow = window.open(whatsappUrl, "_blank");
+      
+      // Pequeno delay para garantir que a janela abriu ou falhou
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Registra no dashboard APENAS após o redirecionamento
+      // 2. Se a janela foi bloqueada ou falhou, não registra a venda
+      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+        throw new Error("WHATSAPP_BLOCKED");
+      }
+
+      // 3. Registra no dashboard APENAS após o redirecionamento
       await registerSale({
         data: {
           customerName,
@@ -79,9 +88,13 @@ export function CartDrawer() {
       clearCart();
       setIsOpen(false);
       toast.success("Pedido enviado! Aguarde o contato no WhatsApp.");
-    } catch (error) {
-      console.error("Error registering sale:", error);
-      toast.error("Erro ao registrar pedido no sistema, mas você pode finalizar no WhatsApp.");
+    } catch (error: any) {
+      console.error("Error during checkout:", error);
+      if (error.message === "WHATSAPP_BLOCKED") {
+        toast.error("O redirecionamento para o WhatsApp foi bloqueado pelo navegador. Por favor, permita pop-ups.");
+      } else {
+        toast.error("Erro ao registrar pedido no sistema. Tente novamente ou entre em contato diretamente.");
+      }
     } finally {
       setIsRegistering(false);
     }
@@ -205,8 +218,17 @@ export function CartDrawer() {
                 disabled={isRegistering}
                 className="h-12 w-full gap-2 rounded-full gradient-pink text-primary-foreground hover:opacity-90 cursor-pointer"
               >
-                {isRegistering ? <Loader2 className="size-4 animate-spin" /> : <MessageSquare className="size-4" />}
-                Finalizar Pedido no WhatsApp
+                {isRegistering ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    Enviando para WhatsApp...
+                  </>
+                ) : (
+                  <>
+                    <MessageSquare className="size-4" />
+                    Finalizar Pedido no WhatsApp
+                  </>
+                )}
               </Button>
             </SheetFooter>
           </div>

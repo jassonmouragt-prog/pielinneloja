@@ -236,7 +236,7 @@ function SalesPage() {
               Nova Venda
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Registrar Nova Venda</DialogTitle>
             </DialogHeader>
@@ -343,26 +343,26 @@ function SalesPage() {
         </div>
       </div>
 
-      <div className="rounded-md border bg-white">
+      <div className="rounded-md border bg-white overflow-hidden overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID / Cliente</TableHead>
-              <TableHead>Data</TableHead>
-              <TableHead>Itens</TableHead>
-              <TableHead>Total</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
+              <TableHead className="min-w-[150px]">ID / Cliente</TableHead>
+              <TableHead className="min-w-[150px]">Data</TableHead>
+              <TableHead className="min-w-[200px]">Itens</TableHead>
+              <TableHead className="min-w-[100px]">Total</TableHead>
+              <TableHead className="min-w-[150px]">Status</TableHead>
+              <TableHead className="text-right min-w-[120px]">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoadingSales ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">Carregando vendas...</TableCell>
+                <TableCell colSpan={6} className="h-24 text-center">Carregando vendas...</TableCell>
               </TableRow>
             ) : filteredSales?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">Nenhuma venda encontrada.</TableCell>
+                <TableCell colSpan={6} className="h-24 text-center">Nenhuma venda encontrada.</TableCell>
               </TableRow>
             ) : (
               filteredSales?.map((sale) => (
