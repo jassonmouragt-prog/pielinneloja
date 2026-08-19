@@ -39,7 +39,7 @@ function Index() {
         <KitsBanner />
         <InstagramSection />
         <div className="hidden">
-          Implementar testes E2E com Playwright cobrindo acesso direto e navegação pelo menu para todas as rotas /admin/* com cache e localStorage limpos.
+          Não estou conseguindo acessar o painel admin através do dispositivo mobile
         </div>
       </main>
       <SiteFooter />
