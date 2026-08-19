@@ -14,6 +14,8 @@ export const Route = createFileRoute('/_admin')({
     if (typeof window === 'undefined') return;
 
     try {
+      console.log('[AdminGuard] Verificando autenticação para:', location.pathname);
+      
       // 1. Get current session with a small retry logic for hydration
       let sessionResponse = await supabase.auth.getSession();
       let session = sessionResponse.data.session;
@@ -21,30 +23,31 @@ export const Route = createFileRoute('/_admin')({
       // Fallback: If no session from client, wait a bit and try one more time 
       // to handle hydration race conditions on some browsers/machines
       if (!session) {
-        await new Promise(resolve => setTimeout(resolve, 300));
+        console.log('[AdminGuard] Aguardando hidratação da sessão...');
+        await new Promise(resolve => setTimeout(resolve, 500));
         sessionResponse = await supabase.auth.getSession();
         session = sessionResponse.data.session;
       }
 
       // Secondary fallback: check localStorage directly if Supabase is being stubborn
-      // ONLY if we are in the browser
-      if (!session && typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      if (!session && typeof localStorage !== 'undefined') {
         const storageKey = Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
         const sessionStr = storageKey ? localStorage.getItem(storageKey) : null;
         if (sessionStr) {
           try {
             const localSession = JSON.parse(sessionStr);
             if (localSession && localSession.access_token) {
+              console.log('[AdminGuard] Sessão recuperada via localStorage');
               session = localSession;
             }
           } catch (e) {
-            console.error('[AdminGuard] Error parsing fallback session:', e);
+            console.error('[AdminGuard] Erro ao analisar sessão do localStorage:', e);
           }
         }
       }
 
       if (!session) {
-        console.log('[AdminGuard] No session found, redirecting to login');
+        console.log('[AdminGuard] Nenhuma sessão encontrada, redirecionando para login');
         throw redirect({ 
           to: '/admin/login', 
           search: { redirect: location.href },
@@ -67,7 +70,7 @@ export const Route = createFileRoute('/_admin')({
         .maybeSingle();
 
       if (roleError) {
-        console.error('[AdminGuard] Role check error:', roleError);
+        console.error('[AdminGuard] Erro ao verificar papel do usuário:', roleError);
         throw redirect({ to: '/admin/login', replace: true });
       }
 
@@ -75,13 +78,13 @@ export const Route = createFileRoute('/_admin')({
         return { session, role: 'admin' as const };
       }
 
-      console.error('[AdminGuard] Not authorized:', userEmail);
+      console.error('[AdminGuard] Usuário não autorizado:', userEmail);
       throw redirect({ to: '/admin/login', replace: true });
     } catch (e: any) {
       // Re-throw redirect errors so TanStack Router can handle them
       if (e.to || e.redirect || [301, 302, 303, 307, 308].includes(e.status)) throw e;
       
-      console.error('[AdminGuard] Unexpected error:', e);
+      console.error('[AdminGuard] Erro inesperado no guardião:', e);
       // In case of any other unexpected error, redirect to login
       throw redirect({ to: '/admin/login', replace: true });
     }
