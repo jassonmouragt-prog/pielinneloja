@@ -16,17 +16,15 @@ export const Route = createFileRoute('/_admin')({
     try {
       console.log('[AdminGuard] Verificando autenticação para:', location.pathname);
       
-      // 1. Get current session with a small retry logic for hydration
-      let sessionResponse = await supabase.auth.getSession();
-      let session = sessionResponse.data.session;
-      
-      // Fallback: If no session from client, wait a bit and try one more time 
-      // to handle hydration race conditions on some browsers/machines
-      if (!session) {
-        console.log('[AdminGuard] Aguardando hidratação da sessão...');
-        await new Promise(resolve => setTimeout(resolve, 500));
-        sessionResponse = await supabase.auth.getSession();
-        session = sessionResponse.data.session;
+      // 1. Get current session with retry logic for hydration.
+      // Mobile browsers (Safari/Chrome iOS/Android) can take longer to
+      // rehydrate the persisted session from storage, so we retry a few
+      // times with small back-off before concluding there is no session.
+      let session = (await supabase.auth.getSession()).data.session;
+      for (let attempt = 1; !session && attempt <= 4; attempt++) {
+        console.log(`[AdminGuard] Aguardando hidratação da sessão (tentativa ${attempt}/4)...`);
+        await new Promise(resolve => setTimeout(resolve, 350 * attempt));
+        session = (await supabase.auth.getSession()).data.session;
       }
 
       // Secondary fallback: check localStorage directly if Supabase is being stubborn
