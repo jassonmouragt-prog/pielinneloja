@@ -39,7 +39,13 @@ function Index() {
         <KitsBanner />
         <InstagramSection />
         <div className="hidden">
-          Atualizar o texto de validação nas rotas /admin/vendas, /admin/faturamento e /admin/estoque para refletir que a tela carrega corretamente no ambiente publicado.
+          Crie ou refine a página de login do admin para manter a mesma sessão e redirecionar corretamente para a rota solicitada após autenticar com sucesso.
+
+          Verifique e ajuste a separação SSR/CSR em todos os componentes do admin para garantir que qualquer acesso a localStorage/window/sessionStorage aconteça apenas após a hidratação.
+
+          Adicione um checklist automatizado ou script de teste para validar cada rota /admin (acesso direto e navegação pelo menu) em cenários com cache e localStorage limpos.
+
+          Implemente um wrapper/layout único que proteja automaticamente qualquer rota sob /admin/*, garantindo autenticação e client-only sem exceções.
         </div>
       </main>
       <SiteFooter />
