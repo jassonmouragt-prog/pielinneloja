@@ -30,6 +30,8 @@ function AdminLoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    
     setIsLoading(true)
 
     try {
@@ -40,13 +42,16 @@ function AdminLoginPage() {
       const cleanPassword = password.trim();
 
       if (!cleanEmail || !cleanPassword) {
+        toast.error('E-mail e senha são obrigatórios');
         throw new Error('E-mail e senha são obrigatórios');
       }
 
+      console.log('Chamando supabase.auth.signInWithPassword...');
       const { data, error } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
         password: cleanPassword,
-      })
+      });
+      console.log('Resposta do Supabase recebida:', { hasData: !!data, hasError: !!error });
 
       if (error) {
         console.error('Erro no signInWithPassword:', error)
