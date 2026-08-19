@@ -48,9 +48,8 @@ export function Categories() {
                 className="group block text-center"
               >
                 <div
-                  className={`mx-auto grid aspect-square w-full max-w-[112px] place-items-center overflow-hidden rounded-full transition-transform duration-300 group-hover:scale-105 ${
-                    category.tone === "pink" ? "gradient-pink" : "bg-purple-100"
-                  }`}
+                  className="mx-auto grid aspect-square w-full max-w-[112px] place-items-center overflow-hidden rounded-full transition-transform duration-300 group-hover:scale-105"
+                  style={{ backgroundColor: category.tone.startsWith('#') ? `${category.tone}1A` : undefined }}
                 >
                   {category.image_url ? (
                     <img
