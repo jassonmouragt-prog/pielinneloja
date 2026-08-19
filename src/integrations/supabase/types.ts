@@ -85,6 +85,7 @@ export type Database = {
           stock_quantity: number | null
           subtitle: string | null
           updated_at: string | null
+          variations: Json | null
         }
         Insert: {
           category_id?: string | null
@@ -97,6 +98,7 @@ export type Database = {
           stock_quantity?: number | null
           subtitle?: string | null
           updated_at?: string | null
+          variations?: Json | null
         }
         Update: {
           category_id?: string | null
@@ -109,6 +111,7 @@ export type Database = {
           stock_quantity?: number | null
           subtitle?: string | null
           updated_at?: string | null
+          variations?: Json | null
         }
         Relationships: [
           {
@@ -128,6 +131,7 @@ export type Database = {
           product_id: string | null
           quantity: number
           sale_id: string
+          variations: Json | null
         }
         Insert: {
           created_at?: string | null
@@ -136,6 +140,7 @@ export type Database = {
           product_id?: string | null
           quantity: number
           sale_id: string
+          variations?: Json | null
         }
         Update: {
           created_at?: string | null
@@ -144,6 +149,7 @@ export type Database = {
           product_id?: string | null
           quantity?: number
           sale_id?: string
+          variations?: Json | null
         }
         Relationships: [
           {

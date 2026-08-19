@@ -8,14 +8,15 @@ export interface CartItem {
   price: string;
   image: string;
   quantity: number;
+  selectedVariations?: Record<string, string> | undefined;
 }
 
 interface CartStore {
   items: CartItem[];
   isOpen: boolean;
   addItem: (product: Omit<CartItem, 'quantity'>) => void;
-  removeItem: (name: string) => void;
-  updateQuantity: (name: string, quantity: number) => void;
+  removeItem: (name: string, variations?: Record<string, string>) => void;
+  updateQuantity: (name: string, quantity: number, variations?: Record<string, string>) => void;
   clearCart: () => void;
   setIsOpen: (isOpen: boolean) => void;
   totalItems: () => number;
@@ -28,12 +29,15 @@ export const useCart = create<CartStore>()(
       isOpen: false,
       addItem: (product: Omit<CartItem, 'quantity'>) => {
         const currentItems = get().items;
-        const existingItem = currentItems.find((item) => item.name === product.name);
+        const existingItem = currentItems.find((item) => 
+          item.name === product.name && 
+          JSON.stringify(item.selectedVariations) === JSON.stringify(product.selectedVariations)
+        );
 
         if (existingItem) {
           set({
             items: currentItems.map((item) =>
-              item.name === product.name
+              item.name === product.name && JSON.stringify(item.selectedVariations) === JSON.stringify(product.selectedVariations)
                 ? { ...item, quantity: item.quantity + 1 }
                 : item
             ),
@@ -46,17 +50,23 @@ export const useCart = create<CartStore>()(
           });
         }
       },
-      removeItem: (name: string) => {
-        set({ items: get().items.filter((item) => item.name !== name) });
+      removeItem: (name: string, variations?: Record<string, string>) => {
+        set({ 
+          items: get().items.filter((item) => 
+            !(item.name === name && JSON.stringify(item.selectedVariations) === JSON.stringify(variations))
+          ) 
+        });
       },
-      updateQuantity: (name: string, quantity: number) => {
+      updateQuantity: (name: string, quantity: number, variations?: Record<string, string>) => {
         if (quantity <= 0) {
-          get().removeItem(name);
+          get().removeItem(name, variations);
           return;
         }
         set({
           items: get().items.map((item) =>
-            item.name === name ? { ...item, quantity } : item
+            (item.name === name && JSON.stringify(item.selectedVariations) === JSON.stringify(variations)) 
+              ? { ...item, quantity } 
+              : item
           ),
         });
       },

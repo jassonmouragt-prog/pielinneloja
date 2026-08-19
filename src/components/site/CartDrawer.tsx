@@ -1,4 +1,4 @@
-import { ShoppingBag, X, Plus, Minus, MessageSquare, Loader2 } from "lucide-react";
+import { ShoppingBag, X, Plus, Minus, MessageSquare, Loader2, Tag } from "lucide-react";
 import { useCart, type CartItem } from "@/hooks/useCart";
 import { useHydrated } from "@/hooks/useHydrated";
 import { registerPendingSale } from "@/lib/sales.functions";
@@ -53,6 +53,12 @@ export function CartDrawer() {
       let message = `Olá! Meu nome é ${customerName}. Gostaria de finalizar o pedido com os seguintes produtos:\n\n`;
       items.forEach((item: CartItem) => {
         message += `• ${item.name} (${item.subtitle})\n`;
+        if (item.selectedVariations) {
+          const variationsStr = Object.entries(item.selectedVariations)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join(', ');
+          message += `  Variações: ${variationsStr}\n`;
+        }
         message += `  Qtd: ${item.quantity} x ${item.price}\n\n`;
       });
       message += `Total: R$ ${totalPrice.toFixed(2).replace(".", ",")}\n`;
@@ -80,7 +86,8 @@ export function CartDrawer() {
           items: items.map(item => ({
             productId: item.id || '',
             quantity: item.quantity,
-            price: parseFloat(item.price.replace("R$", "").replace(",", "."))
+            price: parseFloat(item.price.replace("R$", "").replace(",", ".")),
+            variations: item.selectedVariations
           }))
         }
       });
@@ -149,19 +156,29 @@ export function CartDrawer() {
                         <div className="flex items-start justify-between gap-2">
                           <h4 className="text-sm font-medium leading-tight">{item.name}</h4>
                           <button
-                            onClick={() => removeItem(item.name)}
+                            onClick={() => removeItem(item.name, item.selectedVariations)}
                             className="text-muted-foreground hover:text-destructive cursor-pointer"
                           >
                             <X className="size-4" />
                           </button>
                         </div>
                         <p className="text-xs text-muted-foreground">{item.subtitle}</p>
+                        {item.selectedVariations && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {Object.entries(item.selectedVariations).map(([key, value]) => (
+                              <span key={key} className="inline-flex items-center gap-1 bg-pink/5 text-[10px] text-pink px-2 py-0.5 rounded-full border border-pink/10 font-medium">
+                                <Tag className="size-2" />
+                                {key}: {value}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-bold text-pink">{item.price}</span>
                         <div className="flex items-center gap-2 rounded-full border border-border px-2 py-1">
                           <button
-                            onClick={() => updateQuantity(item.name, item.quantity - 1)}
+                            onClick={() => updateQuantity(item.name, item.quantity - 1, item.selectedVariations)}
                             className="text-muted-foreground hover:text-pink cursor-pointer"
                           >
                             <Minus className="size-3" />
@@ -170,7 +187,7 @@ export function CartDrawer() {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => updateQuantity(item.name, item.quantity + 1)}
+                            onClick={() => updateQuantity(item.name, item.quantity + 1, item.selectedVariations)}
                             className="text-muted-foreground hover:text-pink cursor-pointer"
                           >
                             <Plus className="size-3" />
