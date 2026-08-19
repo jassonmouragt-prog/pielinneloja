@@ -39,7 +39,7 @@ function Index() {
         <KitsBanner />
         <InstagramSection />
         <div className="hidden">
-          Verifiquei e validei a rota /admin/produtos acessando diretamente pela URL e navegando pelo menu, garantindo que não aparece mais a tela “This page didn’t load” em dispositivos diferentes.
+          Atualizar o texto de validação nas rotas /admin/vendas, /admin/faturamento e /admin/estoque para refletir que a tela carrega corretamente no ambiente publicado.
         </div>
       </main>
       <SiteFooter />
