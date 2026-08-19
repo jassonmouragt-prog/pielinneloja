@@ -22,7 +22,7 @@ export const registerPendingSale = createServerFn({ method: "POST" })
         total_amount: totalAmount,
         status: 'pending',
         whatsapp_message: whatsappMessage,
-        customer_name: customerName
+        customer_name: customerName || null
       })
       .select()
       .single();
