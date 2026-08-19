@@ -63,8 +63,10 @@ export const updateSaleStatus = createServerFn({ method: "POST" })
 
     if (saleError) throw saleError;
 
-    if (status === 'confirmed') {
+    if (status === 'confirmed' && sale.sale_items) {
       for (const item of sale.sale_items) {
+        if (!item.product_id) continue;
+
         await supabaseAdmin
           .from('stock_movements')
           .insert({
