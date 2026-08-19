@@ -104,7 +104,10 @@ function AdminLayout() {
           <Link
             key={item.label}
             to={item.href as any}
-            onClick={() => setIsMobileMenuOpen(false)}
+            onClick={() => {
+              console.log('[AdminLayout] Navigating to:', item.href);
+              setIsMobileMenuOpen(false);
+            }}
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-pink/5 hover:text-pink [&.active]:bg-pink/10 [&.active]:text-pink"
           >
             <item.icon className="h-5 w-5" />
