@@ -25,7 +25,7 @@ function AdminDashboard() {
           .from('sales')
           .select('*, sale_items(*, products(name))')
           .order('created_at', { ascending: false })
-          .limit(5),
+          .limit(10),
         supabase
           .from('products')
           .select('id, name, stock_quantity')
@@ -37,6 +37,7 @@ function AdminDashboard() {
         .gte('created_at', firstDayOfMonth);
 
       const confirmedSales = monthSalesRes.data?.filter(s => s.status === 'confirmed') || [];
+      const pendingSalesCount = monthSalesRes.data?.filter(s => s.status === 'pending').length || 0;
       const revenue = confirmedSales.reduce((acc, s) => acc + Number(s.total_amount), 0);
       
       const lowStockProducts = productsRes.data?.filter(p => (p.stock_quantity ?? 0) <= 5) || [];
@@ -45,6 +46,7 @@ function AdminDashboard() {
       return {
         revenue,
         confirmedCount: confirmedSales.length,
+        pendingSalesCount,
         lowStockCount,
         lowStockProducts,
         totalProducts: productsRes.data?.length || 0,
