@@ -208,7 +208,7 @@ function AdminSettingsPage() {
                   Nova
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="w-[95vw] sm:max-w-md max-h-[95vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>{editingCategory ? 'Editar Categoria' : 'Nova Categoria'}</DialogTitle>
                 </DialogHeader>
