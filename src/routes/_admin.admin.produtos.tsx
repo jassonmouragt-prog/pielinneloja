@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Edit2, Trash2, AlertCircle, Loader2, Upload, X } from 'lucide-react'
+import { Plus, Search, Edit2, Trash2, AlertCircle, Loader2, Upload, X, Tag } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -25,6 +25,10 @@ const productSchema = z.object({
   category_id: z.string().min(1, 'Selecione uma categoria'),
   stock_quantity: z.coerce.number().int().min(0, 'Estoque deve ser maior ou igual a 0'),
   status: z.enum(['active', 'inactive']),
+  variations: z.array(z.object({
+    name: z.string().min(1, 'Nome da variação é obrigatório'),
+    options: z.array(z.string().min(1, 'Opção não pode ser vazia'))
+  })).default([]),
 })
 
 type ProductFormValues = z.infer<typeof productSchema>
@@ -93,6 +97,7 @@ function AdminProductsPage() {
       category_id: '',
       stock_quantity: 0,
       status: 'active',
+      variations: [],
     },
   })
 
@@ -106,6 +111,7 @@ function AdminProductsPage() {
       category_id: product.category_id,
       stock_quantity: product.stock_quantity,
       status: product.status as 'active' | 'inactive',
+      variations: Array.isArray(product.variations) ? product.variations : [],
     })
     
     // Set preview if image exists
@@ -162,6 +168,7 @@ function AdminProductsPage() {
         category_id: values.category_id || null,
         stock_quantity: values.stock_quantity,
         status: values.status,
+        variations: values.variations || [],
       }
 
       console.log('Iniciando persistência do produto:', isNew ? 'Novo' : 'Edição', payload)
@@ -264,7 +271,16 @@ function AdminProductsPage() {
       setEditingProduct(null)
       setImageFile(null)
       setImagePreview(null)
-      form.reset()
+      form.reset({
+        name: '',
+        subtitle: '',
+        description: '',
+        price: 0,
+        category_id: '',
+        stock_quantity: 0,
+        status: 'active',
+        variations: [],
+      })
       refetch()
     } catch (error: any) {
       console.error('Erro detalhado ao salvar produto:', error)
