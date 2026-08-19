@@ -35,7 +35,7 @@ export function Categories() {
           </a>
         </Reveal>
 
-        <div className="mt-8 grid grid-cols-3 gap-x-3 gap-y-6 xs:grid-cols-4 sm:gap-x-4 sm:gap-y-8 lg:grid-cols-7 lg:gap-x-6">
+        <div className="mt-8 grid grid-cols-2 gap-x-3 gap-y-6 xs:grid-cols-4 sm:gap-x-4 sm:gap-y-8 lg:grid-cols-7 lg:gap-x-6">
           {isLoading && (
             <div className="col-span-full flex justify-center py-10">
               <Loader2 className="h-8 w-8 animate-spin text-pink" />
