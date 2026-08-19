@@ -8,7 +8,7 @@ export interface CartItem {
   price: string;
   image: string;
   quantity: number;
-  selectedVariations?: Record<string, string>;
+  selectedVariations?: Record<string, string> | undefined;
 }
 
 interface CartStore {
