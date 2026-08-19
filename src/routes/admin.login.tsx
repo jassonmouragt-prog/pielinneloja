@@ -24,37 +24,6 @@ function AdminLoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [debugInfo, setDebugInfo] = useState<{
-    session: any;
-    user: any;
-    lastError: string | null;
-    storageKey: string | null;
-    cookies: string | null;
-  }>({
-    session: null,
-    user: null,
-    lastError: null,
-    storageKey: null,
-    cookies: null
-  })
-
-  const updateDebugInfo = async (error: string | null = null) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    const storageKey = Object.keys(localStorage).find(key => key.startsWith('sb-') && key.endsWith('-auth-token')) || null;
-    
-    setDebugInfo(prev => ({
-      ...prev,
-      session: session ? 'Ativa' : 'Nenhuma',
-      user: session?.user?.email || 'Nenhum',
-      lastError: error || prev.lastError,
-      storageKey: storageKey ? 'Presente' : 'Ausente',
-      cookies: document.cookie.includes('sb-') ? 'Detectados' : 'Nenhum cookie de auth'
-    }));
-  }
-
-  useEffect(() => {
-    updateDebugInfo();
-  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
