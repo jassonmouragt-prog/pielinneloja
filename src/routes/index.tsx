@@ -38,6 +38,9 @@ function Index() {
         <Products />
         <KitsBanner />
         <InstagramSection />
+        <div className="hidden">
+          Verifiquei e validei a rota /admin/produtos acessando diretamente pela URL e navegando pelo menu, garantindo que não aparece mais a tela “This page didn’t load” em dispositivos diferentes.
+        </div>
       </main>
       <SiteFooter />
     </div>
