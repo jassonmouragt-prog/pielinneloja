@@ -10,7 +10,8 @@ export const registerPendingSale = createServerFn({ method: "POST" })
     items: z.array(z.object({
       productId: z.string(),
       quantity: z.number(),
-      price: z.number()
+      price: z.number(),
+      variations: z.record(z.string()).optional()
     }))
   }).parse(data))
   .handler(async ({ data }) => {
@@ -33,7 +34,8 @@ export const registerPendingSale = createServerFn({ method: "POST" })
       sale_id: sale.id,
       product_id: item.productId,
       quantity: item.quantity,
-      price_at_sale: item.price
+      price_at_sale: item.price,
+      variations: item.variations || null
     }));
 
     const { error: itemsError } = await supabaseAdmin
