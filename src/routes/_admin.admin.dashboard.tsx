@@ -25,7 +25,7 @@ function AdminDashboard() {
           .from('sales')
           .select('*, sale_items(*, products(name))')
           .order('created_at', { ascending: false })
-          .limit(5),
+          .limit(10),
         supabase
           .from('products')
           .select('id, name, stock_quantity')
@@ -37,6 +37,7 @@ function AdminDashboard() {
         .gte('created_at', firstDayOfMonth);
 
       const confirmedSales = monthSalesRes.data?.filter(s => s.status === 'confirmed') || [];
+      const pendingSalesCount = monthSalesRes.data?.filter(s => s.status === 'pending').length || 0;
       const revenue = confirmedSales.reduce((acc, s) => acc + Number(s.total_amount), 0);
       
       const lowStockProducts = productsRes.data?.filter(p => (p.stock_quantity ?? 0) <= 5) || [];
@@ -45,6 +46,7 @@ function AdminDashboard() {
       return {
         revenue,
         confirmedCount: confirmedSales.length,
+        pendingSalesCount,
         lowStockCount,
         lowStockProducts,
         totalProducts: productsRes.data?.length || 0,
@@ -55,12 +57,19 @@ function AdminDashboard() {
 
   const cards = [
     { title: 'Faturamento (Mês)', value: `R$ ${stats?.revenue?.toFixed(2) || '0.00'}`, icon: DollarSign, color: 'text-green-600', onClick: () => window.location.href = '/admin/faturamento' },
-    { title: 'Vendas Confirmadas', value: stats?.confirmedCount || 0, icon: ShoppingCart, color: 'text-blue-600', onClick: undefined },
+    { 
+      title: 'Vendas Pendentes', 
+      value: stats?.pendingSalesCount || 0, 
+      icon: ShoppingCart, 
+      color: 'text-yellow-600', 
+      onClick: () => window.location.href = '/admin/vendas',
+      highlight: (stats?.pendingSalesCount || 0) > 0
+    },
     { 
       title: 'Estoque Baixo', 
       value: stats?.lowStockCount || 0, 
       icon: AlertTriangle, 
-      color: 'text-yellow-600',
+      color: 'text-red-600',
       onClick: () => setShowLowStock(!showLowStock),
       highlight: (stats?.lowStockCount || 0) > 0
     },
@@ -153,11 +162,17 @@ function AdminDashboard() {
                       {sale.sale_items?.map((i: any) => `${i.quantity}x ${i.products?.name}`).join(', ')}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold">R$ {sale.total_amount.toFixed(2)}</p>
-                    <p className="text-[10px] text-muted-foreground">
-                      {new Date(sale.created_at).toLocaleDateString('pt-BR')}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <Badge variant={sale.status === 'pending' ? 'secondary' : sale.status === 'confirmed' ? 'default' : 'outline'} 
+                           className={sale.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : sale.status === 'confirmed' ? 'bg-green-500' : ''}>
+                      {sale.status === 'pending' ? 'Pendente' : sale.status === 'confirmed' ? 'Ok' : 'Canc.'}
+                    </Badge>
+                    <div className="text-right">
+                      <p className="text-sm font-bold">R$ {sale.total_amount.toFixed(2)}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {new Date(sale.created_at).toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
                   </div>
                 </div>
               ))}

@@ -63,21 +63,7 @@ export function CartDrawer() {
       });
       message += `Total: R$ ${totalPrice.toFixed(2).replace(".", ",")}\n`;
 
-      const encodedMessage = encodeURIComponent(message);
-      
-      // 1. Tenta abrir o WhatsApp
-      const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
-      const newWindow = window.open(whatsappUrl, "_blank");
-      
-      // Pequeno delay para garantir que a janela abriu ou falhou
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // 2. Se a janela foi bloqueada ou falhou, não registra a venda
-      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-        throw new Error("WHATSAPP_BLOCKED");
-      }
-
-      // 3. Registra no dashboard APENAS após o redirecionamento
+      // 1. Registra no dashboard PRIMEIRO
       await registerSale({
         data: {
           customerName,
@@ -91,6 +77,18 @@ export function CartDrawer() {
           }))
         }
       });
+
+      // 2. Só então redireciona para o WhatsApp
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+      
+      // Tenta abrir em nova janela
+      const newWindow = window.open(whatsappUrl, "_blank");
+      
+      // Se a janela foi bloqueada, tenta redirecionar na mesma aba como fallback
+      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+        window.location.href = whatsappUrl;
+      }
       
       clearCart();
       setIsOpen(false);
