@@ -14,6 +14,23 @@ export const Route = createFileRoute('/categoria/$slug')({
       slug: z.string().parse(params.slug),
     }),
   },
+  head: ({ params }) => {
+    const slug = params.slug;
+    const name = slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' ');
+    const title = `${name} | Sua Lojinha Maakeup`;
+    const description = `Confira nossa seleção de ${name} na Sua Lojinha Maakeup. Melhores preços e qualidade para sua beleza.`;
+    
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
+      ],
+    }
+  },
   component: CategoryPage,
 })
 
