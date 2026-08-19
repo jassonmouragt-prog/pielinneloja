@@ -31,7 +31,7 @@ function AdminLoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     console.log('Botão de entrar clicado!')
-    alert('Tentando login...')
+    
     setIsLoading(true)
 
     try {
