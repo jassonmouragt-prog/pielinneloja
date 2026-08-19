@@ -223,7 +223,7 @@ function AdminStockPage() {
 
       {/* Movement Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="w-[95vw] sm:max-w-md max-h-[95vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Registrar Movimentação</DialogTitle>
             <DialogDescription>
@@ -317,7 +317,7 @@ function AdminStockPage() {
 
       {/* History Dialog */}
       <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Histórico de Movimentações</DialogTitle>
           </DialogHeader>
