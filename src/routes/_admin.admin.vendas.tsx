@@ -454,7 +454,7 @@ function SalesPage() {
                                       {Object.entries(item.variations).map(([key, value]) => (
                                         <span key={key} className="inline-flex items-center gap-1 bg-pink/5 text-[10px] text-pink px-2 py-0.5 rounded-full border border-pink/10 font-medium">
                                           <Tag className="size-2" />
-                                          {key}: {value}
+                                          {key}: {value as string}
                                         </span>
                                       ))}
                                     </div>
