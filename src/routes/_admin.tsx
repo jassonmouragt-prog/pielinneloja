@@ -8,7 +8,7 @@ import { useState } from 'react'
 import logoAsset from "@/assets/logo.png.asset.json"
 
 export const Route = createFileRoute('/_admin')({
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
     // Fallback detection for client-side navigation
     const isClient = typeof window !== 'undefined';
     const storageKey = isClient ? Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token')) : null;
@@ -24,30 +24,39 @@ export const Route = createFileRoute('/_admin')({
     const session = supabaseSession || localSession;
     
     console.log('[AdminGuard] Session Check Email:', session?.user?.email);
-    console.log('[AdminGuard] Session Check User ID:', session?.user?.id);
     
     if (!session) {
       console.log('[AdminGuard] No session found, redirecting to login');
-      throw redirect({ to: '/admin/login', replace: true });
+      throw redirect({ 
+        to: '/admin/login', 
+        search: { redirect: location.href },
+        replace: true 
+      });
     }
 
     // Emergency bypass based on email for the known admin
     if (session.user.email?.toLowerCase() === 'sualojinhaadmin@admin.com') {
-      console.log('[AdminGuard] Email bypass granted for', session.user.email);
-      return { session, role: 'admin' as const };
-    }
-
-    if (session.user.id === 'd3c2ef39-bf82-47aa-98f2-fae877115be4') {
-      console.log('[AdminGuard] User ID bypass granted for', session.user.id);
       return { session, role: 'admin' as const };
     }
 
     try {
-      const { data: roleData } = await supabase
+      // Add a small delay for Supabase to properly sync on client side if needed
+      if (isClient && !supabaseSession && localSession) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', session.user.id)
         .maybeSingle();
+
+      if (roleError) {
+        console.error('[AdminGuard] Role check error:', roleError);
+        // If it's a transient network error, we might want to be careful, 
+        // but for safety redirect to login
+        throw redirect({ to: '/admin/login', replace: true });
+      }
 
       if (roleData?.role === 'admin') {
         return { session, role: 'admin' as const };
@@ -56,7 +65,7 @@ export const Route = createFileRoute('/_admin')({
       console.error('[AdminGuard] Not authorized');
       throw redirect({ to: '/admin/login', replace: true });
     } catch (e: any) {
-      if (e.to || e.redirect) throw e;
+      if (e.to || e.redirect || e.status === 307 || e.status === 302) throw e;
       console.error('[AdminGuard] Error verify:', e);
       throw redirect({ to: '/admin/login', replace: true });
     }
