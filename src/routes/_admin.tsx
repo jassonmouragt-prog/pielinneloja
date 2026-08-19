@@ -13,14 +13,31 @@ export const Route = createFileRoute('/_admin')({
     if (typeof window === 'undefined') return;
 
     // 1. Get current session with a small retry logic for hydration
-    let { data: { session } } = await supabase.auth.getSession();
+    let sessionResponse = await supabase.auth.getSession();
+    let session = sessionResponse.data.session;
     
     // Fallback: If no session from client, wait a bit and try one more time 
     // to handle hydration race conditions on some browsers/machines
     if (!session) {
-      await new Promise(resolve => setTimeout(resolve, 150));
-      const secondCheck = await supabase.auth.getSession();
-      session = secondCheck.data.session;
+      await new Promise(resolve => setTimeout(resolve, 300));
+      sessionResponse = await supabase.auth.getSession();
+      session = sessionResponse.data.session;
+    }
+
+    // Secondary fallback: check localStorage directly if Supabase is being stubborn
+    if (!session && typeof localStorage !== 'undefined') {
+      const storageKey = Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+      const sessionStr = storageKey ? localStorage.getItem(storageKey) : null;
+      if (sessionStr) {
+        try {
+          const localSession = JSON.parse(sessionStr);
+          if (localSession && localSession.access_token) {
+            session = localSession;
+          }
+        } catch (e) {
+          console.error('[AdminGuard] Error parsing fallback session:', e);
+        }
+      }
     }
 
     if (!session) {

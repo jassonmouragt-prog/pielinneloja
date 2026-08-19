@@ -47,6 +47,10 @@ function AdminLoginPage() {
 
       if (error) {
         console.error('Erro no signInWithPassword:', error)
+        // Se for erro de credenciais, avisar claramente
+        if (error.message === 'Invalid login credentials') {
+          throw new Error('E-mail ou senha incorretos. Verifique suas credenciais.');
+        }
         throw error
       }
 
