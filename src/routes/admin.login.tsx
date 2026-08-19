@@ -111,7 +111,6 @@ function AdminLoginPage() {
       }
     } catch (error: any) {
       console.error('Erro capturado no login:', error)
-      updateDebugInfo(error.message || 'Erro desconhecido');
       toast.error(error.message || 'Erro ao realizar login')
     } finally {
       setIsLoading(false)
