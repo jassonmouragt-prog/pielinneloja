@@ -33,6 +33,14 @@ function createSupabaseClient() {
   const SUPABASE_URL = import.meta.env['VITE_SUPABASE_URL'] || process.env['SUPABASE_URL'];
   const SUPABASE_PUBLISHABLE_KEY = import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || process.env['SUPABASE_PUBLISHABLE_KEY'];
 
+  console.log('[Supabase Client Initialization]', {
+    hasUrl: !!SUPABASE_URL,
+    hasKey: !!SUPABASE_PUBLISHABLE_KEY,
+    url: SUPABASE_URL ? `${SUPABASE_URL.substring(0, 10)}...` : 'undefined',
+    key: SUPABASE_PUBLISHABLE_KEY ? `${SUPABASE_PUBLISHABLE_KEY.substring(0, 10)}...` : 'undefined',
+    isBrowser: typeof window !== 'undefined'
+  });
+
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [
       ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
@@ -40,6 +48,10 @@ function createSupabaseClient() {
     ];
     const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
     console.error(`[Supabase] ${message}`);
+    // No browser, don't throw to avoid crashing SSR entirely if possible, but it will fail later
+    if (typeof window !== 'undefined') {
+      alert(message);
+    }
     throw new Error(message);
   }
 
