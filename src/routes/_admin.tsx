@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link } from '@tanstack/react-router'
 import { supabase } from '@/integrations/supabase/client'
-import { LayoutDashboard, Package, Box, Settings, LogOut, Menu, ShoppingCart } from 'lucide-react'
+import { LayoutDashboard, Package, Box, Settings, LogOut, Menu, ShoppingCart, DollarSign } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet'
@@ -75,6 +75,7 @@ function AdminLayout() {
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
     { label: 'Vendas', icon: ShoppingCart, href: '/admin/vendas' },
+    { label: 'Faturamento', icon: DollarSign, href: '/admin/faturamento' },
     { label: 'Produtos', icon: Package, href: '/admin/produtos' },
     { label: 'Estoque', icon: Box, href: '/admin/estoque' },
     { label: 'Configurações', icon: Settings, href: '/admin/configuracoes' },

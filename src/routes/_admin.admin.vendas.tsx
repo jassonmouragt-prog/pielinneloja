@@ -2,6 +2,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
+import { updateSaleStatus } from '@/lib/sales.functions'
+import { useServerFn } from '@tanstack/react-start'
 import { 
   Table, 
   TableBody, 
@@ -48,6 +50,7 @@ type SaleItem = {
 function SalesPage() {
   const queryClient = useQueryClient();
   const [isNewSaleOpen, setIsNewSaleOpen] = useState(false);
+  const updateStatusFn = useServerFn(updateSaleStatus);
   const [customerName, setCustomerName] = useState('');
   const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -161,6 +164,20 @@ function SalesPage() {
     },
     onError: (error: any) => {
       toast.error('Erro ao registrar venda: ' + error.message);
+    }
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ saleId, status }: { saleId: string, status: 'confirmed' | 'cancelled' }) => {
+      return updateStatusFn({ data: { saleId, status } });
+    },
+    onSuccess: () => {
+      toast.success('Status da venda atualizado!');
+      queryClient.invalidateQueries({ queryKey: ['admin-sales'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+    },
+    onError: (error: any) => {
+      toast.error('Erro ao atualizar status: ' + error.message);
     }
   });
 
@@ -364,9 +381,32 @@ function SalesPage() {
                   </TableCell>
                   <TableCell className="font-medium">R$ {sale.total_amount.toFixed(2)}</TableCell>
                   <TableCell>
-                    <Badge variant={sale.status === 'confirmed' ? 'default' : 'secondary'} className={sale.status === 'confirmed' ? 'bg-green-500 hover:bg-green-600' : ''}>
-                      {sale.status === 'confirmed' ? 'Concluída' : sale.status}
-                    </Badge>
+                    {sale.status === 'pending' ? (
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          variant="secondary" 
+                          className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 cursor-pointer"
+                          onClick={() => updateStatusMutation.mutate({ saleId: sale.id, status: 'confirmed' })}
+                        >
+                          Pendente (Confirmar?)
+                        </Badge>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-6 px-2 text-xs text-red-500"
+                          onClick={() => updateStatusMutation.mutate({ saleId: sale.id, status: 'cancelled' })}
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    ) : (
+                      <Badge 
+                        variant={sale.status === 'confirmed' ? 'default' : 'secondary'} 
+                        className={sale.status === 'confirmed' ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-100 text-gray-800'}
+                      >
+                        {sale.status === 'confirmed' ? 'Concluída' : sale.status === 'cancelled' ? 'Cancelada' : sale.status}
+                      </Badge>
+                    )}
                   </TableCell>
                 </TableRow>
               ))

@@ -54,7 +54,7 @@ function AdminDashboard() {
   });
 
   const cards = [
-    { title: 'Faturamento (Mês)', value: `R$ ${stats?.revenue?.toFixed(2) || '0.00'}`, icon: DollarSign, color: 'text-green-600', onClick: undefined },
+    { title: 'Faturamento (Mês)', value: `R$ ${stats?.revenue?.toFixed(2) || '0.00'}`, icon: DollarSign, color: 'text-green-600', onClick: () => window.location.href = '/admin/faturamento' },
     { title: 'Vendas Confirmadas', value: stats?.confirmedCount || 0, icon: ShoppingCart, color: 'text-blue-600', onClick: undefined },
     { 
       title: 'Estoque Baixo', 
