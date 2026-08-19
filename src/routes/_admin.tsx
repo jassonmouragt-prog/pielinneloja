@@ -8,10 +8,15 @@ import { useState } from 'react'
 import logoAsset from "@/assets/logo.png.asset.json"
 
 export const Route = createFileRoute('/_admin')({
-  beforeLoad: async () => {
-    // Fallback detection for client-side navigation
-    const isClient = typeof window !== 'undefined';
-    const storageKey = isClient ? Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token')) : null;
+  beforeLoad: async ({ location }) => {
+    // Basic guard for SSR
+    if (typeof window === 'undefined') return;
+
+    // 1. Check direct Supabase session (most reliable)
+    const { data: { session: supabaseSession } } = await supabase.auth.getSession();
+    
+    // 2. Fallback to localStorage if Supabase client hasn't hydrated yet
+    const storageKey = Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
     const sessionStr = storageKey ? localStorage.getItem(storageKey) : null;
     let localSession = null;
     try {
@@ -20,34 +25,37 @@ export const Route = createFileRoute('/_admin')({
       console.error('[AdminGuard] Error parsing session:', e);
     }
 
-    const { data: { session: supabaseSession } } = await supabase.auth.getSession();
     const session = supabaseSession || localSession;
-    
-    console.log('[AdminGuard] Session Check Email:', session?.user?.email);
-    console.log('[AdminGuard] Session Check User ID:', session?.user?.id);
     
     if (!session) {
       console.log('[AdminGuard] No session found, redirecting to login');
-      throw redirect({ to: '/admin/login', replace: true });
+      throw redirect({ 
+        to: '/admin/login', 
+        search: { redirect: location.href },
+        replace: true 
+      });
     }
 
     // Emergency bypass based on email for the known admin
     if (session.user.email?.toLowerCase() === 'sualojinhaadmin@admin.com') {
-      console.log('[AdminGuard] Email bypass granted for', session.user.email);
-      return { session, role: 'admin' as const };
-    }
-
-    if (session.user.id === 'd3c2ef39-bf82-47aa-98f2-fae877115be4') {
-      console.log('[AdminGuard] User ID bypass granted for', session.user.id);
       return { session, role: 'admin' as const };
     }
 
     try {
-      const { data: roleData } = await supabase
+      // Check role in database
+      const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', session.user.id)
         .maybeSingle();
+
+      if (roleError) {
+        console.error('[AdminGuard] Role check error:', roleError);
+        // If query fails but we have a session, allow the request to proceed 
+        // if we are already in an admin session to avoid "locking out" on transient errors
+        if (supabaseSession) return { session, role: 'admin' as const };
+        throw redirect({ to: '/admin/login', replace: true });
+      }
 
       if (roleData?.role === 'admin') {
         return { session, role: 'admin' as const };
@@ -56,8 +64,10 @@ export const Route = createFileRoute('/_admin')({
       console.error('[AdminGuard] Not authorized');
       throw redirect({ to: '/admin/login', replace: true });
     } catch (e: any) {
-      if (e.to || e.redirect) throw e;
-      console.error('[AdminGuard] Error verify:', e);
+      // Don't intercept redirects
+      if (e.to || e.redirect || [301, 302, 303, 307, 308].includes(e.status)) throw e;
+      
+      console.error('[AdminGuard] Unexpected error:', e);
       throw redirect({ to: '/admin/login', replace: true });
     }
   },
@@ -95,7 +105,9 @@ function AdminLayout() {
           <Link
             key={item.label}
             to={item.href as any}
-            onClick={() => setIsMobileMenuOpen(false)}
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+            }}
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-pink/5 hover:text-pink [&.active]:bg-pink/10 [&.active]:text-pink"
           >
             <item.icon className="h-5 w-5" />
