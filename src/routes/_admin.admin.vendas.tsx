@@ -416,7 +416,7 @@ function SalesPage() {
                       <DialogTrigger asChild>
                         <Button variant="ghost" size="sm">Ver Detalhes</Button>
                       </DialogTrigger>
-                      <DialogContent>
+                      <DialogContent className="w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>Detalhes da Venda</DialogTitle>
                         </DialogHeader>

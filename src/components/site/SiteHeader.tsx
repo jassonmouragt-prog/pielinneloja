@@ -42,7 +42,7 @@ export function SiteHeader() {
               alt="Sua Lojinha Maakeup"
               width={200}
               height={147}
-              className="h-12 w-auto lg:h-[68px]"
+              className="h-10 w-auto sm:h-12 lg:h-[68px]"
             />
           </Link>
 

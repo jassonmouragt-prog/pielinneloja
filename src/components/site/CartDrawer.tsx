@@ -120,7 +120,7 @@ export function CartDrawer() {
           )}
         </button>
       </SheetTrigger>
-      <SheetContent className="flex w-full flex-col p-0 sm:max-w-md z-[100]" side="right">
+      <SheetContent className="flex w-full flex-col p-0 sm:max-w-md z-[100] max-h-screen overflow-y-auto" side="right">
         <SheetHeader className="border-b px-6 py-4">
           <SheetTitle className="flex items-center gap-2 text-pink">
             <ShoppingBag className="size-5" />

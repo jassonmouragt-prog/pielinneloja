@@ -115,7 +115,7 @@ export function Products({ products: initialProducts }: { products?: any[] }) {
                     </div>
                   </div>
                 </div>
-                <h3 className="mt-4 text-[13px] leading-snug font-medium text-foreground">
+                <h3 className="mt-4 text-[12px] sm:text-[13px] leading-snug font-medium text-foreground line-clamp-2 min-h-[3em]">
                   {product.name}
                   <br />
                   <span className="text-muted-foreground font-normal">{product.subtitle || ''}</span>
