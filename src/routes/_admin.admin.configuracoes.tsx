@@ -308,14 +308,14 @@ function AdminSettingsPage() {
                   <div className="flex items-center gap-3">
                     <div 
                       className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden border border-border"
-                      style={{ backgroundColor: `${cat.tone}1A` }}
+                      style={{ backgroundColor: cat.tone ? `${cat.tone}1A` : undefined }}
                     >
                       {cat.image_url ? (
                         <img src={cat.image_url} alt={cat.name} className="w-full h-full object-contain" />
                       ) : (
                         <div 
                           className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: cat.tone }} 
+                          style={{ backgroundColor: cat.tone || '#FF69B4' }} 
                         />
                       )}
                     </div>
