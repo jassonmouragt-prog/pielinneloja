@@ -217,6 +217,7 @@ function SalesPage() {
   };
 
   const exportToCSV = () => {
+    if (typeof window === 'undefined') return;
     if (!sales || sales.length === 0) {
       toast.error('Não há vendas para exportar');
       return;
@@ -242,10 +243,9 @@ function SalesPage() {
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.body.appendChild(document.createElement('a'));
     link.setAttribute('href', url);
     link.setAttribute('download', `vendas_${format(new Date(), 'dd-MM-yyyy')}.csv`);
-    document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     toast.success('Relatório exportado com sucesso!');
