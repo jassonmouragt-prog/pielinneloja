@@ -465,6 +465,107 @@ function AdminProductsPage() {
                       </FormItem>
                     )}
                   />
+
+                  {/* Variações */}
+                  <div className="col-span-full space-y-4 border-t pt-4">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-semibold flex items-center gap-2">
+                        <Tag className="size-4" />
+                        Variações do Produto (Ex: Cor, Tamanho, Tipo)
+                      </label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const current = form.getValues('variations') || [];
+                          form.setValue('variations', [...current, { name: '', options: [''] }]);
+                        }}
+                      >
+                        <Plus className="size-4 mr-1" />
+                        Add Variação
+                      </Button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {form.watch('variations')?.map((variation, vIndex) => (
+                        <div key={vIndex} className="p-4 rounded-lg border bg-muted/30 relative space-y-4">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-2 top-2 text-muted-foreground hover:text-destructive"
+                            onClick={() => {
+                              const current = form.getValues('variations') || [];
+                              form.setValue('variations', current.filter((_, i) => i !== vIndex));
+                            }}
+                          >
+                            <X className="size-4" />
+                          </Button>
+
+                          <div className="space-y-2">
+                            <Label>Nome da Variação (Ex: Cor)</Label>
+                            <Input
+                              placeholder="Nome da variação..."
+                              value={variation.name}
+                              onChange={(e) => {
+                                const current = form.getValues('variations') || [];
+                                if (current[vIndex]) {
+                                  current[vIndex].name = e.target.value;
+                                  form.setValue('variations', [...current]);
+                                }
+                              }}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Opções (Separe por vírgula ou adicione individualmente)</Label>
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {variation.options.map((opt, oIndex) => (
+                                <div key={oIndex} className="flex items-center gap-1 bg-white border rounded-md pl-2 pr-1 py-1">
+                                  <span className="text-xs">{opt}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const current = form.getValues('variations') || [];
+                                      if (current[vIndex]) {
+                                        current[vIndex].options = current[vIndex].options.filter((_, i) => i !== oIndex);
+                                        form.setValue('variations', [...current]);
+                                      }
+                                    }}
+                                    className="text-muted-foreground hover:text-destructive"
+                                  >
+                                    <X className="size-3" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="flex gap-2">
+                              <Input
+                                placeholder="Nova opção..."
+                                className="h-8"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    const val = e.currentTarget.value.trim();
+                                    if (val) {
+                                      const current = form.getValues('variations') || [];
+                                      if (current[vIndex] && !current[vIndex].options.includes(val)) {
+                                        current[vIndex].options.push(val);
+                                        form.setValue('variations', [...current]);
+                                      }
+                                      e.currentTarget.value = '';
+                                    }
+                                  }
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="col-span-full space-y-2">
                     <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Imagem do Produto</label>
                     <div className="space-y-4">
