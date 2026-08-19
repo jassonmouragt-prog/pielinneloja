@@ -1,8 +1,9 @@
-import { ShoppingBag, X } from "lucide-react";
+import { ShoppingBag, X, Check } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
+import { useState, useEffect } from "react";
 
 interface ProductModalProps {
   product: any;
@@ -12,6 +13,21 @@ interface ProductModalProps {
 
 export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   const { addItem } = useCart();
+  const [selectedVariations, setSelectedVariations] = useState<Record<string, string>>({});
+
+  const variations = Array.isArray(product?.variations) ? product.variations : [];
+
+  useEffect(() => {
+    if (isOpen && variations.length > 0) {
+      const initial: Record<string, string> = {};
+      variations.forEach((v: any) => {
+        if (v.options && v.options.length > 0) {
+          initial[v.name] = v.options[0];
+        }
+      });
+      setSelectedVariations(initial);
+    }
+  }, [isOpen, product]);
 
   if (!product) return null;
 
@@ -24,6 +40,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
       subtitle: product.subtitle || '',
       price: `R$ ${Number(product.price).toFixed(2)}`,
       image: mainImage,
+      selectedVariations: Object.keys(selectedVariations).length > 0 ? selectedVariations : undefined,
     });
     toast.success("Produto adicionado ao carrinho!");
     onClose();
@@ -72,6 +89,39 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                   {product.description || "Sem descrição disponível para este produto."}
                 </p>
               </div>
+
+              {variations.length > 0 && (
+                <div className="space-y-4 py-4 border-t border-border">
+                  {variations.map((variation: any) => (
+                    <div key={variation.name} className="space-y-2">
+                      <label className="text-sm font-semibold text-foreground">
+                        {variation.name}
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {variation.options.map((option: string) => {
+                          const isSelected = selectedVariations[variation.name] === option;
+                          return (
+                            <button
+                              key={option}
+                              onClick={() => setSelectedVariations(prev => ({ ...prev, [variation.name]: option }))}
+                              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                                isSelected
+                                  ? "bg-pink border-pink text-white shadow-sm"
+                                  : "bg-white border-border text-muted-foreground hover:border-pink/50"
+                              }`}
+                            >
+                              <span className="flex items-center gap-1">
+                                {isSelected && <Check className="size-3" />}
+                                {option}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="pt-6 border-t border-border">
                 <Button
