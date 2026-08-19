@@ -34,7 +34,7 @@ export function Categories() {
           </a>
         </Reveal>
 
-        <div className="mt-8 grid grid-cols-3 gap-x-4 gap-y-8 sm:grid-cols-4 lg:grid-cols-7 lg:gap-x-6">
+        <div className="mt-8 grid grid-cols-3 gap-x-3 gap-y-6 xs:grid-cols-4 sm:gap-x-4 sm:gap-y-8 lg:grid-cols-7 lg:gap-x-6">
           {isLoading && (
             <div className="col-span-full flex justify-center py-10">
               <Loader2 className="h-8 w-8 animate-spin text-pink" />
@@ -48,7 +48,7 @@ export function Categories() {
                 className="group block text-center"
               >
                 <div
-                  className="mx-auto grid aspect-square w-full max-w-[112px] place-items-center overflow-hidden rounded-full transition-transform duration-300 group-hover:scale-105"
+                  className="mx-auto grid aspect-square w-full max-w-[80px] xs:max-w-[100px] sm:max-w-[112px] place-items-center overflow-hidden rounded-full transition-transform duration-300 group-hover:scale-105"
                   style={{ backgroundColor: '#E846881A' }}
                 >
                   {(() => {
