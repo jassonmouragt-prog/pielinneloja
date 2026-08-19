@@ -165,53 +165,6 @@ function AdminLoginPage() {
           </CardFooter>
         </form>
       </Card>
-
-      <div className="mt-8 w-full max-w-md">
-        <Card className="bg-slate-900 text-slate-100 border-slate-800">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-mono flex items-center gap-2">
-              <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
-              Painel de Diagnóstico (Admin)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 font-mono text-xs">
-            <div className="flex justify-between border-b border-slate-800 pb-1">
-              <span className="text-slate-400">Status Sessão:</span>
-              <span className={debugInfo.session === 'Ativa' ? 'text-green-400' : 'text-yellow-400'}>
-                {debugInfo.session}
-              </span>
-            </div>
-            <div className="flex justify-between border-b border-slate-800 pb-1">
-              <span className="text-slate-400">Usuário:</span>
-              <span>{debugInfo.user}</span>
-            </div>
-            <div className="flex justify-between border-b border-slate-800 pb-1">
-              <span className="text-slate-400">LocalStorage Key:</span>
-              <span className={debugInfo.storageKey === 'Presente' ? 'text-green-400' : 'text-red-400'}>
-                {debugInfo.storageKey}
-              </span>
-            </div>
-            <div className="flex justify-between border-b border-slate-800 pb-1">
-              <span className="text-slate-400">Cookies:</span>
-              <span>{debugInfo.cookies}</span>
-            </div>
-            {debugInfo.lastError && (
-              <div className="mt-2 p-2 bg-red-900/30 border border-red-800 rounded text-red-200 break-words">
-                <span className="font-bold block mb-1">Último Erro:</span>
-                {debugInfo.lastError}
-              </div>
-            )}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full mt-4 h-7 text-[10px] border-slate-700 hover:bg-slate-800 hover:text-white"
-              onClick={() => updateDebugInfo()}
-            >
-              Atualizar Diagnóstico
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   )
 }
