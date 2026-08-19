@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect, Link } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect, Link, useRouter } from '@tanstack/react-router'
 import { supabase } from '@/integrations/supabase/client'
 import { LayoutDashboard, Package, Box, Settings, LogOut, Menu, ShoppingCart, DollarSign } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -91,6 +91,7 @@ export const Route = createFileRoute('/_admin')({
 })
 
 function AdminLayout() {
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -98,11 +99,18 @@ function AdminLayout() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // Retry session detection to tolerate slow storage hydration on mobile
+        let session = (await supabase.auth.getSession()).data.session;
+        for (let attempt = 1; !session && attempt <= 3; attempt++) {
+          await new Promise(resolve => setTimeout(resolve, 300 * attempt));
+          session = (await supabase.auth.getSession()).data.session;
+        }
+
         if (!session) {
           setIsAuthorized(false);
+          // Safety net: never leave the user on a blank screen — send to login
+          router.navigate({ to: '/admin/login', replace: true });
         } else {
-          // Check role if needed, but beforeLoad already handles initial gate
           setIsAuthorized(true);
         }
       } catch (error) {
@@ -112,7 +120,7 @@ function AdminLayout() {
       }
     };
     checkAuth();
-  }, []);
+  }, [router]);
 
   const handleLogout = async () => {
     if (typeof window !== 'undefined') {
