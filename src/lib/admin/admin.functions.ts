@@ -1,32 +1,38 @@
 import { createServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
+// Authenticated server functions: the middleware injects `context.supabase`
+// (RLS as the signed-in user). Never import the browser supabase client or
+// client.server at module scope of a *.functions.ts file.
 export const getAdminProfile = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
 
     const { data: roleData } = await supabase
       .from('user_roles')
       .select('role')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single();
 
     if (roleData?.role !== 'admin') return null;
 
+    const { data: { user } } = await supabase.auth.getUser();
     return { user, role: roleData.role };
   });
 
 export const updateProductStock = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator((data: unknown) => z.object({
     productId: z.string(),
     quantity: z.number(),
     type: z.string(),
     notes: z.string().optional()
   }).parse(data))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const { productId, quantity, type, notes } = data;
+    const { supabase } = context;
     
     const { data: product } = await supabase
       .from('products')
