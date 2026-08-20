@@ -1,6 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { z } from "zod";
+
+// Server-only admin client (service role). MUST be loaded dynamically inside
+// each handler — a top-level import ships this module to the client bundle
+// (this file is imported by route files and CartDrawer) and breaks the
+// published build at runtime.
+async function getSupabaseAdmin() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
+}
 
 export const registerPendingSale = createServerFn({ method: "POST" })
   .validator((data: unknown) => z.object({
@@ -16,6 +24,7 @@ export const registerPendingSale = createServerFn({ method: "POST" })
   }).parse(data))
   .handler(async ({ data }) => {
     const { customerName, totalAmount, whatsappMessage, items } = data;
+    const supabaseAdmin = await getSupabaseAdmin();
 
     const { data: sale, error: saleError } = await supabaseAdmin
       .from('sales')
@@ -54,6 +63,7 @@ export const updateSaleStatus = createServerFn({ method: "POST" })
   }).parse(data))
   .handler(async ({ data }) => {
     const { saleId, status } = data;
+    const supabaseAdmin = await getSupabaseAdmin();
 
     const { data: sale, error: saleError } = await supabaseAdmin
       .from('sales')
@@ -100,6 +110,8 @@ export const updateSaleStatus = createServerFn({ method: "POST" })
 
 export const resetAllSales = createServerFn({ method: "POST" })
   .handler(async () => {
+    const supabaseAdmin = await getSupabaseAdmin();
+
     // 1. Delete all sale items
     const { error: itemsError } = await supabaseAdmin
       .from('sale_items')
