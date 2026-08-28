@@ -127,9 +127,14 @@ export function Products({ products: initialProducts }: { products?: any[] }) {
                     <Stars rating={4.5} />
                     <span className="text-[11px] text-muted-foreground">(120)</span>
                   </div>
-                  <p className="mt-2 text-sm font-bold text-foreground">
-                    R$ {Number(product.price).toFixed(2)}
-                  </p>
+                  <div className="mt-2 flex items-baseline gap-1.5">
+                    <span className="text-sm font-bold text-foreground">
+                      R$ {Number(product.price).toFixed(2)}
+                    </span>
+                    <span className="text-[10px] font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
+                      no Pix
+                    </span>
+                  </div>
                   <button
                     onClick={(e) => handleAddToCart(e, product)}
                     className="mt-3 flex w-full items-center justify-center gap-2 rounded-md gradient-pink px-3 py-2 text-[11px] font-semibold text-primary-foreground transition-opacity duration-300 hover:opacity-90 cursor-pointer"

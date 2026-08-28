@@ -1,12 +1,13 @@
 export const navLinks = [
-  "Maquiagem",
+  "Pele",
+  "Olhos",
+  "Lábios",
+  "Sobrancelhas",
+  "Perfumaria",
   "Skincare",
   "Cabelos",
   "Corpo",
   "Acessórios",
-  "Kits",
-  "Novidades",
-  "Promoções",
 ];
 
 export const footerColumns = [
@@ -32,6 +33,6 @@ export const footerColumns = [
   },
   {
     title: "Categorias",
-    links: ["Maquiagem", "Skincare", "Cabelos", "Corpo", "Acessórios", "Kits"],
+    links: ["Pele", "Olhos", "Lábios", "Sobrancelhas", "Perfumaria", "Skincare", "Cabelos", "Corpo", "Acessórios"],
   },
 ];

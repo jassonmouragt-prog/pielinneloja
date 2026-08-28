@@ -29,7 +29,7 @@ export function SiteHeader() {
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 overflow-x-auto px-4 py-2.5 whitespace-nowrap sm:px-6">
           <span className="flex items-center gap-1.5 font-bold">
             <Truck className="size-3.5 shrink-0 text-pink" />
-            PREÇO ÚNICO: R$10, R$15 e R$20
+            PREÇO FIXO: R$10, R$15 e R$20
           </span>
         </div>
       </div>

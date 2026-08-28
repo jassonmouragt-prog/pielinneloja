@@ -82,16 +82,19 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-baseline gap-2 flex-wrap">
                 <span className="text-2xl font-bold text-pink">
                   R$ {Number(product.price).toFixed(2)}
                 </span>
-                {stock <= 5 && stock > 0 && (
-                  <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                    Apenas {stock} em estoque
-                  </span>
-                )}
+                <span className="text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
+                  💰 no Pix
+                </span>
               </div>
+              {stock <= 5 && stock > 0 && (
+                <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                  Apenas {stock} em estoque
+                </span>
+              )}
 
               <div className="prose prose-sm text-muted-foreground">
                 <p className="leading-relaxed">

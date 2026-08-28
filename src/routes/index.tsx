@@ -8,6 +8,7 @@ import { KitsBanner } from "@/components/site/KitsBanner";
 import { Products } from "@/components/site/Products";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
+import { TopSelling } from "@/components/site/TopSelling";
 
 const title = "Sua Lojinha Maakeup | Maquiagem e Beleza com Preço que Você Ama";
 const description =
@@ -36,6 +37,7 @@ function Index() {
         <Benefits />
         <Categories />
         <Products />
+        <TopSelling />
         <KitsBanner />
         <InstagramSection />
       </main>

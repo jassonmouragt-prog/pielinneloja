@@ -15,6 +15,7 @@
     "db:studio": "drizzle-kit studio",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:bootstrap": "tsx scripts/bootstrap.ts",
+    "db:reseed-categories": "tsx scripts/reseed-categories.ts",
     "assets:upload": "tsx scripts/upload-static-assets.ts"
   },
   "dependencies": {
