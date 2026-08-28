@@ -4,10 +4,23 @@ import { db, schema } from "@/db/client";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "@/lib/auth/auth-middleware";
 import { uploadFile, deleteFile } from "@/lib/storage/r2";
-import { randomUUID } from "node:crypto";
 
 const PRODUCT_KEY_PREFIX = "products";
 const CATEGORY_KEY_PREFIX = "categories";
+
+function generateUUID(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
+function base64ToBytes(b64: string): Uint8Array {
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
 
 export const deleteProduct = createServerFn({ method: "POST" })
   .middleware([requireAuth])
@@ -92,7 +105,7 @@ export const upsertProduct = createServerFn({ method: "POST" })
     if (data.imageBase64 && data.imageContentType && data.imageFileName && productId) {
       const ext = data.imageFileName.split(".").pop() ?? "bin";
       const key = `${PRODUCT_KEY_PREFIX}/${productId}-${Date.now()}.${ext}`;
-      const buffer = Buffer.from(data.imageBase64, "base64");
+      const buffer = base64ToBytes(data.imageBase64);
       const uploaded = await uploadFile(key, buffer, data.imageContentType);
       const oldImages = await tx
         .select()
@@ -134,8 +147,8 @@ export const upsertCategory = createServerFn({ method: "POST" })
     let imageUrl: string | null = null;
     if (data.imageBase64 && data.imageContentType && data.imageFileName) {
       const ext = data.imageFileName.split(".").pop() ?? "bin";
-      const key = `${CATEGORY_KEY_PREFIX}/${randomUUID()}.${ext}`;
-      const buffer = Buffer.from(data.imageBase64, "base64");
+      const key = `${CATEGORY_KEY_PREFIX}/${generateUUID()}.${ext}`;
+      const buffer = base64ToBytes(data.imageBase64);
       const uploaded = await uploadFile(key, buffer, data.imageContentType);
       imageUrl = uploaded.key;
     }

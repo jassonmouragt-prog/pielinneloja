@@ -58,7 +58,8 @@ export async function verifySessionToken(token: string): Promise<SessionClaims |
     });
     if (!payload.sub || !payload["email"] || !payload["role"]) return null;
     return payload as SessionClaims;
-  } catch {
+  } catch (e) {
+    console.warn("[auth] verifySessionToken failed", e instanceof Error ? e.message : e);
     return null;
   }
 }

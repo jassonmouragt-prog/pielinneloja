@@ -1,99 +1,72 @@
-import { createFileRoute, Outlet, redirect, Link, useRouter } from "@tanstack/react-router";
-import {
-  LayoutDashboard,
-  Package,
-  Box,
-  Settings,
-  LogOut,
-  Menu,
-  ShoppingCart,
-  DollarSign,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useState, useEffect } from "react";
+import { createFileRoute, Outlet, redirect, Link, useRouter } from '@tanstack/react-router'
+import { LayoutDashboard, Package, Box, Settings, LogOut, Menu, ShoppingCart, DollarSign } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { useState, useEffect } from 'react'
 import logoAsset from "@/assets/logo.png.asset.json"
-import { resolveAssetUrl } from "@/lib/assets";
-import { toast } from "sonner";
-import { useServerFn } from "@tanstack/react-start";
-import { getCurrentSession, tokenStorage } from "@/lib/auth/auth.functions";
+import { resolveAssetUrl } from "@/lib/assets"
+import { toast } from 'sonner'
+import { useServerFn } from '@tanstack/react-start'
+import { getCurrentSession } from '@/lib/auth/auth.functions'
+import { tokenStorage } from '@/lib/auth/token-storage'
 
-export const Route = createFileRoute("/_admin")({
+export const Route = createFileRoute('/_admin')({
   beforeLoad: async ({ location }) => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
 
-    try {
-      const token = tokenStorage.get();
-      if (!token) {
-        throw redirect({ to: "/admin/login", search: { redirect: location.href }, replace: true });
-      }
-
-      let session: Awaited<ReturnType<typeof getCurrentSession>> | null = null;
-      for (let attempt = 1; attempt <= 4; attempt++) {
-        try {
-          session = await getCurrentSession();
-          if (session) break;
-        } catch (e) {
-          // ignore and retry
-        }
-        if (!session && attempt < 4) {
-          await new Promise((r) => setTimeout(r, 350 * attempt));
-        }
-      }
-
-      if (!session || session.role !== "admin") {
-        tokenStorage.clear();
-        throw redirect({ to: "/admin/login", replace: true });
-      }
-
-      return { session, role: "admin" as const };
-    } catch (e: any) {
-      if (e?.isRedirect || e?.to || e?.redirect) throw e;
-      throw redirect({ to: "/admin/login", replace: true });
+    const token = tokenStorage.get();
+    if (!token) {
+      throw redirect({ to: '/admin/login', search: { redirect: location.href }, replace: true });
     }
   },
   component: AdminLayout,
-});
+})
 
 function AdminLayout() {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const getCurrentSessionFn = useServerFn(getCurrentSession);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const session = await getCurrentSession();
-        if (!session || session.role !== "admin") {
+        const session = await getCurrentSessionFn();
+        if (!session || session.role !== 'admin') {
+          tokenStorage.clear();
           setIsAuthorized(false);
-          router.navigate({ to: "/admin/login", replace: true });
+          toast.error('Sessão expirada ou inválida. Faça login novamente.');
+          router.navigate({ to: '/admin/login', replace: true });
         } else {
           setIsAuthorized(true);
         }
       } catch (error) {
-        console.error("Error checking auth in layout:", error);
+        console.error('[admin layout] checkAuth failed', error);
+        tokenStorage.clear();
+        setIsAuthorized(false);
+        router.navigate({ to: '/admin/login', replace: true });
       } finally {
         setIsLoading(false);
       }
     };
     checkAuth();
-  }, [router]);
+  }, [router, getCurrentSessionFn]);
 
-  const handleLogout = async () => {
-    if (typeof window !== "undefined") {
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
       tokenStorage.clear();
-      window.location.href = "/admin/login";
+      window.location.href = '/admin/login';
     }
   };
 
   const navItems = [
-    { label: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard" },
-    { label: "Vendas", icon: ShoppingCart, href: "/admin/vendas" },
-    { label: "Faturamento", icon: DollarSign, href: "/admin/faturamento" },
-    { label: "Produtos", icon: Package, href: "/admin/produtos" },
-    { label: "Estoque", icon: Box, href: "/admin/estoque" },
-    { label: "Configurações", icon: Settings, href: "/admin/configuracoes" },
+    { label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
+    { label: 'Vendas', icon: ShoppingCart, href: '/admin/vendas' },
+    { label: 'Faturamento', icon: DollarSign, href: '/admin/faturamento' },
+    { label: 'Produtos', icon: Package, href: '/admin/produtos' },
+    { label: 'Estoque', icon: Box, href: '/admin/estoque' },
+    { label: 'Configurações', icon: Settings, href: '/admin/configuracoes' },
   ];
 
   const SidebarContent = () => (
@@ -109,9 +82,7 @@ function AdminLayout() {
           <Link
             key={item.label}
             to={item.href as any}
-            onClick={() => {
-              setIsMobileMenuOpen(false);
-            }}
+            onClick={() => { setIsMobileMenuOpen(false); }}
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-pink/5 hover:text-pink [&.active]:bg-pink/10 [&.active]:text-pink"
           >
             <item.icon className="h-5 w-5" />
@@ -143,7 +114,7 @@ function AdminLayout() {
     );
   }
 
-  if (!isAuthorized && typeof window !== "undefined") {
+  if (!isAuthorized) {
     return null;
   }
 
@@ -177,5 +148,5 @@ function AdminLayout() {
         </div>
       </main>
     </div>
-  );
+  )
 }

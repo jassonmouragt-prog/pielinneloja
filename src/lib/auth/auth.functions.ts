@@ -1,9 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { authenticateUser, signSessionToken, hashPassword, isAdminEmail } from "@/lib/auth/auth";
+import { getRequest } from "@tanstack/react-start/server";
+import {
+  authenticateUser,
+  signSessionToken,
+  hashPassword,
+  isAdminEmail,
+  verifySessionToken,
+  getUserRole,
+} from "@/lib/auth/auth";
 import { db, schema } from "@/db/client";
 import { eq } from "drizzle-orm";
-import { tokenStorage } from "@/lib/auth/auth-attacher";
+import { tokenStorage } from "@/lib/auth/token-storage";
 
 export const signIn = createServerFn({ method: "POST" })
   .validator((data: unknown) =>
@@ -23,6 +31,17 @@ export const signIn = createServerFn({ method: "POST" })
       throw new Error("Acesso negado. Apenas administradores podem acessar esta área.");
     }
 
+    if (user.role !== "admin" && adminByEmail) {
+      try {
+        await db
+          .insert(schema.userRoles)
+          .values({ userId: user.id, role: "admin" })
+          .onConflictDoNothing();
+      } catch (e) {
+        console.warn("[auth] failed to ensure admin role for hardcoded admin email", e);
+      }
+    }
+
     const token = await signSessionToken({
       id: user.id,
       email: user.email,
@@ -35,22 +54,27 @@ export const signIn = createServerFn({ method: "POST" })
     };
   });
 
-export const getCurrentSession = createServerFn({ method: "GET" }).handler(async () => {
-  const { getRequest } = await import("@tanstack/react-start/server");
-  const request = getRequest();
-  const authHeader = request?.headers.get("authorization");
-  if (!authHeader?.startsWith("Bearer ")) return null;
-  const token = authHeader.replace("Bearer ", "");
-  const { verifySessionToken, getUserRole } = await import("@/lib/auth/auth");
-  const claims = await verifySessionToken(token);
-  if (!claims) return null;
-  const role = await getUserRole(claims.sub);
-  return {
-    userId: claims.sub,
-    email: claims.email,
-    role: role ?? "user",
-  };
-});
+export const getCurrentSession = createServerFn({ method: "GET" }).handler(
+  async () => {
+    try {
+      const request = getRequest();
+      const authHeader = request?.headers.get("authorization");
+      if (!authHeader?.startsWith("Bearer ")) return null;
+      const token = authHeader.replace("Bearer ", "");
+      const claims = await verifySessionToken(token);
+      if (!claims) return null;
+      const role = await getUserRole(claims.sub);
+      return {
+        userId: claims.sub,
+        email: claims.email,
+        role: role ?? "user",
+      };
+    } catch (e) {
+      console.warn("[auth] getCurrentSession failed", e);
+      return null;
+    }
+  },
+);
 
 export const bootstrapAdmin = createServerFn({ method: "POST" })
   .validator((data: unknown) =>
@@ -74,7 +98,10 @@ export const bootstrapAdmin = createServerFn({ method: "POST" })
       return { ok: true, created: false, userId: found.id };
     }
     const passwordHash = await hashPassword(data.password);
-    const inserted = await db.insert(schema.users).values({ email, passwordHash }).returning();
+    const inserted = await db
+      .insert(schema.users)
+      .values({ email, passwordHash })
+      .returning();
     const user = inserted[0];
     if (!user) throw new Error("Failed to create user");
     await db.insert(schema.userRoles).values({ userId: user.id, role: "admin" });

@@ -1,8 +1,8 @@
-import { createFileRoute, redirect, useRouter, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { createFileRoute, redirect, useRouter, Link } from '@tanstack/react-router'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Card,
   CardContent,
@@ -10,28 +10,25 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+} from '@/components/ui/card';
+import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
 import logoAsset from "@/assets/logo.png.asset.json"
-import { resolveAssetUrl } from "@/lib/assets";
-import { useServerFn } from "@tanstack/react-start";
-import { signIn, getCurrentSession, tokenStorage } from "@/lib/auth/auth.functions";
+import { resolveAssetUrl } from "@/lib/assets"
+import { useServerFn } from '@tanstack/react-start'
+import { signIn } from '@/lib/auth/auth.functions'
+import { tokenStorage } from '@/lib/auth/token-storage'
 
-export const Route = createFileRoute("/admin/login")({
+export const Route = createFileRoute('/admin/login')({
   beforeLoad: async () => {
-    if (typeof window === "undefined") return;
-    try {
-      const session = await getCurrentSession();
-      if (session && session.role === "admin") {
-        throw redirect({ to: "/admin/dashboard" });
-      }
-    } catch (e: any) {
-      if (e?.isRedirect) throw e;
+    if (typeof window === 'undefined') return;
+    const token = tokenStorage.get();
+    if (token) {
+      throw redirect({ to: '/admin/dashboard' });
     }
   },
   component: AdminLoginPage,
-});
+})
 
 function parseLoginError(error: any): string {
   if (!error) return "Erro ao realizar login. Tente novamente.";
@@ -82,10 +79,8 @@ function AdminLoginPage() {
       tokenStorage.set(result.token);
       toast.success("Login realizado com sucesso!");
 
-      setTimeout(async () => {
-        await router.invalidate();
-        router.navigate({ to: "/admin/dashboard" });
-      }, 100);
+      await router.invalidate();
+      router.navigate({ to: '/admin/dashboard' });
     } catch (error: any) {
       console.error("Erro no login:", error);
       const message = parseLoginError(error);
@@ -144,5 +139,5 @@ function AdminLoginPage() {
         </form>
       </Card>
     </div>
-  );
+  )
 }
