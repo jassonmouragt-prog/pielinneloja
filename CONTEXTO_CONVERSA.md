@@ -1,6 +1,6 @@
 # Contexto da Conversa - Projeto Sua Lojinha Maakeup
 
-> Documento de continuidade. **Atualizado em 28/08/2026**.
+> Documento de continuidade. **Atualizado em 28/08/2026** (2ª sessão: variações, despesas, estoque).
 > Este arquivo é o "estado atual" do projeto. Toda vez que a conversa for retomada, leia este arquivo primeiro.
 
 ---
@@ -357,4 +357,107 @@ vercel --force
 
 ---
 
-**Última atualização:** 28/08/2026 - Todas as mudanças da cliente aplicadas, projeto funcional localmente, aguardando deploy.
+## 9. Variações + Estoque + Despesas (sessão 2)
+
+### 9.1 Tabelas adicionadas (migration 0001)
+- **`product_variations`**: id, product_id → products, variation_name, option_value, **stock individual**, sort_order, timestamps
+  - UNIQUE INDEX em (product_id, variation_name, option_value)
+- **`expenses`**: id, type (enum), description, amount, expense_date, notes, timestamps
+  - INDEX em type e expense_date
+- Enums adicionados:
+  - `expense_type`: funcionaria | fornecedores | agua | luz | internet | aluguel | marketing | impostos | outros
+
+### 9.2 Server functions novas
+- `src/lib/product-variations.queries.ts`:
+  - `listProductVariations({ productId })` — lista variações
+  - `syncProductVariations({ productId, variations })` — apaga todas e recria (transação); soma estoque total no `products.stockQuantity`
+  - `getProductWithVariations({ productId })` — busca produto + variações agrupadas
+- `src/lib/expenses.queries.ts`:
+  - `listExpenses({ type?, from?, to?, limit? })`
+  - `createExpense({ type, description, amount, expenseDate?, notes? })`
+  - `deleteExpense({ id })`
+  - `getExpensesSummary({ from?, to? })` — agrupado por tipo
+- Adicionado em `src/lib/queries.queries.ts`:
+  - `getDashboardSummary()` — retorna `{ revenue, totalExpenses, netProfit, confirmedCount, pendingCount }` do mês atual
+
+### 9.3 Comportamento do admin de produtos
+- `src/routes/_admin.admin.produtos.tsx`:
+  - Form de variações atualizado: cada opção tem input de **estoque individual**
+  - Ao salvar: `upsertProduct` → `syncProductVariations` (sincroniza variações + atualiza estoque total)
+  - Ao editar: `loadProductVariations(productId)` carrega as variações do banco pro form
+- `src/routes/_admin.admin.despesas.tsx` (página `/admin/despesas`):
+  - 1 card: "Despesas deste mês" (sem cards extras de tipo)
+  - Filtros: **Mês** (mês atual + últimos 12 meses) + **Tipo** (9 opções)
+  - Botão "Limpar filtros" quando algum filtro está ativo
+  - Tabela com data, tipo (com ícone + cor), descrição, valor, ações
+  - Modal de criação com 9 tipos no select, cada um com ícone e cor
+
+### 9.4 Comportamento do site público
+- `src/components/site/Products.tsx`:
+  - Cards **abrem modal ao clicar** (não mais hover-only) — mobile-friendly
+  - Hover: scale 105% na imagem + scale 0.98 no active (feedback tátil)
+- `src/components/site/ProductModal.tsx`:
+  - **Seletor de variações obrigatório** se o produto tem variações
+  - Cada opção mostra: nome + **"X em estoque"** abaixo
+    - Cor normal: cinza
+    - Estoque baixo (≤3): amarelo
+    - Esgotado (0): vermelho + "Esgotado" + ícone de X + **line-through** + cursor not-allowed + disabled
+  - Botão "Adicionar" desabilitado se: faltam opções OU alguma selecionada está esgotada
+  - Aviso dinâmico "X em estoque" ou "Apenas X em estoque" (≤3) abaixo do preço
+  - **Seletor de quantidade** com `−` `quantidade` `+` limitado ao estoque da seleção
+  - Botão mostra "Adicionar X ao carrinho" quando quantity > 1
+- `src/hooks/useCart.ts`:
+  - `addItem(product, quantity?)` agora aceita quantidade (default 1)
+  - Persistência via Zustand (localStorage) com `cart-storage`
+
+### 9.5 Backend updates importantes
+- `src/lib/queries.queries.ts` — `listPublicProducts`:
+  - Faz JOIN com `product_variations` e injeta `stockByOption: Record<optionValue, stock>` em cada variação
+  - Formato final da variação pro client: `{ name, options, stockByOption }`
+- `src/lib/admin/admin.queries.ts` — `upsertProduct`:
+  - Aceita variations com `options` como `string[]` OU `Array<{value, stock}>` (compatibilidade com produtos antigos)
+  - Faz normalização interna: `o => typeof o === "string" ? o : o.value`
+
+### 9.6 Dashboard atualizado (`/_admin/admin/dashboard`)
+6 cards em grid responsivo:
+1. Faturamento (Mês) - verde - `/admin/faturamento`
+2. Despesas (Mês) - vermelho - `/admin/despesas`
+3. Lucro Líquido ou Prejuízo - verde/vermelho (dinâmico) - `/admin/faturamento`
+4. Vendas Pendentes - amarelo - `/admin/vendas`
+5. Estoque Baixo - vermelho - toggle
+6. Total de Produtos - rosa
+
+### 9.7 Faturamento atualizado (`/_admin/admin/faturamento`)
+- 4 cards: Receita (verde) / Despesas (vermelho) / Lucro (verde-vermelho) / Ticket Médio
+- Gráfico de barras com 3 séries: Receita / Despesas / Lucro
+- Resumo mensal: `+R$ receita / -R$ despesa / =R$ lucro` por mês
+
+### 9.8 Menu lateral admin atualizado
+Links: Dashboard | Vendas | Faturamento | **Despesas** | Produtos | Estoque | Configurações
+
+---
+
+## 10. Padrões de erro comuns (pra evitar)
+
+### 10.1 "variations: 0, options: 0 — Expected string, received object"
+**Causa**: server fn `upsertProduct` esperava `options: string[]` mas o form admin envia `options: { value, stock }[]`
+**Solução**: server fn usa `z.union([z.string(), z.object({...})])` e normaliza internamente
+
+### 10.2 Rotas TanStack Router "not assignable to keyof FileRoutesByPath"
+**Causa**: types do TanStack Router ainda não foram regenerados após criar nova rota
+**Solução**: rodar `npx @tanstack/router-cli generate` OU rodar `tsc --noEmit` que re-gera (deixar o typecheck resolver)
+
+### 10.3 "Type 'any' is missing the following properties"
+**Causa**: schema Zod opcional vs obrigatório. `stock: z.coerce.number().default(0)` gera `stock?: number` mas o form envia `stock: number`
+**Solução**: usar `z.number()` direto (sem `.default()`) quando o form sempre envia o valor
+
+### 10.4 Buffer/Node no client
+**NUNCA** usar `Buffer` ou `node:crypto` em código que vai pro client bundle
+**Sempre** usar `atob` + `Uint8Array` (browser) ou `crypto.randomUUID()` (Web Crypto API)
+
+### 10.5 localStorage no SSR
+**NUNCA** acessar `window.localStorage` direto, sempre via `tokenStorage.get()` que tem guard `typeof window`
+
+---
+
+**Última atualização:** 28/08/2026 - Sessão 2 finalizada (variações com estoque, despesas, lucro líquido, modal melhorado). Commit + push automáticos, aguardando deploy do Vercel.
