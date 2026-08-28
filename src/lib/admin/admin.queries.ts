@@ -58,7 +58,15 @@ export const upsertProduct = createServerFn({ method: "POST" })
           .array(
             z.object({
               name: z.string().min(1),
-              options: z.array(z.string().min(1)),
+              options: z.array(
+                z.union([
+                  z.string().min(1),
+                  z.object({
+                    value: z.string().min(1),
+                    stock: z.number().int().min(0),
+                  }),
+                ]),
+              ),
             }),
           )
           .default([]),
@@ -70,6 +78,11 @@ export const upsertProduct = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { db: tx } = context;
+    const normalizedVariations = data.variations.map((v) => ({
+      name: v.name,
+      options: v.options.map((o) => (typeof o === "string" ? o : o.value)),
+    }));
+
     const payload = {
       name: data.name,
       subtitle: data.subtitle || null,
@@ -78,7 +91,7 @@ export const upsertProduct = createServerFn({ method: "POST" })
       categoryId: data.categoryId || null,
       stockQuantity: data.stockQuantity,
       status: data.status,
-      variations: data.variations,
+      variations: normalizedVariations,
       updatedAt: new Date(),
     };
 

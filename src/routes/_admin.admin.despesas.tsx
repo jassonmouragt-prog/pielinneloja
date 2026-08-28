@@ -48,6 +48,7 @@ function AdminExpensesPage() {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [filterType, setFilterType] = useState<string>("all");
+  const [filterMonth, setFilterMonth] = useState<string>("current");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const listExpensesFn = useServerFn(listExpenses);
@@ -55,19 +56,38 @@ function AdminExpensesPage() {
   const deleteExpenseFn = useServerFn(deleteExpense);
   const getSummaryFn = useServerFn(getExpensesSummary);
 
+  function getMonthRange(monthKey: string): { from?: string; to?: string } {
+    if (monthKey === "current" || !monthKey) return {};
+    const [year, month] = monthKey.split("-").map(Number);
+    if (!year || !month) return {};
+    const firstDay = new Date(year, month - 1, 1);
+    const lastDay = new Date(year, month, 0, 23, 59, 59);
+    return { from: firstDay.toISOString(), to: lastDay.toISOString() };
+  }
+
+  const monthRange = getMonthRange(filterMonth);
+
   const { data: expenses, isLoading } = useQuery({
-    queryKey: ['admin-expenses', filterType],
+    queryKey: ['admin-expenses', filterType, filterMonth],
     queryFn: () =>
       listExpensesFn({
         data: {
           type: filterType === "all" ? undefined : (filterType as any),
+          from: monthRange.from,
+          to: monthRange.to,
         },
       }),
   });
 
   const { data: summary } = useQuery({
-    queryKey: ['admin-expenses-summary'],
-    queryFn: () => getSummaryFn(),
+    queryKey: ['admin-expenses-summary', filterMonth],
+    queryFn: () =>
+      getSummaryFn({
+        data: {
+          from: monthRange.from,
+          to: monthRange.to,
+        },
+      }),
   });
 
   const form = useForm<ExpenseFormValues>({
@@ -141,7 +161,9 @@ function AdminExpensesPage() {
 
       <Card className="bg-red-50/30 border-red-100">
         <CardContent className="pt-4 pb-4">
-          <p className="text-xs text-muted-foreground">Despesas deste mês</p>
+          <p className="text-xs text-muted-foreground">
+            {filterMonth === "current" ? "Despesas deste mês" : "Despesas do período"}
+          </p>
           <p className="text-3xl font-bold text-red-600 mt-1">R$ {totalPeriod.toFixed(2)}</p>
           <p className="text-[10px] text-muted-foreground mt-1">{totalCount} {totalCount === 1 ? "despesa registrada" : "despesas registradas"}</p>
         </CardContent>
@@ -150,31 +172,63 @@ function AdminExpensesPage() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center justify-between">
-            <span>Filtrar por tipo</span>
-            {filterType !== "all" && (
+            <span>Filtros</span>
+            {(filterType !== "all" || filterMonth !== "current") && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setFilterType("all")}
+                onClick={() => {
+                  setFilterType("all");
+                  setFilterMonth("current");
+                }}
                 className="text-xs h-7"
               >
-                Limpar filtro
+                Limpar filtros
               </Button>
             )}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="h-9">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os tipos</SelectItem>
-              {EXPENSE_TYPES.map((t) => (
-                <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs mb-1.5 block">Mês</Label>
+              <Select value={filterMonth} onValueChange={setFilterMonth}>
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="current">Mês atual</SelectItem>
+                  {(() => {
+                    const months: { value: string; label: string }[] = [];
+                    const now = new Date();
+                    for (let i = 1; i <= 12; i++) {
+                      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                      const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+                      const label = d.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+                      months.push({ value, label: label.charAt(0).toUpperCase() + label.slice(1) });
+                    }
+                    return months.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    ));
+                  })()}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs mb-1.5 block">Tipo</Label>
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
+                  {EXPENSE_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
