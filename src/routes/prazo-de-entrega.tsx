@@ -1,12 +1,10 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { InstitutionalLayout } from '@/components/site/InstitutionalLayout'
+import { createFileRoute } from "@tanstack/react-router";
+import { InstitutionalLayout } from "@/components/site/InstitutionalLayout";
 
-export const Route = createFileRoute('/prazo-de-entrega')({
+export const Route = createFileRoute("/prazo-de-entrega")({
   component: () => (
     <InstitutionalLayout title="Prazo de Entrega">
-      <p>
-        Entregamos em todo o Brasil! O prazo varia de acordo com a sua região:
-      </p>
+      <p>Entregamos em todo o Brasil! O prazo varia de acordo com a sua região:</p>
       <div className="mt-8 overflow-hidden rounded-lg border border-pink/20">
         <table className="w-full text-sm text-left">
           <thead className="bg-cream text-foreground uppercase text-[10px] font-bold">
@@ -29,4 +27,4 @@ export const Route = createFileRoute('/prazo-de-entrega')({
       </div>
     </InstitutionalLayout>
   ),
-})
+});

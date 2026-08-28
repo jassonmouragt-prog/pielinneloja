@@ -1,206 +1,182 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
-import { supabase } from '@/integrations/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Trash2, Loader2, Save, Upload, Pencil, AlertCircle } from 'lucide-react'
-import { resetAllSales } from '@/lib/sales.functions'
-import { useServerFn } from '@tanstack/react-start'
-import { useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import * as z from 'zod'
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus, Trash2, Loader2, Save, Upload, Pencil, AlertCircle } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { resetAllSales } from "@/lib/sales.functions";
+import { upsertCategory, deleteCategory, listCategoriesAdmin } from "@/lib/admin/admin.queries";
+import { publicImageUrl } from "@/lib/storage/public-url";
 
 const categorySchema = z.object({
-  name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  tone: z.string().min(4, 'Selecione uma cor válida'),
+  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  tone: z.string().min(4, "Selecione uma cor válida"),
   image_url: z.string().nullable().optional(),
-})
+});
 
+type CategoryValues = z.infer<typeof categorySchema>;
 
-
-type CategoryValues = z.infer<typeof categorySchema>
-
-export const Route = createFileRoute('/_admin/admin/configuracoes')({
+export const Route = createFileRoute("/_admin/admin/configuracoes")({
   component: AdminSettingsPage,
-})
+});
 
 function AdminSettingsPage() {
-  const queryClient = useQueryClient()
-  const resetSalesFn = useServerFn(resetAllSales)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false)
-  const [isResetting, setIsResetting] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<any>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isUploading, setIsUploading] = useState(false)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
-
+  const queryClient = useQueryClient();
+  const resetSalesFn = useServerFn(resetAllSales);
+  const listCategoriesAdminFn = useServerFn(listCategoriesAdmin);
+  const upsertCategoryFn = useServerFn(upsertCategory);
+  const deleteCategoryFn = useServerFn(deleteCategory);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   const { data: categories, refetch } = useQuery({
-    queryKey: ['admin-categories-settings'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name');
-      if (error) throw error;
-      return data;
-    }
+    queryKey: ["admin-categories-settings"],
+    queryFn: () => listCategoriesAdminFn(),
   });
 
   const form = useForm<CategoryValues>({
     resolver: zodResolver(categorySchema),
     defaultValues: {
-      name: '',
-      tone: 'pink',
+      name: "",
+      tone: "#FF69B4",
       image_url: null,
     },
-
-  })
+  });
 
   const onSubmit = async (values: CategoryValues) => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
-      const payload: any = {
-        name: values.name,
-        tone: values.tone,
-        image_url: values.image_url ?? null
+      let imageBase64: string | null = null;
+      let imageContentType: string | null = null;
+      let imageFileName: string | null = null;
+      if (pendingFile) {
+        const buffer = await pendingFile.arrayBuffer();
+        imageBase64 = Buffer.from(buffer).toString("base64");
+        imageContentType = pendingFile.type;
+        imageFileName = pendingFile.name;
       }
 
-      if (editingCategory) {
-        const { error } = await supabase
-          .from('categories')
-          .update(payload)
-          .eq('id', editingCategory.id)
-        if (error) throw error
-        toast.success('Categoria atualizada com sucesso!')
-      } else {
-        const { error } = await supabase
-          .from('categories')
-          .insert([payload])
-        if (error) throw error
-        toast.success('Categoria adicionada com sucesso!')
-      }
-      
-      setIsDialogOpen(false)
-      setEditingCategory(null)
-      form.reset()
-      setImagePreview(null)
-      refetch()
+      await upsertCategoryFn({
+        data: {
+          id: editingCategory?.id,
+          name: values.name,
+          tone: values.tone,
+          imageBase64,
+          imageContentType,
+          imageFileName,
+        },
+      });
+
+      toast.success(
+        editingCategory ? "Categoria atualizada com sucesso!" : "Categoria adicionada com sucesso!",
+      );
+      setIsDialogOpen(false);
+      setEditingCategory(null);
+      setPendingFile(null);
+      setImagePreview(null);
+      form.reset();
+      refetch();
     } catch (error: any) {
-      toast.error('Erro: ' + error.message)
+      toast.error("Erro: " + error.message);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    // 1. Validar formato do arquivo
-    const allowedTypes = ['image/png', 'image/jpeg', 'image/webp']
+    const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      toast.error('Formato inválido! Use PNG, JPG ou WEBP.')
-      e.target.value = ''
-      return
+      toast.error("Formato inválido! Use PNG, JPG ou WEBP.");
+      e.target.value = "";
+      return;
     }
 
-    // 2. Validar tamanho do arquivo (limite de 2MB)
-    const maxSize = 2 * 1024 * 1024 // 2MB
+    const maxSize = 2 * 1024 * 1024;
     if (file.size > maxSize) {
-      toast.error('O arquivo é muito grande! O limite é 2MB.')
-      e.target.value = ''
-      return
+      toast.error("O arquivo é muito grande! O limite é 2MB.");
+      e.target.value = "";
+      return;
     }
 
-    setIsUploading(true)
-    try {
-      // Create preview
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Math.random()}.${fileExt}`
-      const filePath = `categories/${fileName}`
-
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file)
-
-      if (uploadError) {
-        if (uploadError.message.includes('permission denied')) {
-          throw new Error('Sem permissão para upload. Verifique as políticas do bucket.')
-        }
-        throw uploadError
-      }
-
-      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-        .from('product-images')
-        .createSignedUrl(filePath, 315360000) // 10 years
-
-      if (signedUrlError) throw signedUrlError
-
-      form.setValue('image_url', signedUrlData.signedUrl)
-      toast.success('Imagem enviada!')
-    } catch (error: any) {
-      console.error('Upload error:', error)
-      toast.error('Erro no upload: ' + error.message)
-      setImagePreview(null)
-    } finally {
-      setIsUploading(false)
-    }
-  }
-
+    setPendingFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleEditCategory = (category: any) => {
-    setEditingCategory(category)
+    setEditingCategory(category);
     form.reset({
       name: category.name,
-      tone: category.tone || '#FF69B4',
-      image_url: category.image_url,
-    })
-    setImagePreview(category.image_url)
-    setIsDialogOpen(true)
-  }
+      tone: category.tone || "#FF69B4",
+      image_url: category.imageUrl,
+    });
+    setImagePreview(publicImageUrl(category.imageUrl));
+    setPendingFile(null);
+    setIsDialogOpen(true);
+  };
 
   const handleDeleteCategory = async (id: string) => {
-    if (!confirm('Tem certeza? Isso pode afetar produtos vinculados a esta categoria.')) return
-    
+    if (!confirm("Tem certeza? Isso pode afetar produtos vinculados a esta categoria.")) return;
     try {
-      const { error } = await supabase.from('categories').delete().eq('id', id)
-      if (error) throw error
-      toast.success('Categoria excluída!')
-      refetch()
+      await deleteCategoryFn({ data: { id } });
+      toast.success("Categoria excluída!");
+      refetch();
     } catch (error: any) {
-      toast.error('Erro ao excluir: ' + error.message)
+      toast.error("Erro ao excluir: " + error.message);
     }
-  }
+  };
 
   const handleResetSales = async () => {
-    setIsResetting(true)
+    setIsResetting(true);
     try {
-      await resetSalesFn()
-      toast.success('Todas as vendas foram zeradas com sucesso!')
-      queryClient.invalidateQueries({ queryKey: ['admin-sales'] })
-      queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
-      queryClient.invalidateQueries({ queryKey: ['admin-billing-stats'] })
-      setIsResetDialogOpen(false)
+      await resetSalesFn();
+      toast.success("Todas as vendas foram zeradas com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["admin-sales"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-billing-stats"] });
+      setIsResetDialogOpen(false);
     } catch (error: any) {
-      toast.error('Erro ao zerar vendas: ' + error.message)
+      toast.error("Erro ao zerar vendas: " + error.message);
     } finally {
-      setIsResetting(false)
+      setIsResetting(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -210,21 +186,24 @@ function AdminSettingsPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Categorias */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle>Categorias</CardTitle>
               <CardDescription>Gerencie as categorias de produtos.</CardDescription>
             </div>
-            <Dialog open={isDialogOpen} onOpenChange={(open) => {
-              setIsDialogOpen(open)
-              if (!open) {
-                setEditingCategory(null)
-                form.reset({ name: '', tone: 'pink', image_url: null })
-                setImagePreview(null)
-              }
-            }}>
+            <Dialog
+              open={isDialogOpen}
+              onOpenChange={(open) => {
+                setIsDialogOpen(open);
+                if (!open) {
+                  setEditingCategory(null);
+                  form.reset({ name: "", tone: "#FF69B4", image_url: null });
+                  setImagePreview(null);
+                  setPendingFile(null);
+                }
+              }}
+            >
               <DialogTrigger asChild>
                 <Button size="sm" className="bg-pink hover:bg-pink/90">
                   <Plus className="h-4 w-4 mr-1" />
@@ -233,7 +212,9 @@ function AdminSettingsPage() {
               </DialogTrigger>
               <DialogContent className="w-[95vw] sm:max-w-md max-h-[95vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>{editingCategory ? 'Editar Categoria' : 'Nova Categoria'}</DialogTitle>
+                  <DialogTitle>
+                    {editingCategory ? "Editar Categoria" : "Nova Categoria"}
+                  </DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -258,20 +239,20 @@ function AdminSettingsPage() {
                           <FormLabel>Cor da Categoria (RGB)</FormLabel>
                           <div className="flex items-center gap-3">
                             <FormControl>
-                              <Input 
-                                type="color" 
-                                {...field} 
+                              <Input
+                                type="color"
+                                {...field}
                                 className="w-12 h-10 p-1 cursor-pointer"
                               />
                             </FormControl>
-                            <Input 
-                              value={field.value} 
+                            <Input
+                              value={field.value}
                               onChange={(e) => field.onChange(e.target.value)}
                               placeholder="#000000"
                               className="font-mono"
                             />
-                            <div 
-                              className="w-10 h-10 rounded border" 
+                            <div
+                              className="w-10 h-10 rounded border"
                               style={{ backgroundColor: field.value }}
                             />
                           </div>
@@ -283,12 +264,16 @@ function AdminSettingsPage() {
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Ícone da Categoria</label>
                       <div className="flex items-center gap-4">
-                        <div 
+                        <div
                           className="relative flex size-20 items-center justify-center overflow-hidden rounded-full border border-dashed border-border transition-colors"
-                          style={{ backgroundColor: `${form.watch('tone')}1A` }} // 10% opacity
+                          style={{ backgroundColor: `${form.watch("tone")}1A` }}
                         >
                           {imagePreview ? (
-                            <img src={imagePreview} alt="Preview" className="h-full w-full object-contain" />
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
+                              className="h-full w-full object-contain"
+                            />
                           ) : (
                             <Upload className="size-6 text-muted-foreground" />
                           )}
@@ -302,7 +287,7 @@ function AdminSettingsPage() {
                           <Input
                             type="file"
                             accept="image/*"
-                            onChange={handleImageUpload}
+                            onChange={handleImageSelect}
                             disabled={isUploading}
                             className="cursor-pointer"
                           />
@@ -326,40 +311,59 @@ function AdminSettingsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {categories?.map((cat) => (
-                <div key={cat.id} className="flex items-center justify-between p-2 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden border border-border"
-                      style={{ backgroundColor: cat.tone ? `${cat.tone}1A` : undefined }}
-                    >
-                      {cat.image_url ? (
-                        <img src={cat.image_url} alt={cat.name} className="w-full h-full object-contain" />
-                      ) : (
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: cat.tone || '#FF69B4' }} 
-                        />
-                      )}
+              {categories?.map((cat: any) => {
+                const iconUrl = publicImageUrl(cat.imageUrl);
+                return (
+                  <div
+                    key={cat.id}
+                    className="flex items-center justify-between p-2 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden border border-border"
+                        style={{ backgroundColor: cat.tone ? `${cat.tone}1A` : undefined }}
+                      >
+                        {iconUrl ? (
+                          <img
+                            src={iconUrl}
+                            alt={cat.name}
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: cat.tone || "#FF69B4" }}
+                          />
+                        )}
+                      </div>
+                      <span className="font-medium">{cat.name}</span>
                     </div>
-                    <span className="font-medium">{cat.name}</span>
-                  </div>
 
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="text-blue-500 h-8 w-8" onClick={() => handleEditCategory(cat)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="text-red-500 h-8 w-8" onClick={() => handleDeleteCategory(cat.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-blue-500 h-8 w-8"
+                        onClick={() => handleEditCategory(cat)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-500 h-8 w-8"
+                        onClick={() => handleDeleteCategory(cat.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
 
-        {/* Loja Info */}
         <Card>
           <CardHeader>
             <CardTitle>Informações da Loja</CardTitle>
@@ -371,11 +375,17 @@ function AdminSettingsPage() {
               <div className="flex gap-2">
                 <Input defaultValue="5584994085244" readOnly className="bg-gray-50" />
               </div>
-              <p className="text-[10px] text-muted-foreground italic">* O número é fixo conforme requisitos do projeto.</p>
+              <p className="text-[10px] text-muted-foreground italic">
+                * O número é fixo conforme requisitos do projeto.
+              </p>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">URL do Instagram</label>
-              <Input defaultValue="https://www.instagram.com/sualojinhamakeup/" readOnly className="bg-gray-50" />
+              <Input
+                defaultValue="https://www.instagram.com/sualojinhamakeup/"
+                readOnly
+                className="bg-gray-50"
+              />
             </div>
             <Button disabled className="w-full">
               <Save className="mr-2 h-4 w-4" />
@@ -385,7 +395,6 @@ function AdminSettingsPage() {
         </Card>
       </div>
 
-      {/* Gerenciamento de Dados */}
       <Card className="mt-6 border-red-100 bg-red-50/10">
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -398,9 +407,11 @@ function AdminSettingsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border border-red-200 bg-red-50">
             <div>
               <p className="font-semibold text-red-900">Zerar Histórico de Vendas</p>
-              <p className="text-sm text-red-700">Esta ação apagará permanentemente todas as vendas e itens registrados.</p>
+              <p className="text-sm text-red-700">
+                Esta ação apagará permanentemente todas as vendas e itens registrados.
+              </p>
             </div>
-            
+
             <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="destructive">
@@ -412,23 +423,22 @@ function AdminSettingsPage() {
                 <DialogHeader>
                   <DialogTitle>Você tem certeza absoluta?</DialogTitle>
                   <DialogDescription>
-                    Esta ação é irreversível. Todas as vendas, itens de venda e movimentações de estoque vinculadas a vendas serão deletados permanentemente.
+                    Esta ação é irreversível. Todas as vendas, itens de venda e movimentações de
+                    estoque vinculadas a vendas serão deletados permanentemente.
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="mt-4 gap-2">
-                  <Button variant="outline" onClick={() => setIsResetDialogOpen(false)}>Cancelar</Button>
-                  <Button 
-                    variant="destructive" 
-                    onClick={handleResetSales}
-                    disabled={isResetting}
-                  >
+                  <Button variant="outline" onClick={() => setIsResetDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button variant="destructive" onClick={handleResetSales} disabled={isResetting}>
                     {isResetting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Zerando...
                       </>
                     ) : (
-                      'Sim, Zerar Tudo'
+                      "Sim, Zerar Tudo"
                     )}
                   </Button>
                 </DialogFooter>
@@ -438,5 +448,5 @@ function AdminSettingsPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

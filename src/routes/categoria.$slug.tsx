@@ -1,14 +1,15 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { z } from 'zod'
-import { SiteHeader } from '@/components/site/SiteHeader'
-import { SiteFooter } from '@/components/site/SiteFooter'
-import { Products } from '@/components/site/Products'
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
-import { Loader2 } from 'lucide-react'
-import { useEffect } from 'react'
+import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
+import { SiteHeader } from "@/components/site/SiteHeader";
+import { SiteFooter } from "@/components/site/SiteFooter";
+import { Products } from "@/components/site/Products";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { listCategories, listPublicProducts } from "@/lib/queries.queries";
 
-export const Route = createFileRoute('/categoria/$slug')({
+export const Route = createFileRoute("/categoria/$slug")({
   params: {
     parse: (params) => ({
       slug: z.string().parse(params.slug),
@@ -16,10 +17,10 @@ export const Route = createFileRoute('/categoria/$slug')({
   },
   head: ({ params }) => {
     const slug = params.slug;
-    const name = slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' ');
+    const name = slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, " ");
     const title = `${name} | Sua Lojinha Maakeup`;
     const description = `Confira nossa seleção de ${name} na Sua Lojinha Maakeup. Melhores preços e qualidade para sua beleza.`;
-    
+
     return {
       meta: [
         { title },
@@ -29,63 +30,59 @@ export const Route = createFileRoute('/categoria/$slug')({
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
       ],
-    }
+    };
   },
   component: CategoryPage,
-})
+});
 
 function CategoryPage() {
-  const { slug } = Route.useParams()
-  
+  const { slug } = Route.useParams();
+  const listCategoriesFn = useServerFn(listCategories);
+  const listProductsFn = useServerFn(listPublicProducts);
+
   const { data: categoryData } = useQuery({
-    queryKey: ['category-info', slug],
+    queryKey: ["category-info", slug],
     queryFn: async () => {
-      const { data } = await supabase.from('categories').select('*')
-      return data?.find(c => 
-        c.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-') === slug
-      )
-    }
-  })
+      const cats = await listCategoriesFn();
+      return cats?.find(
+        (c: any) =>
+          c.name
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/\s+/g, "-") === slug,
+      );
+    },
+  });
 
-  const categoryName = categoryData?.name || slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' ')
-
+  const categoryName =
+    categoryData?.name || slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, " ");
 
   const { data: categoryProducts, isLoading } = useQuery({
-    queryKey: ['category-products', slug],
+    queryKey: ["category-products", slug],
     queryFn: async () => {
-      // Try to find by slug-ified name
-      const { data: allCategories } = await supabase
-        .from('categories')
-        .select('id, name')
-
-      const catData = allCategories?.find(c => 
-        c.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-') === slug
-      )
-
-      if (!catData) return []
-
-
-      const { data: prodData } = await supabase
-        .from('products')
-        .select(`
-          *,
-          product_images(url, is_main)
-        `)
-        .eq('category_id', catData.id)
-        .order('created_at', { ascending: false })
-
-      return prodData || []
-    }
-  })
+      const cats = await listCategoriesFn();
+      const catData = cats?.find(
+        (c: any) =>
+          c.name
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/\s+/g, "-") === slug,
+      );
+      if (!catData) return [];
+      return listProductsFn({ data: { categoryId: catData.id } });
+    },
+  });
 
   useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [slug])
+    window.scrollTo(0, 0);
+  }, [slug]);
 
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
-      
+
       <main className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6">
         <header className="mb-12 text-center">
           <h1 className="text-4xl font-bold text-foreground mb-4">{categoryName}</h1>
@@ -96,8 +93,8 @@ function CategoryPage() {
           <div className="flex h-64 items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-pink" />
           </div>
-        ) : categoryProducts && categoryProducts.length > 0 ? (
-          <Products products={categoryProducts} />
+        ) : (categoryProducts as any[])?.length > 0 ? (
+          <Products products={categoryProducts as any} />
         ) : (
           <div className="text-center py-20 bg-cream/30 rounded-2xl border border-dashed border-pink/20">
             <p className="text-muted-foreground text-lg">
@@ -109,5 +106,5 @@ function CategoryPage() {
 
       <SiteFooter />
     </div>
-  )
+  );
 }

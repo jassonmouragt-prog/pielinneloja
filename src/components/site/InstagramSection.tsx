@@ -4,8 +4,12 @@ import { getInstagramPosts } from "@/lib/instagram.functions";
 import { Loader2, Instagram } from "lucide-react";
 
 export function InstagramSection() {
-  const { data: posts, isLoading, error } = useQuery({
-    queryKey: ['instagram-posts'],
+  const {
+    data: posts,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["instagram-posts"],
     queryFn: () => getInstagramPosts(),
     staleTime: 1000 * 60 * 60, // 1 hora
   });

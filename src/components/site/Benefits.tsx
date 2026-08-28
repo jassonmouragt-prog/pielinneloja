@@ -13,11 +13,7 @@ export function Benefits() {
     <section className="bg-background">
       <div className="mx-auto flex max-w-[1200px] flex-wrap justify-center gap-x-12 gap-y-8 px-4 py-8 sm:px-6 lg:py-9">
         {benefits.map((benefit, index) => (
-          <Reveal
-            key={benefit.title}
-            delay={index * 70}
-            className="flex items-center gap-3"
-          >
+          <Reveal key={benefit.title} delay={index * 70} className="flex items-center gap-3">
             <benefit.icon className="size-6 shrink-0 stroke-[1.5] text-pink" />
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground">{benefit.title}</p>

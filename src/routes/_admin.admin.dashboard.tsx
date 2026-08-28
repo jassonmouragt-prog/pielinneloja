@@ -1,46 +1,48 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
-import { supabase } from '@/integrations/supabase/client'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { DollarSign, ShoppingCart, Package, AlertTriangle, ChevronRight, AlertCircle } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DollarSign,
+  ShoppingCart,
+  Package,
+  AlertTriangle,
+  ChevronRight,
+  AlertCircle,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useServerFn } from "@tanstack/react-start";
+import { getRecentSales, getMonthSalesStats, getProductsForDashboard } from "@/lib/queries.queries";
+import { publicImageUrl } from "@/lib/storage/public-url";
 
-export const Route = createFileRoute('/_admin/admin/dashboard')({
+export const Route = createFileRoute("/_admin/admin/dashboard")({
   component: AdminDashboard,
-})
+});
 
 function AdminDashboard() {
   const [showLowStock, setShowLowStock] = useState(false);
+  const getRecentSalesFn = useServerFn(getRecentSales);
+  const getMonthStatsFn = useServerFn(getMonthSalesStats);
+  const getProductsFn = useServerFn(getProductsForDashboard);
 
   const { data: stats } = useQuery({
-    queryKey: ['admin-stats'],
+    queryKey: ["admin-stats"],
     queryFn: async () => {
-      const now = new Date();
-      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-
-      const [salesRes, productsRes] = await Promise.all([
-        supabase
-          .from('sales')
-          .select('*, sale_items(*, products(name))')
-          .order('created_at', { ascending: false })
-          .limit(10),
-        supabase
-          .from('products')
-          .select('id, name, stock_quantity')
+      const [recentSales, products, monthSales] = await Promise.all([
+        getRecentSalesFn(),
+        getProductsFn(),
+        getMonthStatsFn(),
       ]);
 
-      const monthSalesRes = await supabase
-        .from('sales')
-        .select('total_amount, status')
-        .gte('created_at', firstDayOfMonth);
+      const confirmedSales = monthSales?.filter((s: any) => s.status === "confirmed") || [];
+      const pendingSalesCount = monthSales?.filter((s: any) => s.status === "pending").length || 0;
+      const revenue = confirmedSales.reduce(
+        (acc: number, s: any) => acc + Number(s.total_amount),
+        0,
+      );
 
-      const confirmedSales = monthSalesRes.data?.filter(s => s.status === 'confirmed') || [];
-      const pendingSalesCount = monthSalesRes.data?.filter(s => s.status === 'pending').length || 0;
-      const revenue = confirmedSales.reduce((acc, s) => acc + Number(s.total_amount), 0);
-      
-      const lowStockProducts = productsRes.data?.filter(p => (p.stock_quantity ?? 0) <= 5) || [];
+      const lowStockProducts = products?.filter((p: any) => (p.stockQuantity ?? 0) <= 5) || [];
       const lowStockCount = lowStockProducts.length;
 
       return {
@@ -49,31 +51,47 @@ function AdminDashboard() {
         pendingSalesCount,
         lowStockCount,
         lowStockProducts,
-        totalProducts: productsRes.data?.length || 0,
-        recentSales: salesRes.data || []
+        totalProducts: products?.length || 0,
+        recentSales: recentSales || [],
       };
-    }
+    },
   });
 
   const cards = [
-    { title: 'Faturamento (Mês)', value: `R$ ${stats?.revenue?.toFixed(2) || '0.00'}`, icon: DollarSign, color: 'text-green-600', onClick: () => { if (typeof window !== 'undefined') window.location.href = '/admin/faturamento' } },
-    { 
-      title: 'Vendas Pendentes', 
-      value: stats?.pendingSalesCount || 0, 
-      icon: ShoppingCart, 
-      color: 'text-yellow-600', 
-      onClick: () => { if (typeof window !== 'undefined') window.location.href = '/admin/vendas' },
-      highlight: (stats?.pendingSalesCount || 0) > 0
+    {
+      title: "Faturamento (Mês)",
+      value: `R$ ${stats?.revenue?.toFixed(2) || "0.00"}`,
+      icon: DollarSign,
+      color: "text-green-600",
+      onClick: () => {
+        if (typeof window !== "undefined") window.location.href = "/admin/faturamento";
+      },
     },
-    { 
-      title: 'Estoque Baixo', 
-      value: stats?.lowStockCount || 0, 
-      icon: AlertTriangle, 
-      color: 'text-red-600',
+    {
+      title: "Vendas Pendentes",
+      value: stats?.pendingSalesCount || 0,
+      icon: ShoppingCart,
+      color: "text-yellow-600",
+      onClick: () => {
+        if (typeof window !== "undefined") window.location.href = "/admin/vendas";
+      },
+      highlight: (stats?.pendingSalesCount || 0) > 0,
+    },
+    {
+      title: "Estoque Baixo",
+      value: stats?.lowStockCount || 0,
+      icon: AlertTriangle,
+      color: "text-red-600",
       onClick: () => setShowLowStock(!showLowStock),
-      highlight: (stats?.lowStockCount || 0) > 0
+      highlight: (stats?.lowStockCount || 0) > 0,
     },
-    { title: 'Total de Produtos', value: stats?.totalProducts || 0, icon: Package, color: 'text-pink', onClick: undefined },
+    {
+      title: "Total de Produtos",
+      value: stats?.totalProducts || 0,
+      icon: Package,
+      color: "text-pink",
+      onClick: undefined,
+    },
   ];
 
   return (
@@ -85,9 +103,9 @@ function AdminDashboard() {
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => (
-          <Card 
-            key={card.title} 
-            className={`${card.onClick ? 'cursor-pointer hover:border-pink/50 transition-colors' : ''} ${card.highlight && !showLowStock ? 'ring-2 ring-yellow-500/20' : ''}`}
+          <Card
+            key={card.title}
+            className={`${card.onClick ? "cursor-pointer hover:border-pink/50 transition-colors" : ""} ${card.highlight && !showLowStock ? "ring-2 ring-yellow-500/20" : ""}`}
             onClick={card.onClick}
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -118,22 +136,20 @@ function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {stats.lowStockProducts.map((product) => (
-                <div 
-                  key={product.id} 
+              {stats.lowStockProducts.map((product: any) => (
+                <div
+                  key={product.id}
                   className="flex items-center justify-between p-3 rounded-lg border bg-white shadow-sm"
                 >
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none">{product.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      Quantidade: <span className="font-bold text-red-500">{product.stock_quantity}</span>
+                      Quantidade:{" "}
+                      <span className="font-bold text-red-500">{product.stockQuantity}</span>
                     </p>
                   </div>
                   <Button variant="outline" size="sm" asChild>
-                    <Link 
-                      to="/admin/produtos" 
-                      search={{ editId: product.id } as any}
-                    >
+                    <Link to="/admin/produtos" search={{ editId: product.id } as any}>
                       Gerenciar
                     </Link>
                   </Button>
@@ -144,7 +160,6 @@ function AdminDashboard() {
         </Card>
       )}
 
-      {/* Charts and rankings would go here */}
       <Card className="col-span-4">
         <CardHeader>
           <CardTitle>Últimas Vendas</CardTitle>
@@ -153,24 +168,47 @@ function AdminDashboard() {
           {stats?.recentSales && stats.recentSales.length > 0 ? (
             <div className="space-y-4">
               {stats.recentSales.map((sale: any) => (
-                <div key={sale.id} className="flex items-center justify-between border-b pb-2 last:border-0">
+                <div
+                  key={sale.id}
+                  className="flex items-center justify-between border-b pb-2 last:border-0"
+                >
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {sale.customer_name || 'Cliente WhatsApp'}
+                      {sale.customerName || "Cliente WhatsApp"}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {sale.sale_items?.map((i: any) => `${i.quantity}x ${i.products?.name}`).join(', ')}
+                      {sale.sale_items
+                        ?.map((i: any) => `${i.quantity}x ${i.products?.name}`)
+                        .join(", ")}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Badge variant={sale.status === 'pending' ? 'secondary' : sale.status === 'confirmed' ? 'default' : 'outline'} 
-                           className={sale.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : sale.status === 'confirmed' ? 'bg-green-500' : ''}>
-                      {sale.status === 'pending' ? 'Pendente' : sale.status === 'confirmed' ? 'Ok' : 'Canc.'}
+                    <Badge
+                      variant={
+                        sale.status === "pending"
+                          ? "secondary"
+                          : sale.status === "confirmed"
+                            ? "default"
+                            : "outline"
+                      }
+                      className={
+                        sale.status === "pending"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : sale.status === "confirmed"
+                            ? "bg-green-500"
+                            : ""
+                      }
+                    >
+                      {sale.status === "pending"
+                        ? "Pendente"
+                        : sale.status === "confirmed"
+                          ? "Ok"
+                          : "Canc."}
                     </Badge>
                     <div className="text-right">
-                      <p className="text-sm font-bold">R$ {sale.total_amount.toFixed(2)}</p>
+                      <p className="text-sm font-bold">R$ {Number(sale.totalAmount).toFixed(2)}</p>
                       <p className="text-[10px] text-muted-foreground">
-                        {new Date(sale.created_at).toLocaleDateString('pt-BR')}
+                        {sale.createdAt ? new Date(sale.createdAt).toLocaleDateString("pt-BR") : ""}
                       </p>
                     </div>
                   </div>
@@ -178,10 +216,12 @@ function AdminDashboard() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground italic text-center py-4">Nenhuma venda registrada recentemente.</p>
+            <p className="text-sm text-muted-foreground italic text-center py-4">
+              Nenhuma venda registrada recentemente.
+            </p>
           )}
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

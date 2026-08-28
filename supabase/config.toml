@@ -1,4 +1,0 @@
-project_id = "drbdwtrsyblyigwwdnrc"
-
-[functions.migrate-helper]
-verify_jwt = false

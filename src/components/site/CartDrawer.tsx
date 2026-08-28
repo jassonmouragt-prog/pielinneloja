@@ -30,13 +30,13 @@ export function CartDrawer() {
   const handleCheckout = async () => {
     setNameError(false);
     if (items.length === 0) return;
-    
+
     if (!customerName.trim()) {
       setNameError(true);
       toast.error("Por favor, informe seu nome para finalizar o pedido.");
       return;
     }
-    
+
     if (customerName.length > 100) {
       toast.error("O nome deve ter no máximo 100 caracteres.");
       return;
@@ -47,7 +47,7 @@ export function CartDrawer() {
     try {
       const totalPrice = items.reduce((acc: number, item: CartItem) => {
         const priceVal = parseFloat(item.price.replace("R$", "").replace(",", "."));
-        return acc + (priceVal * item.quantity);
+        return acc + priceVal * item.quantity;
       }, 0);
 
       let message = `Olá! Meu nome é ${customerName}. Gostaria de finalizar o pedido com os seguintes produtos:\n\n`;
@@ -56,7 +56,7 @@ export function CartDrawer() {
         if (item.selectedVariations) {
           const variationsStr = Object.entries(item.selectedVariations)
             .map(([key, value]) => `${key}: ${value}`)
-            .join(', ');
+            .join(", ");
           message += `  Variações: ${variationsStr}\n`;
         }
         message += `  Qtd: ${item.quantity} x ${item.price}\n\n`;
@@ -69,36 +69,40 @@ export function CartDrawer() {
           customerName,
           totalAmount: totalPrice,
           whatsappMessage: message,
-          items: items.map(item => ({
-            productId: item.id || '',
+          items: items.map((item) => ({
+            productId: item.id || "",
             quantity: item.quantity,
             price: parseFloat(item.price.replace("R$", "").replace(",", ".")),
-            variations: item.selectedVariations
-          }))
-        }
+            variations: item.selectedVariations,
+          })),
+        },
       });
 
       // 2. Só então redireciona para o WhatsApp
       const encodedMessage = encodeURIComponent(message);
       const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
-      
+
       // Tenta abrir em nova janela
       const newWindow = window.open(whatsappUrl, "_blank");
-      
+
       // Se a janela foi bloqueada, tenta redirecionar na mesma aba como fallback
-      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+      if (!newWindow || newWindow.closed || typeof newWindow.closed === "undefined") {
         window.location.href = whatsappUrl;
       }
-      
+
       clearCart();
       setIsOpen(false);
       toast.success("Pedido enviado! Aguarde o contato no WhatsApp.");
     } catch (error: any) {
       console.error("Error during checkout:", error);
       if (error.message === "WHATSAPP_BLOCKED") {
-        toast.error("O redirecionamento para o WhatsApp foi bloqueado pelo navegador. Por favor, permita pop-ups.");
+        toast.error(
+          "O redirecionamento para o WhatsApp foi bloqueado pelo navegador. Por favor, permita pop-ups.",
+        );
       } else {
-        toast.error("Erro ao registrar pedido no sistema. Tente novamente ou entre em contato diretamente.");
+        toast.error(
+          "Erro ao registrar pedido no sistema. Tente novamente ou entre em contato diretamente.",
+        );
       }
     } finally {
       setIsRegistering(false);
@@ -120,7 +124,10 @@ export function CartDrawer() {
           )}
         </button>
       </SheetTrigger>
-      <SheetContent className="flex w-full flex-col p-0 sm:max-w-md z-[100] max-h-screen overflow-y-auto" side="right">
+      <SheetContent
+        className="flex w-full flex-col p-0 sm:max-w-md z-[100] max-h-screen overflow-y-auto"
+        side="right"
+      >
         <SheetHeader className="border-b px-6 py-4">
           <SheetTitle className="flex items-center gap-2 text-pink">
             <ShoppingBag className="size-5" />
@@ -164,7 +171,10 @@ export function CartDrawer() {
                         {item.selectedVariations && (
                           <div className="flex flex-wrap gap-1 mt-1">
                             {Object.entries(item.selectedVariations).map(([key, value]) => (
-                              <span key={key} className="inline-flex items-center gap-1 bg-pink/5 text-[10px] text-pink px-2 py-0.5 rounded-full border border-pink/10 font-medium">
+                              <span
+                                key={key}
+                                className="inline-flex items-center gap-1 bg-pink/5 text-[10px] text-pink px-2 py-0.5 rounded-full border border-pink/10 font-medium"
+                              >
                                 <Tag className="size-2" />
                                 {key}: {value}
                               </span>
@@ -176,7 +186,9 @@ export function CartDrawer() {
                         <span className="text-sm font-bold text-pink">{item.price}</span>
                         <div className="flex items-center gap-2 rounded-full border border-border px-2 py-1">
                           <button
-                            onClick={() => updateQuantity(item.name, item.quantity - 1, item.selectedVariations)}
+                            onClick={() =>
+                              updateQuantity(item.name, item.quantity - 1, item.selectedVariations)
+                            }
                             className="text-muted-foreground hover:text-pink cursor-pointer"
                           >
                             <Minus className="size-3" />
@@ -185,7 +197,9 @@ export function CartDrawer() {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => updateQuantity(item.name, item.quantity + 1, item.selectedVariations)}
+                            onClick={() =>
+                              updateQuantity(item.name, item.quantity + 1, item.selectedVariations)
+                            }
                             className="text-muted-foreground hover:text-pink cursor-pointer"
                           >
                             <Plus className="size-3" />
@@ -206,14 +220,16 @@ export function CartDrawer() {
                   {items
                     .reduce((acc: number, item: CartItem) => {
                       const priceVal = parseFloat(item.price.replace("R$", "").replace(",", "."));
-                      return acc + (priceVal * item.quantity);
+                      return acc + priceVal * item.quantity;
                     }, 0)
                     .toFixed(2)
                     .replace(".", ",")}
                 </span>
               </div>
               <div className="mb-6 space-y-2 w-full">
-                <Label htmlFor="customerName" className="text-sm font-medium">Seu Nome</Label>
+                <Label htmlFor="customerName" className="text-sm font-medium">
+                  Seu Nome
+                </Label>
                 <Input
                   id="customerName"
                   placeholder="Como gostaria de ser chamado(a)?"
@@ -225,7 +241,9 @@ export function CartDrawer() {
                   className={`rounded-full border-pink/30 focus-visible:ring-pink ${nameError ? "border-red-500 ring-1 ring-red-500" : ""}`}
                 />
                 {nameError && (
-                  <p className="text-[10px] text-red-500 mt-1 ml-2 italic">O nome é obrigatório para finalizar o pedido.</p>
+                  <p className="text-[10px] text-red-500 mt-1 ml-2 italic">
+                    O nome é obrigatório para finalizar o pedido.
+                  </p>
                 )}
               </div>
               <Button

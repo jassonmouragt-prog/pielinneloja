@@ -1,67 +1,54 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { db, schema } from "@/db/client";
+import { requireAuth } from "@/lib/auth/auth-middleware";
+import { and, eq, sql } from "drizzle-orm";
 
-// Authenticated server functions: the middleware injects `context.supabase`
-// (RLS as the signed-in user). Never import the browser supabase client or
-// client.server at module scope of a *.functions.ts file.
 export const getAdminProfile = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-
-    const { data: roleData } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId)
-      .single();
-
-    if (roleData?.role !== 'admin') return null;
-
-    const { data: { user } } = await supabase.auth.getUser();
-    return { user, role: roleData.role };
+    const { userId, email, role } = context;
+    return { id: userId, email, role };
   });
 
 export const updateProductStock = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .validator((data: unknown) => z.object({
-    productId: z.string(),
-    quantity: z.number(),
-    type: z.string(),
-    notes: z.string().optional()
-  }).parse(data))
+  .middleware([requireAuth])
+  .validator((data: unknown) =>
+    z
+      .object({
+        productId: z.string().uuid(),
+        quantity: z.number().int(),
+        type: z.string().min(1),
+        notes: z.string().optional(),
+      })
+      .parse(data),
+  )
   .handler(async ({ data, context }) => {
     const { productId, quantity, type, notes } = data;
-    const { supabase } = context;
-    
-    const { data: product } = await supabase
-      .from('products')
-      .select('stock_quantity')
-      .eq('id', productId)
-      .single();
+    const { db: tx } = context;
 
+    const productRows = await tx
+      .select()
+      .from(schema.products)
+      .where(eq(schema.products.id, productId))
+      .limit(1);
+    const product = productRows[0];
     if (!product) throw new Error("Product not found");
 
-    const currentStock = product.stock_quantity ?? 0;
+    const currentStock = product.stockQuantity ?? 0;
     const newStock = currentStock + quantity;
 
-    const { error: updateError } = await supabase
-      .from('products')
-      .update({ stock_quantity: newStock })
-      .eq('id', productId);
+    await tx
+      .update(schema.products)
+      .set({ stockQuantity: newStock, updatedAt: new Date() })
+      .where(eq(schema.products.id, productId));
 
-    if (updateError) throw updateError;
-
-    const { error: movementError } = await supabase
-      .from('stock_movements')
-      .insert({
-        product_id: productId,
-        quantity,
-        type,
-        notes: notes ?? null
-      });
-
-    if (movementError) throw movementError;
+    await tx.insert(schema.stockMovements).values({
+      productId,
+      quantity,
+      type,
+      notes: notes ?? null,
+    });
 
     return { success: true, newStock };
   });

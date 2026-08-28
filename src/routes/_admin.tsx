@@ -1,94 +1,58 @@
-import { createFileRoute, Outlet, redirect, Link, useRouter } from '@tanstack/react-router'
-import { supabase } from '@/integrations/supabase/client'
-import { LayoutDashboard, Package, Box, Settings, LogOut, Menu, ShoppingCart, DollarSign } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { useState, useEffect } from 'react'
-import logoAsset from "@/assets/logo.png.asset.json"
-import { toast } from 'sonner'
+import { createFileRoute, Outlet, redirect, Link, useRouter } from "@tanstack/react-router";
+import {
+  LayoutDashboard,
+  Package,
+  Box,
+  Settings,
+  LogOut,
+  Menu,
+  ShoppingCart,
+  DollarSign,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useState, useEffect } from "react";
+import logoAsset from "@/assets/logo.png.asset.json";
+import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { getCurrentSession, tokenStorage } from "@/lib/auth/auth.functions";
 
-export const Route = createFileRoute('/_admin')({
+export const Route = createFileRoute("/_admin")({
   beforeLoad: async ({ location }) => {
-    // Basic guard for SSR - if we are on the server, we just pass
-    // The client-side will run this again and handle the redirect if needed
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     try {
-      console.log('[AdminGuard] Verificando autenticação para:', location.pathname);
-      
-      // 1. Get current session with retry logic for hydration.
-      // Mobile browsers (Safari/Chrome iOS/Android) can take longer to
-      // rehydrate the persisted session from storage, so we retry a few
-      // times with small back-off before concluding there is no session.
-      let session = (await supabase.auth.getSession()).data.session;
-      for (let attempt = 1; !session && attempt <= 4; attempt++) {
-        console.log(`[AdminGuard] Aguardando hidratação da sessão (tentativa ${attempt}/4)...`);
-        await new Promise(resolve => setTimeout(resolve, 350 * attempt));
-        session = (await supabase.auth.getSession()).data.session;
+      const token = tokenStorage.get();
+      if (!token) {
+        throw redirect({ to: "/admin/login", search: { redirect: location.href }, replace: true });
       }
 
-      // Secondary fallback: check localStorage directly if Supabase is being stubborn
-      if (!session && typeof localStorage !== 'undefined') {
-        const storageKey = Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
-        const sessionStr = storageKey ? localStorage.getItem(storageKey) : null;
-        if (sessionStr) {
-          try {
-            const localSession = JSON.parse(sessionStr);
-            if (localSession && localSession.access_token) {
-              console.log('[AdminGuard] Sessão recuperada via localStorage');
-              session = localSession;
-            }
-          } catch (e) {
-            console.error('[AdminGuard] Erro ao analisar sessão do localStorage:', e);
-          }
+      let session: Awaited<ReturnType<typeof getCurrentSession>> | null = null;
+      for (let attempt = 1; attempt <= 4; attempt++) {
+        try {
+          session = await getCurrentSession();
+          if (session) break;
+        } catch (e) {
+          // ignore and retry
+        }
+        if (!session && attempt < 4) {
+          await new Promise((r) => setTimeout(r, 350 * attempt));
         }
       }
 
-      if (!session) {
-        console.log('[AdminGuard] Nenhuma sessão encontrada, redirecionando para login');
-        throw redirect({ 
-          to: '/admin/login', 
-          search: { redirect: location.href },
-          replace: true 
-        });
+      if (!session || session.role !== "admin") {
+        tokenStorage.clear();
+        throw redirect({ to: "/admin/login", replace: true });
       }
 
-      const userEmail = session.user.email?.toLowerCase();
-      
-      // Emergency bypass for the known admin to ensure access even if DB query fails
-      if (userEmail === 'sualojinhaadmin@admin.com') {
-        return { session, role: 'admin' as const };
-      }
-
-      // Check role in database via user_roles table
-      const { data: roleData, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (roleError) {
-        console.error('[AdminGuard] Erro ao verificar papel do usuário:', roleError);
-        throw redirect({ to: '/admin/login', replace: true });
-      }
-
-      if (roleData?.role === 'admin') {
-        return { session, role: 'admin' as const };
-      }
-
-      console.error('[AdminGuard] Usuário não autorizado:', userEmail);
-      throw redirect({ to: '/admin/login', replace: true });
+      return { session, role: "admin" as const };
     } catch (e: any) {
-      // Re-throw redirect errors so TanStack Router can handle them
-      if (e.to || e.redirect || [301, 302, 303, 307, 308].includes(e.status)) throw e;
-      
-      console.error('[AdminGuard] Erro inesperado no guardião:', e);
-      // In case of any other unexpected error, redirect to login
-      throw redirect({ to: '/admin/login', replace: true });
+      if (e?.isRedirect || e?.to || e?.redirect) throw e;
+      throw redirect({ to: "/admin/login", replace: true });
     }
   },
   component: AdminLayout,
-})
+});
 
 function AdminLayout() {
   const router = useRouter();
@@ -99,22 +63,15 @@ function AdminLayout() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Retry session detection to tolerate slow storage hydration on mobile
-        let session = (await supabase.auth.getSession()).data.session;
-        for (let attempt = 1; !session && attempt <= 3; attempt++) {
-          await new Promise(resolve => setTimeout(resolve, 300 * attempt));
-          session = (await supabase.auth.getSession()).data.session;
-        }
-
-        if (!session) {
+        const session = await getCurrentSession();
+        if (!session || session.role !== "admin") {
           setIsAuthorized(false);
-          // Safety net: never leave the user on a blank screen — send to login
-          router.navigate({ to: '/admin/login', replace: true });
+          router.navigate({ to: "/admin/login", replace: true });
         } else {
           setIsAuthorized(true);
         }
       } catch (error) {
-        console.error('Error checking auth in layout:', error);
+        console.error("Error checking auth in layout:", error);
       } finally {
         setIsLoading(false);
       }
@@ -123,19 +80,19 @@ function AdminLayout() {
   }, [router]);
 
   const handleLogout = async () => {
-    if (typeof window !== 'undefined') {
-      await supabase.auth.signOut();
-      window.location.href = '/admin/login';
+    if (typeof window !== "undefined") {
+      tokenStorage.clear();
+      window.location.href = "/admin/login";
     }
   };
 
   const navItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
-    { label: 'Vendas', icon: ShoppingCart, href: '/admin/vendas' },
-    { label: 'Faturamento', icon: DollarSign, href: '/admin/faturamento' },
-    { label: 'Produtos', icon: Package, href: '/admin/produtos' },
-    { label: 'Estoque', icon: Box, href: '/admin/estoque' },
-    { label: 'Configurações', icon: Settings, href: '/admin/configuracoes' },
+    { label: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard" },
+    { label: "Vendas", icon: ShoppingCart, href: "/admin/vendas" },
+    { label: "Faturamento", icon: DollarSign, href: "/admin/faturamento" },
+    { label: "Produtos", icon: Package, href: "/admin/produtos" },
+    { label: "Estoque", icon: Box, href: "/admin/estoque" },
+    { label: "Configurações", icon: Settings, href: "/admin/configuracoes" },
   ];
 
   const SidebarContent = () => (
@@ -146,7 +103,6 @@ function AdminLayout() {
           <span className="text-lg font-bold text-pink">Admin</span>
         </Link>
       </div>
-      
       <nav className="flex-1 space-y-1 px-3 py-4">
         {navItems.map((item) => (
           <Link
@@ -162,7 +118,6 @@ function AdminLayout() {
           </Link>
         ))}
       </nav>
-
       <div className="border-t border-gray-200 p-4">
         <Button
           variant="ghost"
@@ -187,15 +142,12 @@ function AdminLayout() {
     );
   }
 
-  if (!isAuthorized && typeof window !== 'undefined') {
-    // If we reached here but are not authorized, something is wrong
-    // The beforeLoad should have caught it, but this is a safety net
+  if (!isAuthorized && typeof window !== "undefined") {
     return null;
   }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Mobile Header */}
       <header className="fixed top-0 left-0 right-0 z-40 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 lg:hidden">
         <Link to="/" className="flex items-center gap-2">
           <img src={logoAsset.url} alt="Logo" className="h-8 w-auto" />
@@ -215,18 +167,14 @@ function AdminLayout() {
           </SheetContent>
         </Sheet>
       </header>
-
-      {/* Desktop Sidebar */}
       <aside className="fixed left-0 top-0 hidden h-full w-64 border-r border-gray-200 bg-white lg:block">
         <SidebarContent />
       </aside>
-
-      {/* Main content */}
       <main className="flex-1 lg:pl-64 pt-16 lg:pt-0 overflow-x-hidden">
         <div className="min-h-screen p-4 sm:p-6 lg:p-8 max-w-[100vw]">
           <Outlet />
         </div>
       </main>
     </div>
-  )
+  );
 }

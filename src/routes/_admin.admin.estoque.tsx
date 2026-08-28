@@ -1,117 +1,131 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
-import { supabase } from '@/integrations/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, ArrowUpCircle, ArrowDownCircle, History, Loader2, AlertCircle } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { toast } from 'sonner'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import * as z from 'zod'
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Plus,
+  Search,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  History,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { useServerFn } from "@tanstack/react-start";
+import { listProductsForStock, listStockMovements } from "@/lib/queries.queries";
+import { updateProductStock } from "@/lib/admin/admin.functions";
 
 const stockMovementSchema = z.object({
-  product_id: z.string().min(1, 'Selecione um produto'),
-  quantity: z.coerce.number().int().refine(n => n !== 0, 'Quantidade não pode ser zero'),
-  type: z.enum(['entry', 'exit', 'adjustment']),
+  product_id: z.string().min(1, "Selecione um produto"),
+  quantity: z.coerce
+    .number()
+    .int()
+    .refine((n) => n !== 0, "Quantidade não pode ser zero"),
+  type: z.enum(["entry", "exit", "adjustment"]),
   notes: z.string().optional(),
-})
+});
 
-type StockMovementValues = z.infer<typeof stockMovementSchema>
+type StockMovementValues = z.infer<typeof stockMovementSchema>;
 
-export const Route = createFileRoute('/_admin/admin/estoque')({
+export const Route = createFileRoute("/_admin/admin/estoque")({
   component: AdminStockPage,
-})
+});
 
 function AdminStockPage() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const listProductsFn = useServerFn(listProductsForStock);
+  const listMovementsFn = useServerFn(listStockMovements);
+  const updateStockFn = useServerFn(updateProductStock);
 
   const { data: products, refetch: refetchProducts } = useQuery({
-    queryKey: ['admin-products-stock'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('products')
-        .select(`id, name, stock_quantity, categories(name)`)
-        .order('name');
-      if (error) throw error;
-      return data;
-    }
+    queryKey: ["admin-products-stock"],
+    queryFn: () => listProductsFn(),
   });
 
   const { data: movements } = useQuery({
-    queryKey: ['stock-movements'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('stock_movements')
-        .select(`*, products(name)`)
-        .order('created_at', { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      return data;
-    },
-    enabled: isHistoryOpen
+    queryKey: ["stock-movements"],
+    queryFn: () => listMovementsFn(),
+    enabled: isHistoryOpen,
   });
 
   const form = useForm<StockMovementValues>({
     resolver: zodResolver(stockMovementSchema),
     defaultValues: {
-      product_id: '',
+      product_id: "",
       quantity: 1,
-      type: 'entry',
-      notes: '',
+      type: "entry",
+      notes: "",
     },
-  })
+  });
 
   const onSubmit = async (values: StockMovementValues) => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
-      // 1. Create movement record
-      const { error: moveError } = await supabase
-        .from('stock_movements')
-        .insert([{
-          product_id: values.product_id,
-          quantity: values.type === 'exit' ? -Math.abs(values.quantity) : values.quantity,
+      const signedQuantity = values.type === "exit" ? -Math.abs(values.quantity) : values.quantity;
+      await updateStockFn({
+        data: {
+          productId: values.product_id,
+          quantity: signedQuantity,
           type: values.type,
-          notes: values.notes || null
-        }])
-      
-      if (moveError) throw moveError
+          notes: values.notes,
+        },
+      });
 
-      // 2. Update product stock
-      const product = products?.find(p => p.id === values.product_id)
-      if (!product) throw new Error('Produto não encontrado')
-
-      const newQuantity = (product.stock_quantity ?? 0) + (values.type === 'exit' ? -Math.abs(values.quantity) : values.quantity)
-
-      const { error: updateError } = await supabase
-        .from('products')
-        .update({ stock_quantity: newQuantity })
-        .eq('id', values.product_id)
-
-      if (updateError) throw updateError
-
-      toast.success('Estoque atualizado com sucesso!')
-      setIsDialogOpen(false)
-      form.reset()
-      refetchProducts()
+      toast.success("Estoque atualizado com sucesso!");
+      setIsDialogOpen(false);
+      form.reset();
+      refetchProducts();
     } catch (error: any) {
-      toast.error('Erro: ' + error.message)
+      toast.error("Erro: " + error.message);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
-  const filteredProducts = products?.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProducts = products?.filter((p: any) =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -136,8 +150,8 @@ function AdminStockPage() {
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input 
-            placeholder="Buscar produtos..." 
+          <Input
+            placeholder="Buscar produtos..."
             className="pl-9"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -158,12 +172,14 @@ function AdminStockPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredProducts?.map((product) => (
+              {filteredProducts?.map((product: any) => (
                 <TableRow key={product.id}>
                   <TableCell>
                     <div className="flex flex-col">
                       <span className="font-medium">{product.name}</span>
-                      <span className="text-xs text-muted-foreground md:hidden">{product.categories?.name}</span>
+                      <span className="text-xs text-muted-foreground md:hidden">
+                        {product.categories?.name}
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">{product.categories?.name}</TableCell>
@@ -179,34 +195,38 @@ function AdminStockPage() {
                     {(product.stock_quantity ?? 0) <= 0 ? (
                       <Badge variant="destructive">Esgotado</Badge>
                     ) : (product.stock_quantity ?? 0) <= 5 ? (
-                      <Badge variant="outline" className="border-yellow-500 text-yellow-600">Baixo</Badge>
+                      <Badge variant="outline" className="border-yellow-500 text-yellow-600">
+                        Baixo
+                      </Badge>
                     ) : (
-                      <Badge variant="outline" className="border-green-500 text-green-600">Normal</Badge>
+                      <Badge variant="outline" className="border-green-500 text-green-600">
+                        Normal
+                      </Badge>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         className="text-green-600"
                         onClick={() => {
-                          form.setValue('product_id', product.id)
-                          form.setValue('type', 'entry')
-                          setIsDialogOpen(true)
+                          form.setValue("product_id", product.id);
+                          form.setValue("type", "entry");
+                          setIsDialogOpen(true);
                         }}
                       >
                         <ArrowUpCircle className="h-4 w-4 mr-1" />
                         <span className="hidden sm:inline">Entrada</span>
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         className="text-red-600"
                         onClick={() => {
-                          form.setValue('product_id', product.id)
-                          form.setValue('type', 'exit')
-                          setIsDialogOpen(true)
+                          form.setValue("product_id", product.id);
+                          form.setValue("type", "exit");
+                          setIsDialogOpen(true);
                         }}
                       >
                         <ArrowDownCircle className="h-4 w-4 mr-1" />
@@ -221,14 +241,11 @@ function AdminStockPage() {
         </div>
       </div>
 
-      {/* Movement Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="w-[95vw] sm:max-w-md max-h-[95vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Registrar Movimentação</DialogTitle>
-            <DialogDescription>
-              Adicione ou remova itens do estoque manualmente.
-            </DialogDescription>
+            <DialogDescription>Adicione ou remova itens do estoque manualmente.</DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -238,15 +255,21 @@ function AdminStockPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Produto</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      value={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione o produto" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {products?.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>{p.name || ''}</SelectItem>
+                        {products?.map((p: any) => (
+                          <SelectItem key={p.id} value={p.id}>
+                            {p.name || ""}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -261,7 +284,11 @@ function AdminStockPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Tipo</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        value={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue />
@@ -315,7 +342,6 @@ function AdminStockPage() {
         </DialogContent>
       </Dialog>
 
-      {/* History Dialog */}
       <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
         <DialogContent className="w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -333,18 +359,30 @@ function AdminStockPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {movements?.map((m) => (
+                {movements?.map((m: any) => (
                   <TableRow key={m.id}>
                     <TableCell className="text-xs">
-                      {m.created_at ? new Date(m.created_at).toLocaleString('pt-BR') : ''}
+                      {m.createdAt ? new Date(m.createdAt).toLocaleString("pt-BR") : ""}
                     </TableCell>
-                    <TableCell className="font-medium">{m.products?.name || ''}</TableCell>
+                    <TableCell className="font-medium">{m.products?.name || ""}</TableCell>
                     <TableCell>
-                      <Badge variant={m.type === 'entry' ? 'default' : m.type === 'exit' ? 'destructive' : 'secondary'}>
-                        {m.type === 'entry' ? 'Entrada' : m.type === 'exit' ? 'Saída' : 'Ajuste'}
+                      <Badge
+                        variant={
+                          m.type === "entry"
+                            ? "default"
+                            : m.type === "exit"
+                              ? "destructive"
+                              : "secondary"
+                        }
+                      >
+                        {m.type === "entry" ? "Entrada" : m.type === "exit" ? "Saída" : "Ajuste"}
                       </Badge>
                     </TableCell>
-                    <TableCell className={m.quantity > 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
+                    <TableCell
+                      className={
+                        m.quantity > 0 ? "text-green-600 font-bold" : "text-red-600 font-bold"
+                      }
+                    >
                       {m.quantity > 0 ? `+${m.quantity}` : m.quantity}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{m.notes}</TableCell>
@@ -356,5 +394,5 @@ function AdminStockPage() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

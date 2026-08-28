@@ -1,140 +1,122 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-
-// Server-only admin client (service role). MUST be loaded dynamically inside
-// each handler — a top-level import ships this module to the client bundle
-// (this file is imported by route files and CartDrawer) and breaks the
-// published build at runtime.
-async function getSupabaseAdmin() {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  return supabaseAdmin;
-}
+import { db, schema } from "@/db/client";
+import { sql } from "drizzle-orm";
 
 export const registerPendingSale = createServerFn({ method: "POST" })
-  .validator((data: unknown) => z.object({
-    customerName: z.string().min(1, "O nome é obrigatório").max(100, "O nome deve ter no máximo 100 caracteres"),
-    totalAmount: z.number(),
-    whatsappMessage: z.string(),
-    items: z.array(z.object({
-      productId: z.string(),
-      quantity: z.number(),
-      price: z.number(),
-      variations: z.record(z.string()).optional()
-    }))
-  }).parse(data))
+  .validator((data: unknown) =>
+    z
+      .object({
+        customerName: z
+          .string()
+          .min(1, "O nome é obrigatório")
+          .max(100, "O nome deve ter no máximo 100 caracteres"),
+        totalAmount: z.number(),
+        whatsappMessage: z.string(),
+        items: z.array(
+          z.object({
+            productId: z.string().uuid(),
+            quantity: z.number().int().positive(),
+            price: z.number(),
+            variations: z.record(z.string()).optional(),
+          }),
+        ),
+      })
+      .parse(data),
+  )
   .handler(async ({ data }) => {
     const { customerName, totalAmount, whatsappMessage, items } = data;
-    const supabaseAdmin = await getSupabaseAdmin();
 
-    const { data: sale, error: saleError } = await supabaseAdmin
-      .from('sales')
-      .insert({
-        total_amount: totalAmount,
-        status: 'pending',
-        whatsapp_message: whatsappMessage,
-        customer_name: customerName || null
+    const insertedSales = await db
+      .insert(schema.sales)
+      .values({
+        totalAmount: totalAmount.toString(),
+        status: "pending",
+        whatsappMessage,
+        customerName: customerName || null,
       })
-      .select()
-      .single();
+      .returning();
+    const sale = insertedSales[0];
+    if (!sale) throw new Error("Failed to create sale");
 
-    if (saleError) throw saleError;
-
-    const saleItems = items.map(item => ({
-      sale_id: sale.id,
-      product_id: item.productId,
-      quantity: item.quantity,
-      price_at_sale: item.price,
-      variations: item.variations || null
-    }));
-
-    const { error: itemsError } = await supabaseAdmin
-      .from('sale_items')
-      .insert(saleItems);
-
-    if (itemsError) throw itemsError;
+    if (items.length > 0) {
+      await db.insert(schema.saleItems).values(
+        items.map((item) => ({
+          saleId: sale.id,
+          productId: item.productId,
+          quantity: item.quantity,
+          priceAtSale: item.price.toString(),
+          variations: item.variations ?? null,
+        })),
+      );
+    }
 
     return { success: true, saleId: sale.id };
   });
 
 export const updateSaleStatus = createServerFn({ method: "POST" })
-  .validator((data: unknown) => z.object({
-    saleId: z.string(),
-    status: z.enum(['confirmed', 'cancelled', 'pending'])
-  }).parse(data))
+  .validator((data: unknown) =>
+    z
+      .object({
+        saleId: z.string().uuid(),
+        status: z.enum(["confirmed", "cancelled", "pending"]),
+      })
+      .parse(data),
+  )
   .handler(async ({ data }) => {
     const { saleId, status } = data;
-    const supabaseAdmin = await getSupabaseAdmin();
 
-    const { data: sale, error: saleError } = await supabaseAdmin
-      .from('sales')
-      .update({ status })
-      .eq('id', saleId)
-      .select(`
-        *,
-        sale_items (product_id, quantity)
-      `)
-      .single();
+    const updateData: { status: string; confirmedAt?: Date } = { status };
+    if (status === "confirmed") updateData.confirmedAt = new Date();
 
-    if (saleError) throw saleError;
+    const updated = await db
+      .update(schema.sales)
+      .set(updateData)
+      .where(sql`${schema.sales.id} = ${saleId}`)
+      .returning();
+    const sale = updated[0];
+    if (!sale) throw new Error("Sale not found");
 
-    if (status === 'confirmed' && sale.sale_items) {
-      for (const item of sale.sale_items) {
-        if (!item.product_id) continue;
+    if (status === "confirmed") {
+      const items = await db
+        .select()
+        .from(schema.saleItems)
+        .where(sql`${schema.saleItems.saleId} = ${saleId}`);
 
-        await supabaseAdmin
-          .from('stock_movements')
-          .insert({
-            product_id: item.product_id,
-            sale_id: sale.id,
-            quantity: -item.quantity,
-            type: 'sale',
-            notes: `Venda confirmada via Admin`
-          });
+      for (const item of items) {
+        if (!item.productId) continue;
 
-        const { data: product } = await supabaseAdmin
-          .from('products')
-          .select('stock_quantity')
-          .eq('id', item.product_id)
-          .single();
-        
+        await db.insert(schema.stockMovements).values({
+          productId: item.productId,
+          saleId: sale.id,
+          quantity: -item.quantity,
+          type: "sale",
+          notes: "Venda confirmada via Admin",
+        });
+
+        const productRows = await db
+          .select()
+          .from(schema.products)
+          .where(sql`${schema.products.id} = ${item.productId}`)
+          .limit(1);
+        const product = productRows[0];
         if (product) {
-          await supabaseAdmin
-            .from('products')
-            .update({ stock_quantity: (product.stock_quantity || 0) - item.quantity })
-            .eq('id', item.product_id);
+          await db
+            .update(schema.products)
+            .set({
+              stockQuantity: (product.stockQuantity ?? 0) - item.quantity,
+              updatedAt: new Date(),
+            })
+            .where(sql`${schema.products.id} = ${item.productId}`);
         }
       }
     }
     return { success: true };
   });
 
-export const resetAllSales = createServerFn({ method: "POST" })
-  .handler(async () => {
-    const supabaseAdmin = await getSupabaseAdmin();
-
-    // 1. Delete all sale items
-    const { error: itemsError } = await supabaseAdmin
-      .from('sale_items')
-      .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000'); 
-
-    if (itemsError) throw itemsError;
-
-    // 2. Delete all stock movements related to sales
-    const { error: movementsError } = await supabaseAdmin
-      .from('stock_movements')
-      .delete()
-      .eq('type', 'sale');
-
-    if (movementsError) throw movementsError;
-
-    // 3. Delete all sales
-    const { error: salesError } = await supabaseAdmin
-      .from('sales')
-      .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000'); 
-
-    if (salesError) throw salesError;
-
-    return { success: true };
-  });
+export const resetAllSales = createServerFn({ method: "POST" }).handler(async () => {
+  await db.delete(schema.saleItems);
+  await db.delete(schema.stockMovements).where(sql`${schema.stockMovements.type} = 'sale'`);
+  await db.delete(schema.sales);
+  return { success: true };
+});

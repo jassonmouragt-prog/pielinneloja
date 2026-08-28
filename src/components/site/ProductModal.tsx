@@ -31,16 +31,19 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
 
   if (!product) return null;
 
-  const mainImage = product.product_images?.find((img: any) => img.is_main)?.url || product.product_images?.[0]?.url;
+  const mainImage =
+    product.product_images?.find((img: any) => img.is_main)?.url ||
+    product.product_images?.[0]?.url;
 
   const handleAddToCart = () => {
     addItem({
       id: product.id,
       name: product.name,
-      subtitle: product.subtitle || '',
+      subtitle: product.subtitle || "",
       price: `R$ ${Number(product.price).toFixed(2)}`,
       image: mainImage,
-      selectedVariations: Object.keys(selectedVariations).length > 0 ? selectedVariations : undefined,
+      selectedVariations:
+        Object.keys(selectedVariations).length > 0 ? selectedVariations : undefined,
     });
     toast.success("Produto adicionado ao carrinho!");
     onClose();
@@ -63,13 +66,9 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
           <div className="p-8 flex flex-col justify-center">
             <div className="space-y-4">
               <div>
-                <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
-                  {product.name}
-                </h2>
+                <h2 className="text-2xl font-bold text-foreground sm:text-3xl">{product.name}</h2>
                 {product.subtitle && (
-                  <p className="text-lg text-muted-foreground mt-1">
-                    {product.subtitle}
-                  </p>
+                  <p className="text-lg text-muted-foreground mt-1">{product.subtitle}</p>
                 )}
               </div>
 
@@ -103,7 +102,12 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                           return (
                             <button
                               key={option}
-                              onClick={() => setSelectedVariations(prev => ({ ...prev, [variation.name]: option }))}
+                              onClick={() =>
+                                setSelectedVariations((prev) => ({
+                                  ...prev,
+                                  [variation.name]: option,
+                                }))
+                              }
                               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
                                 isSelected
                                   ? "bg-pink border-pink text-white shadow-sm"
@@ -131,7 +135,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                   <ShoppingBag className="size-5" />
                   Adicionar ao Carrinho
                 </Button>
-                
+
                 <p className="mt-4 text-center text-xs text-muted-foreground">
                   Finalize sua compra pelo WhatsApp após adicionar os produtos ao carrinho.
                 </p>

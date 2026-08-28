@@ -3,7 +3,6 @@ import { Link } from "@tanstack/react-router";
 import logoAsset from "@/assets/logo.png.asset.json";
 import { footerColumns } from "./data";
 
-
 export function SiteFooter() {
   return (
     <footer className="bg-cream">
@@ -46,14 +45,26 @@ export function SiteFooter() {
                   {column.title === "Categorias" ? (
                     <Link
                       to="/categoria/$slug"
-                      params={{ slug: link.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-') }}
+                      params={{
+                        slug: link
+                          .toLowerCase()
+                          .normalize("NFD")
+                          .replace(/[\u0300-\u036f]/g, "")
+                          .replace(/\s+/g, "-"),
+                      }}
                       className="text-xs text-muted-foreground transition-colors duration-300 hover:text-pink"
                     >
                       {link}
                     </Link>
                   ) : (
                     <Link
-                      to={(`/${link.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-')}`) as any}
+                      to={
+                        `/${link
+                          .toLowerCase()
+                          .normalize("NFD")
+                          .replace(/[\u0300-\u036f]/g, "")
+                          .replace(/\s+/g, "-")}` as any
+                      }
                       className="text-xs text-muted-foreground transition-colors duration-300 hover:text-pink"
                     >
                       {link}
@@ -64,7 +75,6 @@ export function SiteFooter() {
             </ul>
           </div>
         ))}
-
 
         <div>
           <h3 className="text-sm font-semibold text-foreground">Newsletter</h3>
