@@ -33,6 +33,30 @@ export const Route = createFileRoute("/admin/login")({
   component: AdminLoginPage,
 });
 
+function parseLoginError(error: any): string {
+  if (!error) return "Erro ao realizar login. Tente novamente.";
+
+  if (typeof error === "string") return error;
+
+  const raw = error.message ?? error.error?.message ?? "";
+  const lower = String(raw).toLowerCase();
+
+  if (lower.includes("e-mail ou senha incorretos")) return "E-mail ou senha incorretos. Verifique e tente novamente.";
+  if (lower.includes("credenciais") || lower.includes("invalid login") || lower.includes("invalid credentials"))
+    return "E-mail ou senha incorretos. Verifique e tente novamente.";
+  if (lower.includes("acesso negado") || lower.includes("não autorizado") || lower.includes("forbidden"))
+    return "Acesso negado. Apenas administradores podem acessar esta área.";
+  if (lower.includes("obrigatório") || lower.includes("required"))
+    return "E-mail e senha são obrigatórios.";
+  if (lower.includes("e-mail inválido") || lower.includes("invalid email"))
+    return "Formato de e-mail inválido.";
+  if (lower.includes("network") || lower.includes("fetch") || lower.includes("failed to fetch"))
+    return "Erro de conexão. Verifique sua internet e tente novamente.";
+
+  if (raw) return raw;
+  return "Erro ao realizar login. Tente novamente.";
+}
+
 function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -64,7 +88,8 @@ function AdminLoginPage() {
       }, 100);
     } catch (error: any) {
       console.error("Erro no login:", error);
-      toast.error(error.message || "Erro ao realizar login");
+      const message = parseLoginError(error);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
