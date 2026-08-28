@@ -48,8 +48,6 @@ function AdminExpensesPage() {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [filterType, setFilterType] = useState<string>("all");
-  const [filterFrom, setFilterFrom] = useState<string>("");
-  const [filterTo, setFilterTo] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const listExpensesFn = useServerFn(listExpenses);
@@ -58,26 +56,18 @@ function AdminExpensesPage() {
   const getSummaryFn = useServerFn(getExpensesSummary);
 
   const { data: expenses, isLoading } = useQuery({
-    queryKey: ['admin-expenses', filterType, filterFrom, filterTo],
+    queryKey: ['admin-expenses', filterType],
     queryFn: () =>
       listExpensesFn({
         data: {
           type: filterType === "all" ? undefined : (filterType as any),
-          from: filterFrom || undefined,
-          to: filterTo || undefined,
         },
       }),
   });
 
   const { data: summary } = useQuery({
-    queryKey: ['admin-expenses-summary', filterFrom, filterTo],
-    queryFn: () =>
-      getSummaryFn({
-        data: {
-          from: filterFrom || undefined,
-          to: filterTo || undefined,
-        },
-      }),
+    queryKey: ['admin-expenses-summary'],
+    queryFn: () => getSummaryFn(),
   });
 
   const form = useForm<ExpenseFormValues>({
@@ -149,61 +139,42 @@ function AdminExpensesPage() {
         </Button>
       </div>
 
-      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
-        <Card>
-          <CardContent className="pt-4 pb-4">
-            <p className="text-xs text-muted-foreground">Total no período</p>
-            <p className="text-2xl font-bold text-red-600">R$ {totalPeriod.toFixed(2)}</p>
-            <p className="text-[10px] text-muted-foreground mt-1">{totalCount} {totalCount === 1 ? "despesa" : "despesas"}</p>
-          </CardContent>
-        </Card>
-        {EXPENSE_TYPES.slice(0, 3).map((t) => {
-          const found = summary?.find((s) => s.type === t.value);
-          const Icon = t.icon;
-          return (
-            <Card key={t.value}>
-              <CardContent className="pt-4 pb-4">
-                <div className="flex items-center gap-1.5">
-                  <Icon className={`size-3.5 ${t.color}`} />
-                  <p className="text-xs text-muted-foreground">{t.label}</p>
-                </div>
-                <p className="text-lg font-bold mt-1">R$ {(found?.total ?? 0).toFixed(2)}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">{found?.count ?? 0} {found?.count === 1 ? "lançamento" : "lançamentos"}</p>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      <Card className="bg-red-50/30 border-red-100">
+        <CardContent className="pt-4 pb-4">
+          <p className="text-xs text-muted-foreground">Despesas deste mês</p>
+          <p className="text-3xl font-bold text-red-600 mt-1">R$ {totalPeriod.toFixed(2)}</p>
+          <p className="text-[10px] text-muted-foreground mt-1">{totalCount} {totalCount === 1 ? "despesa registrada" : "despesas registradas"}</p>
+        </CardContent>
+      </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Filtros</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center justify-between">
+            <span>Filtrar por tipo</span>
+            {filterType !== "all" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setFilterType("all")}
+                className="text-xs h-7"
+              >
+                Limpar filtro
+              </Button>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <Label className="text-xs">De</Label>
-              <Input type="date" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)} className="h-9" />
-            </div>
-            <div>
-              <Label className="text-xs">Até</Label>
-              <Input type="date" value={filterTo} onChange={(e) => setFilterTo(e.target.value)} className="h-9" />
-            </div>
-            <div>
-              <Label className="text-xs">Tipo</Label>
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {EXPENSE_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <Select value={filterType} onValueChange={setFilterType}>
+            <SelectTrigger className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os tipos</SelectItem>
+              {EXPENSE_TYPES.map((t) => (
+                <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </CardContent>
       </Card>
 
