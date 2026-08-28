@@ -31,9 +31,6 @@ async function ensureRoleFunction() {
   `);
 
   await db.execute(sql`REVOKE ALL ON FUNCTION public.has_role(uuid, app_role) FROM PUBLIC;`);
-  await db.execute(
-    sql`GRANT EXECUTE ON FUNCTION public.has_role(uuid, app_role) TO anon, authenticated;`,
-  );
 }
 
 async function enableRls() {
