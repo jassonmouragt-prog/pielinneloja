@@ -56,6 +56,7 @@ import * as z from "zod";
 import { useServerFn } from "@tanstack/react-start";
 import { listAdminProducts, listCategories } from "@/lib/queries.queries";
 import { upsertProduct, deleteProduct, listCategoriesAdmin } from "@/lib/admin/admin.queries";
+import { syncProductVariations, getProductWithVariations } from "@/lib/product-variations.queries";
 import { publicImageUrl } from "@/lib/storage/public-url";
 
 const productSchema = z.object({
@@ -69,7 +70,12 @@ const productSchema = z.object({
   variations: z.array(
     z.object({
       name: z.string().min(1, "Nome da variação é obrigatório"),
-      options: z.array(z.string().min(1, "Opção não pode ser vazia")),
+      options: z.array(
+        z.object({
+          value: z.string().min(1, "Opção não pode ser vazia"),
+          stock: z.number().int().min(0, "Estoque inválido"),
+        }),
+      ),
     }),
   ),
 });
@@ -138,6 +144,8 @@ function AdminProductsPage() {
   const listCategoriesFn = useServerFn(listCategories);
   const upsertProductFn = useServerFn(upsertProduct);
   const deleteProductFn = useServerFn(deleteProduct);
+  const syncVariationsFn = useServerFn(syncProductVariations);
+  const getProductVariationsFn = useServerFn(getProductWithVariations);
 
   const { data: products, refetch } = useQuery({
     queryKey: ["admin-products"],
@@ -161,12 +169,31 @@ function AdminProductsPage() {
       status: "active",
       variations: [],
     },
-  });
+  })
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "variations",
   });
+
+  const { fields: optionFieldsArray } = useFieldArray({
+    control: form.control,
+    name: "variations",
+  });
+
+  const loadProductVariations = async (productId: string) => {
+    try {
+      const data = await getProductVariationsFn({ data: { productId } });
+      if (!data) return;
+      const variationsForForm = data.variations.map((v: any) => ({
+        name: v.name,
+        options: v.options.map((o: any) => ({ value: o.value, stock: o.stock })),
+      }));
+      form.setValue("variations", variationsForForm as any);
+    } catch (e) {
+      console.error("Failed to load product variations", e);
+    }
+  };
 
   const handleEdit = (product: any) => {
     setEditingProduct(product);
@@ -178,8 +205,10 @@ function AdminProductsPage() {
       category_id: product.categoryId || "",
       stock_quantity: product.stockQuantity,
       status: (product.status as "active" | "inactive") || "active",
-      variations: Array.isArray(product.variations) ? product.variations : [],
+      variations: [],
     });
+
+    loadProductVariations(product.id);
 
     const firstImage = product.product_images?.[0]?.url;
     if (firstImage) {
@@ -240,7 +269,7 @@ function AdminProductsPage() {
         setUploadProgress(60);
       }
 
-      await upsertProductFn({
+      const result = await upsertProductFn({
         data: {
           id: editingProduct?.id,
           name: values.name,
@@ -257,6 +286,21 @@ function AdminProductsPage() {
         },
       });
       setUploadProgress(100);
+
+      const finalProductId = result.id;
+      if (finalProductId) {
+        const variationsForSync = (values.variations || []).map((v) => ({
+          name: v.name,
+          options: v.options.map((o) => ({ value: o.value, stock: o.stock })),
+        }));
+        try {
+          await syncVariationsFn({
+            data: { productId: finalProductId, variations: variationsForSync },
+          });
+        } catch (e) {
+          console.error("Failed to sync variations", e);
+        }
+      }
 
       toast.success(editingProduct ? "Produto atualizado!" : "Produto criado!");
       setIsDialogOpen(false);
@@ -503,14 +547,35 @@ function AdminProductsPage() {
                           />
 
                           <div className="space-y-2">
-                            <Label>Opções (Separe por vírgula ou adicione individualmente)</Label>
-                            <div className="flex flex-wrap gap-2 mb-2">
+                            <Label>Opções + Estoque por opção</Label>
+                            <div className="space-y-1.5 mb-2">
                               {form.watch(`variations.${vIndex}.options`)?.map((opt, oIndex) => (
                                 <div
                                   key={oIndex}
-                                  className="flex items-center gap-1 bg-white border rounded-md pl-2 pr-1 py-1"
+                                  className="flex items-center gap-2 bg-white border rounded-md p-1.5 pr-1"
                                 >
-                                  <span className="text-xs">{opt}</span>
+                                  <span className="text-xs flex-1 pl-1 truncate">{opt.value}</span>
+                                  <div className="flex items-center gap-1">
+                                    <Label className="text-[10px] text-muted-foreground">Estoque:</Label>
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      className="h-7 w-20 text-xs"
+                                      value={opt.stock}
+                                      onChange={(e) => {
+                                        const currentOptions = form.getValues(
+                                          `variations.${vIndex}.options`,
+                                        );
+                                        const updated = currentOptions.map((o, i) =>
+                                          i === oIndex ? { ...o, stock: parseInt(e.target.value) || 0 } : o,
+                                        );
+                                        form.setValue(
+                                          `variations.${vIndex}.options`,
+                                          updated,
+                                        );
+                                      }}
+                                    />
+                                  </div>
                                   <button
                                     type="button"
                                     onClick={() => {
@@ -522,9 +587,9 @@ function AdminProductsPage() {
                                         currentOptions.filter((_, i) => i !== oIndex),
                                       );
                                     }}
-                                    className="text-muted-foreground hover:text-destructive"
+                                    className="text-muted-foreground hover:text-destructive px-1"
                                   >
-                                    <X className="size-3" />
+                                    <X className="size-3.5" />
                                   </button>
                                 </div>
                               ))}
@@ -533,10 +598,10 @@ function AdminProductsPage() {
                               onAdd={(val) => {
                                 const currentOptions =
                                   form.getValues(`variations.${vIndex}.options`) || [];
-                                if (!currentOptions.includes(val)) {
+                                if (!currentOptions.some((o: any) => o.value === val)) {
                                   form.setValue(`variations.${vIndex}.options`, [
                                     ...currentOptions,
-                                    val,
+                                    { value: val, stock: 0 },
                                   ]);
                                 }
                               }}

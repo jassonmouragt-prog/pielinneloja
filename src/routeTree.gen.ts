@@ -25,6 +25,7 @@ import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
 import { Route as AdminAdminConfiguracoesRouteImport } from './routes/_admin.admin.configuracoes'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin.admin.dashboard'
+import { Route as AdminAdminDespesasRouteImport } from './routes/_admin.admin.despesas'
 import { Route as AdminAdminEstoqueRouteImport } from './routes/_admin.admin.estoque'
 import { Route as AdminAdminFaturamentoRouteImport } from './routes/_admin.admin.faturamento'
 import { Route as AdminAdminProdutosRouteImport } from './routes/_admin.admin.produtos'
@@ -109,6 +110,11 @@ const AdminAdminDashboardRoute = AdminAdminDashboardRouteImport.update({
   path: '/admin/dashboard',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAdminDespesasRoute = AdminAdminDespesasRouteImport.update({
+  id: '/admin/despesas',
+  path: '/admin/despesas',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAdminEstoqueRoute = AdminAdminEstoqueRouteImport.update({
   id: '/admin/estoque',
   path: '/admin/estoque',
@@ -146,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/admin/configuracoes': typeof AdminAdminConfiguracoesRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/admin/despesas': typeof AdminAdminDespesasRoute
   '/admin/estoque': typeof AdminAdminEstoqueRoute
   '/admin/faturamento': typeof AdminAdminFaturamentoRoute
   '/admin/produtos': typeof AdminAdminProdutosRoute
@@ -167,6 +174,7 @@ export interface FileRoutesByTo {
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/admin/configuracoes': typeof AdminAdminConfiguracoesRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/admin/despesas': typeof AdminAdminDespesasRoute
   '/admin/estoque': typeof AdminAdminEstoqueRoute
   '/admin/faturamento': typeof AdminAdminFaturamentoRoute
   '/admin/produtos': typeof AdminAdminProdutosRoute
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/_admin/admin/configuracoes': typeof AdminAdminConfiguracoesRoute
   '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
+  '/_admin/admin/despesas': typeof AdminAdminDespesasRoute
   '/_admin/admin/estoque': typeof AdminAdminEstoqueRoute
   '/_admin/admin/faturamento': typeof AdminAdminFaturamentoRoute
   '/_admin/admin/produtos': typeof AdminAdminProdutosRoute
@@ -213,6 +222,7 @@ export interface FileRouteTypes {
     | '/categoria/$slug'
     | '/admin/configuracoes'
     | '/admin/dashboard'
+    | '/admin/despesas'
     | '/admin/estoque'
     | '/admin/faturamento'
     | '/admin/produtos'
@@ -234,6 +244,7 @@ export interface FileRouteTypes {
     | '/categoria/$slug'
     | '/admin/configuracoes'
     | '/admin/dashboard'
+    | '/admin/despesas'
     | '/admin/estoque'
     | '/admin/faturamento'
     | '/admin/produtos'
@@ -256,6 +267,7 @@ export interface FileRouteTypes {
     | '/categoria/$slug'
     | '/_admin/admin/configuracoes'
     | '/_admin/admin/dashboard'
+    | '/_admin/admin/despesas'
     | '/_admin/admin/estoque'
     | '/_admin/admin/faturamento'
     | '/_admin/admin/produtos'
@@ -393,6 +405,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdminDashboardRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/admin/despesas': {
+      id: '/_admin/admin/despesas'
+      path: '/admin/despesas'
+      fullPath: '/admin/despesas'
+      preLoaderRoute: typeof AdminAdminDespesasRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/admin/estoque': {
       id: '/_admin/admin/estoque'
       path: '/admin/estoque'
@@ -427,6 +446,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAdminConfiguracoesRoute: typeof AdminAdminConfiguracoesRoute
   AdminAdminDashboardRoute: typeof AdminAdminDashboardRoute
+  AdminAdminDespesasRoute: typeof AdminAdminDespesasRoute
   AdminAdminEstoqueRoute: typeof AdminAdminEstoqueRoute
   AdminAdminFaturamentoRoute: typeof AdminAdminFaturamentoRoute
   AdminAdminProdutosRoute: typeof AdminAdminProdutosRoute
@@ -436,6 +456,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAdminConfiguracoesRoute: AdminAdminConfiguracoesRoute,
   AdminAdminDashboardRoute: AdminAdminDashboardRoute,
+  AdminAdminDespesasRoute: AdminAdminDespesasRoute,
   AdminAdminEstoqueRoute: AdminAdminEstoqueRoute,
   AdminAdminFaturamentoRoute: AdminAdminFaturamentoRoute,
   AdminAdminProdutosRoute: AdminAdminProdutosRoute,
@@ -463,13 +484,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

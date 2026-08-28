@@ -9,11 +9,14 @@ import {
   AlertTriangle,
   ChevronRight,
   AlertCircle,
+  TrendingDown,
+  TrendingUp,
+  Receipt,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useServerFn } from "@tanstack/react-start";
-import { getRecentSales, getMonthSalesStats, getProductsForDashboard } from "@/lib/queries.queries";
+import { getRecentSales, getProductsForDashboard, getDashboardSummary } from "@/lib/queries.queries";
 
 export const Route = createFileRoute("/_admin/admin/dashboard")({
   component: AdminDashboard,
@@ -22,32 +25,27 @@ export const Route = createFileRoute("/_admin/admin/dashboard")({
 function AdminDashboard() {
   const [showLowStock, setShowLowStock] = useState(false);
   const getRecentSalesFn = useServerFn(getRecentSales);
-  const getMonthStatsFn = useServerFn(getMonthSalesStats);
   const getProductsFn = useServerFn(getProductsForDashboard);
+  const getSummaryFn = useServerFn(getDashboardSummary);
 
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const [recentSales, products, monthSales] = await Promise.all([
+      const [recentSales, products, summary] = await Promise.all([
         getRecentSalesFn(),
         getProductsFn(),
-        getMonthStatsFn(),
+        getSummaryFn(),
       ]);
-
-      const confirmedSales = monthSales?.filter((s: any) => s.status === "confirmed") || [];
-      const pendingSalesCount = monthSales?.filter((s: any) => s.status === "pending").length || 0;
-      const revenue = confirmedSales.reduce(
-        (acc: number, s: any) => acc + Number(s.total_amount),
-        0,
-      );
 
       const lowStockProducts = products?.filter((p: any) => (p.stockQuantity ?? 0) <= 5) || [];
       const lowStockCount = lowStockProducts.length;
 
       return {
-        revenue,
-        confirmedCount: confirmedSales.length,
-        pendingSalesCount,
+        revenue: summary?.revenue ?? 0,
+        totalExpenses: summary?.totalExpenses ?? 0,
+        netProfit: summary?.netProfit ?? 0,
+        confirmedCount: summary?.confirmedCount ?? 0,
+        pendingCount: summary?.pendingCount ?? 0,
         lowStockCount,
         lowStockProducts,
         totalProducts: products?.length || 0,
@@ -67,14 +65,32 @@ function AdminDashboard() {
       },
     },
     {
+      title: "Despesas (Mês)",
+      value: `R$ ${stats?.totalExpenses?.toFixed(2) || "0.00"}`,
+      icon: Receipt,
+      color: "text-red-600",
+      onClick: () => {
+        if (typeof window !== "undefined") window.location.href = "/admin/despesas";
+      },
+    },
+    {
+      title: stats && stats.netProfit >= 0 ? "Lucro Líquido (Mês)" : "Prejuízo (Mês)",
+      value: `R$ ${Math.abs(stats?.netProfit ?? 0).toFixed(2)}`,
+      icon: stats && stats.netProfit >= 0 ? TrendingUp : TrendingDown,
+      color: stats && stats.netProfit >= 0 ? "text-emerald-600" : "text-red-600",
+      onClick: () => {
+        if (typeof window !== "undefined") window.location.href = "/admin/faturamento";
+      },
+    },
+    {
       title: "Vendas Pendentes",
-      value: stats?.pendingSalesCount || 0,
+      value: stats?.pendingCount || 0,
       icon: ShoppingCart,
       color: "text-yellow-600",
       onClick: () => {
         if (typeof window !== "undefined") window.location.href = "/admin/vendas";
       },
-      highlight: (stats?.pendingSalesCount || 0) > 0,
+      highlight: (stats?.pendingCount || 0) > 0,
     },
     {
       title: "Estoque Baixo",
@@ -100,7 +116,7 @@ function AdminDashboard() {
         <p className="text-muted-foreground">Visão geral da sua loja neste mês.</p>
       </div>
 
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {cards.map((card) => (
           <Card
             key={card.title}
@@ -108,15 +124,15 @@ function AdminDashboard() {
             onClick={card.onClick}
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">{card.title}</CardTitle>
               <card.icon className={`h-4 w-4 ${card.color}`} />
             </CardHeader>
             <CardContent>
-              <div className="flex items-baseline justify-between">
-                <div className="text-2xl font-bold">{card.value}</div>
+              <div className="flex items-baseline justify-between gap-1">
+                <div className="text-xl sm:text-2xl font-bold truncate">{card.value}</div>
                 {card.onClick && (
-                  <div className="text-xs text-muted-foreground flex items-center gap-1">
-                    Ver detalhes <ChevronRight className="h-3 w-3" />
+                  <div className="text-xs text-muted-foreground hidden lg:flex items-center gap-1 shrink-0">
+                    Ver <ChevronRight className="h-3 w-3" />
                   </div>
                 )}
               </div>
@@ -167,42 +183,23 @@ function AdminDashboard() {
           {stats?.recentSales && stats.recentSales.length > 0 ? (
             <div className="space-y-4">
               {stats.recentSales.map((sale: any) => (
-                <div
-                  key={sale.id}
-                  className="flex items-center justify-between border-b pb-2 last:border-0"
-                >
+                <div key={sale.id} className="flex items-center justify-between border-b pb-2 last:border-0">
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none">
                       {sale.customerName || "Cliente WhatsApp"}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {sale.sale_items
-                        ?.map((i: any) => `${i.quantity}x ${i.products?.name}`)
-                        .join(", ")}
+                      {sale.sale_items?.map((i: any) => `${i.quantity}x ${i.products?.name}`).join(", ")}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <Badge
                       variant={
-                        sale.status === "pending"
-                          ? "secondary"
-                          : sale.status === "confirmed"
-                            ? "default"
-                            : "outline"
+                        sale.status === "pending" ? "secondary" : sale.status === "confirmed" ? "default" : "outline"
                       }
-                      className={
-                        sale.status === "pending"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : sale.status === "confirmed"
-                            ? "bg-green-500"
-                            : ""
-                      }
+                      className={sale.status === "pending" ? "bg-yellow-100 text-yellow-800" : sale.status === "confirmed" ? "bg-green-500" : ""}
                     >
-                      {sale.status === "pending"
-                        ? "Pendente"
-                        : sale.status === "confirmed"
-                          ? "Ok"
-                          : "Canc."}
+                      {sale.status === "pending" ? "Pendente" : sale.status === "confirmed" ? "Ok" : "Canc."}
                     </Badge>
                     <div className="text-right">
                       <p className="text-sm font-bold">R$ {Number(sale.totalAmount).toFixed(2)}</p>

@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db, schema } from "@/db/client";
-import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, lte, sql, sum } from "drizzle-orm";
 import { optionalAuth, requireAuth } from "@/lib/auth/auth-middleware";
 
 export const listCategories = createServerFn({ method: "GET" }).handler(async () => {
@@ -390,4 +390,52 @@ export const getBillingData = createServerFn({ method: "GET" })
       total_amount: Number(s.totalAmount),
       created_at: s.createdAt?.toISOString() ?? null,
     }));
+  });
+
+export const getDashboardSummary = createServerFn({ method: "GET" })
+  .middleware([requireAuth])
+  .handler(async () => {
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+    const [salesRows, expensesAgg] = await Promise.all([
+      db
+        .select({
+          totalAmount: schema.sales.totalAmount,
+          status: schema.sales.status,
+        })
+        .from(schema.sales)
+        .where(
+          and(
+            gte(schema.sales.createdAt, firstDayOfMonth),
+            lte(schema.sales.createdAt, lastDayOfMonth),
+          ),
+        ),
+      db
+        .select({
+          total: sum(schema.expenses.amount).as("total"),
+        })
+        .from(schema.expenses)
+        .where(
+          and(
+            gte(schema.expenses.expenseDate, firstDayOfMonth),
+            lte(schema.expenses.expenseDate, lastDayOfMonth),
+          ),
+        ),
+    ]);
+
+    const confirmed = salesRows.filter((s) => s.status === "confirmed");
+    const pending = salesRows.filter((s) => s.status === "pending");
+    const revenue = confirmed.reduce((acc, s) => acc + Number(s.totalAmount), 0);
+    const totalExpenses = Number(expensesAgg[0]?.total ?? 0);
+    const netProfit = revenue - totalExpenses;
+
+    return {
+      revenue,
+      totalExpenses,
+      netProfit,
+      confirmedCount: confirmed.length,
+      pendingCount: pending.length,
+    };
   });

@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, Link, useRouter } from '@tanstack/react-router'
-import { LayoutDashboard, Package, Box, Settings, LogOut, Menu, ShoppingCart, DollarSign } from 'lucide-react'
+import { LayoutDashboard, Package, Box, Settings, LogOut, Menu, ShoppingCart, DollarSign, Receipt } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { useState, useEffect } from 'react'
@@ -64,6 +64,7 @@ function AdminLayout() {
     { label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
     { label: 'Vendas', icon: ShoppingCart, href: '/admin/vendas' },
     { label: 'Faturamento', icon: DollarSign, href: '/admin/faturamento' },
+    { label: 'Despesas', icon: Receipt, href: '/admin/despesas' },
     { label: 'Produtos', icon: Package, href: '/admin/produtos' },
     { label: 'Estoque', icon: Box, href: '/admin/estoque' },
     { label: 'Configurações', icon: Settings, href: '/admin/configuracoes' },

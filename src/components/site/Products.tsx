@@ -1,6 +1,5 @@
-import { ArrowRight, Heart, ShoppingBag, Star, Loader2, Eye } from "lucide-react";
+import { ArrowRight, Heart, ShoppingBag, Star, Loader2 } from "lucide-react";
 import { Reveal } from "./Reveal";
-import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -36,7 +35,6 @@ function resolveProductImage(product: any): string | null {
 }
 
 export function Products({ products: initialProducts }: { products?: any[] }) {
-  const { addItem } = useCart();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const listPublicProductsFn = useServerFn(listPublicProducts);
 
@@ -50,21 +48,6 @@ export function Products({ products: initialProducts }: { products?: any[] }) {
   });
 
   const displayProducts = (initialProducts || products) as any[];
-
-  const handleAddToCart = (e: React.MouseEvent, product: any) => {
-    e.stopPropagation();
-    e.preventDefault();
-    const mainImage = resolveProductImage(product);
-
-    addItem({
-      id: product.id,
-      name: product.name,
-      subtitle: product.subtitle || '',
-      price: `R$ ${Number(product.price).toFixed(2)}`,
-      image: mainImage || '',
-    });
-    toast.success("Produto adicionado ao carrinho!");
-  };
 
   return (
     <section id="mais-vendidos" className="bg-background">
@@ -91,7 +74,7 @@ export function Products({ products: initialProducts }: { products?: any[] }) {
               <Reveal key={product.id} delay={index * 60}>
                 <article
                   onClick={() => setSelectedProduct(product)}
-                  className="group relative h-full overflow-hidden rounded-xl border border-border bg-card transition-shadow duration-300 hover:shadow-card cursor-pointer"
+                  className="group relative h-full overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:shadow-card hover:-translate-y-0.5 active:scale-[0.98] cursor-pointer"
                 >
                   <div className="relative">
                     <button
@@ -110,25 +93,13 @@ export function Products({ products: initialProducts }: { products?: any[] }) {
                           loading="lazy"
                           width={600}
                           height={600}
-                          className="mx-auto h-32 w-auto object-contain transition-transform duration-500 group-hover:scale-110 sm:h-36"
+                          className="mx-auto h-32 w-auto object-contain transition-transform duration-500 group-hover:scale-105 sm:h-36"
                         />
                       ) : (
                         <div className="grid h-32 sm:h-36 place-items-center text-muted-foreground text-xs">
                           Sem imagem
                         </div>
                       )}
-
-                      <button
-                        type="button"
-                        aria-label="Adicionar ao carrinho"
-                        onClick={(e) => handleAddToCart(e, product)}
-                        className="absolute inset-0 grid place-items-center bg-pink/85 text-primary-foreground opacity-0 transition-opacity duration-300 group-hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:focus-visible:opacity-100"
-                      >
-                        <span className="flex items-center gap-1.5 rounded-full bg-white text-pink text-xs font-bold px-4 py-2 shadow-md">
-                          <ShoppingBag className="size-3.5" />
-                          Adicionar
-                        </span>
-                      </button>
                     </div>
                   </div>
 

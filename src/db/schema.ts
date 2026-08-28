@@ -16,6 +16,20 @@ import {
 
 export const appRole = pgEnum("app_role", ["admin", "user"]);
 
+export const productStatus = pgEnum("product_status", ["active", "inactive", "draft"]);
+
+export const expenseType = pgEnum("expense_type", [
+  "funcionaria",
+  "fornecedores",
+  "agua",
+  "luz",
+  "internet",
+  "aluguel",
+  "marketing",
+  "impostos",
+  "outros",
+]);
+
 export const users = pgTable(
   "users",
   {
@@ -86,6 +100,26 @@ export const productImages = pgTable(
   (t) => [index("product_images_product_id_idx").on(t.productId)],
 );
 
+export const productVariations = pgTable(
+  "product_variations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    variationName: varchar("variation_name", { length: 100 }).notNull(),
+    optionValue: varchar("option_value", { length: 100 }).notNull(),
+    stock: integer("stock").default(0).notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("product_variations_product_id_idx").on(t.productId),
+    uniqueIndex("product_variations_unique_option").on(t.productId, t.variationName, t.optionValue),
+  ],
+);
+
 export const sales = pgTable("sales", {
   id: uuid("id").primaryKey().defaultRandom(),
   totalAmount: numeric("total_amount", { precision: 12, scale: 2 }).notNull(),
@@ -121,6 +155,7 @@ export const stockMovements = pgTable(
     productId: uuid("product_id")
       .notNull()
       .references(() => products.id, { onDelete: "cascade" }),
+    variationId: uuid("variation_id").references(() => productVariations.id, { onDelete: "set null" }),
     quantity: integer("quantity").notNull(),
     type: varchar("type", { length: 32 }).notNull(),
     saleId: uuid("sale_id").references(() => sales.id, { onDelete: "set null" }),
@@ -128,6 +163,24 @@ export const stockMovements = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [index("stock_movements_product_id_idx").on(t.productId)],
+);
+
+export const expenses = pgTable(
+  "expenses",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    type: expenseType("type").notNull(),
+    description: text("description").notNull(),
+    amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+    expenseDate: timestamp("expense_date", { withTimezone: true }).defaultNow().notNull(),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index("expenses_type_idx").on(t.type),
+    index("expenses_date_idx").on(t.expenseDate),
+  ],
 );
 
 export type User = typeof users.$inferSelect;
@@ -139,9 +192,13 @@ export type Product = typeof products.$inferSelect;
 export type NewProduct = typeof products.$inferInsert;
 export type ProductImage = typeof productImages.$inferSelect;
 export type NewProductImage = typeof productImages.$inferInsert;
+export type ProductVariation = typeof productVariations.$inferSelect;
+export type NewProductVariation = typeof productVariations.$inferInsert;
 export type Sale = typeof sales.$inferSelect;
 export type NewSale = typeof sales.$inferInsert;
 export type SaleItem = typeof saleItems.$inferSelect;
 export type NewSaleItem = typeof saleItems.$inferInsert;
 export type StockMovement = typeof stockMovements.$inferSelect;
 export type NewStockMovement = typeof stockMovements.$inferInsert;
+export type Expense = typeof expenses.$inferSelect;
+export type NewExpense = typeof expenses.$inferInsert;
