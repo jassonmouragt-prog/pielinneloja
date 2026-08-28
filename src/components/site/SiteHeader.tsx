@@ -1,4 +1,4 @@
-import { Heart, Menu, Search, ShoppingBag, Truck, User, ChevronRight } from "lucide-react";
+import { Heart, Menu, Search, ShoppingBag, ChevronRight } from "lucide-react";
 import { useState, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { CartDrawer } from "./CartDrawer";
@@ -6,6 +6,7 @@ import { CartDrawer } from "./CartDrawer";
 import logoAsset from "@/assets/logo.png.asset.json";
 import { resolveAssetUrl } from "@/lib/assets";
 import { navLinks } from "./data";
+import { AnnouncementBar } from "./AnnouncementBar";
 
 export function SiteHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -24,15 +25,7 @@ export function SiteHeader() {
 
   return (
     <header>
-      {/* announcement bar */}
-      <div className="bg-cream text-[11px] text-foreground/80 sm:text-xs">
-        <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 overflow-x-auto px-4 py-2.5 whitespace-nowrap sm:px-6">
-          <span className="flex items-center gap-1.5 font-bold">
-            <Truck className="size-3.5 shrink-0 text-pink" />
-            PREÇO FIXO: R$10, R$15 e R$20
-          </span>
-        </div>
-      </div>
+      <AnnouncementBar />
 
       {/* main bar */}
       <div className="bg-background">

@@ -202,8 +202,28 @@
   }
 }
 
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes bounce-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+
 @utility animate-fade-up {
   animation: fade-up 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@utility marquee-track {
+  display: inline-flex;
+  animation: marquee linear infinite;
+  will-change: transform;
+}
+
+@utility animate-bounce-soft {
+  animation: bounce-soft 1.4s ease-in-out infinite;
 }
 
 @utility reveal {

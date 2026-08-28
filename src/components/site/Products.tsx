@@ -9,6 +9,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { listPublicProducts } from "@/lib/queries.queries";
 import { publicImageUrl } from "@/lib/storage/public-url";
 
+
 function Stars({ rating }: { rating: number }) {
   return (
     <span className="flex items-center gap-0.5">
@@ -16,7 +17,9 @@ function Stars({ rating }: { rating: number }) {
         <Star
           key={star}
           className={`size-3 ${
-            star <= Math.round(rating) ? "fill-pink-light text-pink-light" : "fill-blush text-blush"
+            star <= Math.round(rating)
+              ? "fill-pink-light text-pink-light"
+              : "fill-blush text-blush"
           }`}
         />
       ))}
@@ -38,26 +41,27 @@ export function Products({ products: initialProducts }: { products?: any[] }) {
   const listPublicProductsFn = useServerFn(listPublicProducts);
 
   const { data: products, isLoading } = useQuery({
-    queryKey: ["public-products"],
+    queryKey: ['public-products'],
     queryFn: async () => {
       if (initialProducts) return initialProducts;
       return listPublicProductsFn({ data: { limit: 10 } });
     },
-    enabled: !initialProducts,
+    enabled: !initialProducts
   });
 
   const displayProducts = (initialProducts || products) as any[];
 
   const handleAddToCart = (e: React.MouseEvent, product: any) => {
     e.stopPropagation();
+    e.preventDefault();
     const mainImage = resolveProductImage(product);
 
     addItem({
       id: product.id,
       name: product.name,
-      subtitle: product.subtitle || "",
+      subtitle: product.subtitle || '',
       price: `R$ ${Number(product.price).toFixed(2)}`,
-      image: mainImage || "",
+      image: mainImage || '',
     });
     toast.success("Produto adicionado ao carrinho!");
   };
@@ -87,7 +91,7 @@ export function Products({ products: initialProducts }: { products?: any[] }) {
               <Reveal key={product.id} delay={index * 60}>
                 <article
                   onClick={() => setSelectedProduct(product)}
-                  className="group h-full overflow-hidden rounded-xl border border-border bg-card p-3 transition-shadow duration-300 hover:shadow-card cursor-pointer"
+                  className="group relative h-full overflow-hidden rounded-xl border border-border bg-card transition-shadow duration-300 hover:shadow-card cursor-pointer"
                 >
                   <div className="relative">
                     <button
@@ -98,50 +102,55 @@ export function Products({ products: initialProducts }: { products?: any[] }) {
                     >
                       <Heart className="size-3.5" />
                     </button>
-                    <div className="relative overflow-hidden rounded-lg bg-cream/30 p-2">
-                      {imageUrl && (
+                    <div className="relative overflow-hidden bg-cream/30 p-2">
+                      {imageUrl ? (
                         <img
                           src={imageUrl}
-                          alt={`${product.name} ${product.subtitle || ""}`}
+                          alt={`${product.name} ${product.subtitle || ''}`}
                           loading="lazy"
                           width={600}
                           height={600}
-                          className="mx-auto h-32 w-auto object-contain transition-transform duration-300 group-hover:scale-105 sm:h-36"
+                          className="mx-auto h-32 w-auto object-contain transition-transform duration-500 group-hover:scale-110 sm:h-36"
                         />
-                      )}
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                        <div className="rounded-full bg-white/90 p-2 text-pink shadow-md">
-                          <Eye className="size-4" />
+                      ) : (
+                        <div className="grid h-32 sm:h-36 place-items-center text-muted-foreground text-xs">
+                          Sem imagem
                         </div>
-                      </div>
+                      )}
+
+                      <button
+                        type="button"
+                        aria-label="Adicionar ao carrinho"
+                        onClick={(e) => handleAddToCart(e, product)}
+                        className="absolute inset-0 grid place-items-center bg-pink/85 text-primary-foreground opacity-0 transition-opacity duration-300 group-hover:opacity-100 focus-visible:opacity-100 sm:opacity-0 sm:focus-visible:opacity-100"
+                      >
+                        <span className="flex items-center gap-1.5 rounded-full bg-white text-pink text-xs font-bold px-4 py-2 shadow-md">
+                          <ShoppingBag className="size-3.5" />
+                          Adicionar
+                        </span>
+                      </button>
                     </div>
                   </div>
-                  <h3 className="mt-4 text-[12px] sm:text-[13px] leading-snug font-medium text-foreground line-clamp-2 min-h-[3em]">
-                    {product.name}
-                    <br />
-                    <span className="text-muted-foreground font-normal">
-                      {product.subtitle || ""}
-                    </span>
-                  </h3>
-                  <div className="mt-2 flex items-center gap-1.5">
-                    <Stars rating={4.5} />
-                    <span className="text-[11px] text-muted-foreground">(120)</span>
+
+                  <div className="p-3">
+                    <h3 className="text-[12px] sm:text-[13px] leading-snug font-medium text-foreground line-clamp-2 min-h-[3em]">
+                      {product.name}
+                      <br />
+                      <span className="text-muted-foreground font-normal">{product.subtitle || ''}</span>
+                    </h3>
+                    <div className="mt-2 flex items-center gap-1.5">
+                      <Stars rating={4.5} />
+                      <span className="text-[11px] text-muted-foreground">(120)</span>
+                    </div>
+                    <div className="mt-2 flex items-baseline gap-1.5">
+                      <span className="text-sm font-bold text-foreground">
+                        R$ {Number(product.price).toFixed(2)}
+                      </span>
+                      <span className="text-[10px] font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
+                        no Pix
+                      </span>
+                    </div>
                   </div>
-                  <div className="mt-2 flex items-baseline gap-1.5">
-                    <span className="text-sm font-bold text-foreground">
-                      R$ {Number(product.price).toFixed(2)}
-                    </span>
-                    <span className="text-[10px] font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
-                      no Pix
-                    </span>
-                  </div>
-                  <button
-                    onClick={(e) => handleAddToCart(e, product)}
-                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-md gradient-pink px-3 py-2 text-[11px] font-semibold text-primary-foreground transition-opacity duration-300 hover:opacity-90 cursor-pointer"
-                  >
-                    <ShoppingBag className="size-3.5" />
-                    Adicionar
-                  </button>
                 </article>
               </Reveal>
             );
