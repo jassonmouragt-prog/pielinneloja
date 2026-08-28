@@ -51,41 +51,80 @@ export const listPublicProducts = createServerFn({ method: "GET" })
 
     if (rows.length === 0) return [];
     const productIds = rows.map((r) => r.id);
-    const images = await db
-      .select()
-      .from(schema.productImages)
-      .where(
-        sql`${schema.productImages.productId} IN (${sql.join(
-          productIds.map((id) => sql`${id}`),
-          sql`, `,
-        )})`,
-      );
+
+    const [images, allVariations] = await Promise.all([
+      db
+        .select()
+        .from(schema.productImages)
+        .where(
+          sql`${schema.productImages.productId} IN (${sql.join(
+            productIds.map((id) => sql`${id}`),
+            sql`, `,
+          )})`,
+        ),
+      db
+        .select()
+        .from(schema.productVariations)
+        .where(
+          sql`${schema.productVariations.productId} IN (${sql.join(
+            productIds.map((id) => sql`${id}`),
+            sql`, `,
+          )})`,
+        ),
+    ]);
+
     const byProduct = new Map<string, typeof images>();
     for (const img of images) {
       const arr = byProduct.get(img.productId) ?? [];
       arr.push(img);
       byProduct.set(img.productId, arr);
     }
-    return rows.map((p) => ({
-      id: p.id,
-      name: p.name,
-      subtitle: p.subtitle,
-      description: p.description,
-      price: Number(p.price),
-      categoryId: p.categoryId,
-      stockQuantity: p.stockQuantity,
-      status: p.status,
-      variations: p.variations ?? [],
-      createdAt: p.createdAt?.toISOString() ?? null,
-      updatedAt: p.updatedAt?.toISOString() ?? null,
-      product_images: (byProduct.get(p.id) ?? []).map((img) => ({
-        id: img.id,
-        productId: img.productId,
-        url: img.url,
-        isMain: img.isMain,
-        createdAt: img.createdAt?.toISOString() ?? null,
-      })),
-    }));
+
+    const stockByProduct = new Map<string, Map<string, number>>();
+    for (const v of allVariations) {
+      const map = stockByProduct.get(v.productId) ?? new Map<string, number>();
+      map.set(`${v.variationName}::${v.optionValue}`, v.stock);
+      stockByProduct.set(v.productId, map);
+    }
+
+    return rows.map((p) => {
+      const stockMap = stockByProduct.get(p.id);
+      const baseVariations: any = p.variations ?? [];
+      const variationsForClient = Array.isArray(baseVariations)
+        ? baseVariations.map((v: any) => {
+            const stockByOption: Record<string, number> = {};
+            if (Array.isArray(v.options)) {
+              for (const opt of v.options) {
+                const optValue = typeof opt === "string" ? opt : opt.value;
+                const stock = stockMap?.get(`${v.name}::${optValue}`) ?? 0;
+                stockByOption[optValue] = stock;
+              }
+            }
+            return { name: v.name, options: v.options, stockByOption };
+          })
+        : [];
+
+      return {
+        id: p.id,
+        name: p.name,
+        subtitle: p.subtitle,
+        description: p.description,
+        price: Number(p.price),
+        categoryId: p.categoryId,
+        stockQuantity: p.stockQuantity,
+        status: p.status,
+        variations: variationsForClient,
+        createdAt: p.createdAt?.toISOString() ?? null,
+        updatedAt: p.updatedAt?.toISOString() ?? null,
+        product_images: (byProduct.get(p.id) ?? []).map((img) => ({
+          id: img.id,
+          productId: img.productId,
+          url: img.url,
+          isMain: img.isMain,
+          createdAt: img.createdAt?.toISOString() ?? null,
+        })),
+      };
+    });
   });
 
 export const listAdminProducts = createServerFn({ method: "GET" })

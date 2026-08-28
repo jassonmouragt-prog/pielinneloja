@@ -14,7 +14,7 @@ export interface CartItem {
 interface CartStore {
   items: CartItem[];
   isOpen: boolean;
-  addItem: (product: Omit<CartItem, "quantity">) => void;
+  addItem: (product: Omit<CartItem, "quantity">, quantity?: number) => void;
   removeItem: (name: string, variations?: Record<string, string>) => void;
   updateQuantity: (name: string, quantity: number, variations?: Record<string, string>) => void;
   clearCart: () => void;
@@ -27,7 +27,7 @@ export const useCart = create<CartStore>()(
     (set, get) => ({
       items: [],
       isOpen: false,
-      addItem: (product: Omit<CartItem, "quantity">) => {
+      addItem: (product: Omit<CartItem, "quantity">, quantity: number = 1) => {
         const currentItems = get().items;
         const existingItem = currentItems.find(
           (item) =>
@@ -40,14 +40,14 @@ export const useCart = create<CartStore>()(
             items: currentItems.map((item) =>
               item.name === product.name &&
               JSON.stringify(item.selectedVariations) === JSON.stringify(product.selectedVariations)
-                ? { ...item, quantity: item.quantity + 1 }
+                ? { ...item, quantity: item.quantity + quantity }
                 : item,
             ),
             isOpen: true,
           });
         } else {
           set({
-            items: [...currentItems, { ...product, quantity: 1 }],
+            items: [...currentItems, { ...product, quantity }],
             isOpen: true,
           });
         }
