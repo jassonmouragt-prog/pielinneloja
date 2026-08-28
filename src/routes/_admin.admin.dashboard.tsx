@@ -14,7 +14,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useServerFn } from "@tanstack/react-start";
 import { getRecentSales, getMonthSalesStats, getProductsForDashboard } from "@/lib/queries.queries";
-import { publicImageUrl } from "@/lib/storage/public-url";
 
 export const Route = createFileRoute("/_admin/admin/dashboard")({
   component: AdminDashboard,

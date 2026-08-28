@@ -12,7 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useState, useEffect } from "react";
-import logoAsset from "@/assets/logo.png.asset.json";
+import logoAsset from "@/assets/logo.png.asset.json"
+import { resolveAssetUrl } from "@/lib/assets";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { getCurrentSession, tokenStorage } from "@/lib/auth/auth.functions";
@@ -99,7 +100,7 @@ function AdminLayout() {
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center border-b border-gray-200 px-6 py-2">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logoAsset.url} alt="Logo" className="h-10 w-auto" />
+          <img src={resolveAssetUrl(logoAsset)} alt="Logo" className="h-10 w-auto" />
           <span className="text-lg font-bold text-pink">Admin</span>
         </Link>
       </div>
@@ -150,7 +151,7 @@ function AdminLayout() {
     <div className="flex min-h-screen bg-gray-50">
       <header className="fixed top-0 left-0 right-0 z-40 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 lg:hidden">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logoAsset.url} alt="Logo" className="h-8 w-auto" />
+          <img src={resolveAssetUrl(logoAsset)} alt="Logo" className="h-8 w-auto" />
           <span className="text-lg font-bold text-pink">Admin</span>
         </Link>
         <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>

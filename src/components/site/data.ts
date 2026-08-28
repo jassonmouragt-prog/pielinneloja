@@ -1,20 +1,3 @@
-import catAcessorios from "@/assets/cat-acessorios.png";
-import catCabelos from "@/assets/cat-cabelos.png";
-import catCorpo from "@/assets/cat-corpo.png";
-import catKits from "@/assets/cat-kits.png";
-import catMaquiagem from "@/assets/cat-maquiagem.png";
-import catSkincare from "@/assets/cat-skincare.png";
-import ig1 from "@/assets/ig-1.jpg";
-import ig2 from "@/assets/ig-2.jpg";
-import ig3 from "@/assets/ig-3.jpg";
-import ig4 from "@/assets/ig-4.jpg";
-import ig5 from "@/assets/ig-5.jpg";
-import prodBase from "@/assets/prod-base.png";
-import prodHidratante from "@/assets/prod-hidratante.png";
-import prodLipTint from "@/assets/prod-liptint.png";
-import prodMascara from "@/assets/prod-mascara.png";
-import prodPo from "@/assets/prod-po.png";
-
 export const navLinks = [
   "Maquiagem",
   "Skincare",
@@ -24,67 +7,6 @@ export const navLinks = [
   "Kits",
   "Novidades",
   "Promoções",
-];
-
-export const categories = [
-  { name: "Maquiagem", image: catMaquiagem, tone: "pink" as const },
-  { name: "Skincare", image: catSkincare, tone: "lilac" as const },
-  { name: "Cabelos", image: catCabelos, tone: "pink" as const },
-  { name: "Corpo", image: catCorpo, tone: "lilac" as const },
-  { name: "Acessórios", image: catAcessorios, tone: "lilac" as const },
-  { name: "Kits", image: catKits, tone: "pink" as const },
-  { name: "Novidades", image: null, tone: "pink" as const },
-];
-
-export const products = [
-  {
-    name: "Base Líquida",
-    subtitle: "Ruby Rose Feels",
-    image: prodBase,
-    rating: 4.5,
-    reviews: 120,
-    price: "R$ 20,00",
-  },
-  {
-    name: "Lip Tint Melu",
-    subtitle: "by Ruby Rose",
-    image: prodLipTint,
-    rating: 4,
-    reviews: 98,
-    price: "R$ 15,00",
-  },
-  {
-    name: "Pó Translúcido",
-    subtitle: "Playboy",
-    image: prodPo,
-    rating: 4.5,
-    reviews: 76,
-    price: "R$ 20,00",
-  },
-  {
-    name: "Máscara de Cílios",
-    subtitle: "Dailus",
-    image: prodMascara,
-    rating: 4.5,
-    reviews: 64,
-    price: "R$ 15,00",
-  },
-  {
-    name: "Hidratante Labial",
-    subtitle: "Melu",
-    image: prodHidratante,
-    rating: 4.5,
-    reviews: 52,
-    price: "R$ 10,00",
-  },
-];
-
-export const instagramPosts = [
-  { image: ig1, alt: "Destaque de cores e produtos" },
-  { image: ig2, alt: "Organização e beleza na loja" },
-  { image: ig3, alt: "Ambiente da loja" },
-  { image: ig4, alt: "Variedade de maquiagens" },
-  { image: ig5, alt: "Kits especiais" },
 ];
 
 export const footerColumns = [

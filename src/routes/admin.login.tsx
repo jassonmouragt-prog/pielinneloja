@@ -13,7 +13,8 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import logoAsset from "@/assets/logo.png.asset.json";
+import logoAsset from "@/assets/logo.png.asset.json"
+import { resolveAssetUrl } from "@/lib/assets";
 import { useServerFn } from "@tanstack/react-start";
 import { signIn, getCurrentSession, tokenStorage } from "@/lib/auth/auth.functions";
 
@@ -75,7 +76,7 @@ function AdminLoginPage() {
         <CardHeader className="space-y-4">
           <div className="flex justify-center">
             <Link to="/">
-              <img src={logoAsset.url} alt="Logo" className="h-20 w-auto" />
+              <img src={resolveAssetUrl(logoAsset)} alt="Logo" className="h-20 w-auto" />
             </Link>
           </div>
           <CardTitle className="text-center text-2xl font-bold">Admin Sua Lojinha</CardTitle>

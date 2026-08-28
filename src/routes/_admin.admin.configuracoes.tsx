@@ -81,7 +81,14 @@ function AdminSettingsPage() {
       let imageFileName: string | null = null;
       if (pendingFile) {
         const buffer = await pendingFile.arrayBuffer();
-        imageBase64 = Buffer.from(buffer).toString("base64");
+        const bytes = new Uint8Array(buffer);
+        let binary = "";
+        const chunkSize = 0x8000;
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+          const chunk = bytes.subarray(i, i + chunkSize);
+          binary += String.fromCharCode.apply(null, Array.from(chunk));
+        }
+        imageBase64 = btoa(binary);
         imageContentType = pendingFile.type;
         imageFileName = pendingFile.name;
       }

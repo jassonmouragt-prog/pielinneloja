@@ -227,7 +227,14 @@ function AdminProductsPage() {
       let imageFileName: string | null = null;
       if (imageFile) {
         const buffer = await imageFile.arrayBuffer();
-        imageBase64 = Buffer.from(buffer).toString("base64");
+        const bytes = new Uint8Array(buffer);
+        let binary = "";
+        const chunkSize = 0x8000;
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+          const chunk = bytes.subarray(i, i + chunkSize);
+          binary += String.fromCharCode.apply(null, Array.from(chunk));
+        }
+        imageBase64 = btoa(binary);
         imageContentType = imageFile.type;
         imageFileName = imageFile.name;
         setUploadProgress(60);

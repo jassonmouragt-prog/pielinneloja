@@ -4,11 +4,20 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
+import { publicImageUrl } from "@/lib/storage/public-url";
 
 interface ProductModalProps {
   product: any;
   isOpen: boolean;
   onClose: () => void;
+}
+
+function resolveProductImage(product: any): string | null {
+  const images = product?.product_images ?? product?.productImages ?? [];
+  const main = images.find((img: any) => img.is_main || img.isMain);
+  const url = (main ?? images[0])?.url;
+  if (!url) return null;
+  return publicImageUrl(url);
 }
 
 export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
@@ -31,9 +40,8 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
 
   if (!product) return null;
 
-  const mainImage =
-    product.product_images?.find((img: any) => img.is_main)?.url ||
-    product.product_images?.[0]?.url;
+  const mainImage = resolveProductImage(product);
+  const stock = product.stockQuantity ?? product.stock ?? 0;
 
   const handleAddToCart = () => {
     addItem({
@@ -41,7 +49,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
       name: product.name,
       subtitle: product.subtitle || "",
       price: `R$ ${Number(product.price).toFixed(2)}`,
-      image: mainImage,
+      image: mainImage || "",
       selectedVariations:
         Object.keys(selectedVariations).length > 0 ? selectedVariations : undefined,
     });
@@ -53,16 +61,18 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="w-[95vw] max-w-4xl p-0 overflow-hidden sm:rounded-2xl max-h-[90vh] overflow-y-auto">
         <div className="grid grid-cols-1 md:grid-cols-2">
-          {/* Imagem do Produto */}
           <div className="bg-cream/30 p-8 flex items-center justify-center relative min-h-[300px] md:min-h-[500px]">
-            <img
-              src={mainImage}
-              alt={product.name}
-              className="max-h-full max-w-full object-contain drop-shadow-xl animate-fade-up"
-            />
+            {mainImage ? (
+              <img
+                src={mainImage}
+                alt={product.name}
+                className="max-h-full max-w-full object-contain drop-shadow-xl animate-fade-up"
+              />
+            ) : (
+              <div className="text-muted-foreground text-sm">Sem imagem</div>
+            )}
           </div>
 
-          {/* Detalhes do Produto */}
           <div className="p-8 flex flex-col justify-center">
             <div className="space-y-4">
               <div>
@@ -76,9 +86,9 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 <span className="text-2xl font-bold text-pink">
                   R$ {Number(product.price).toFixed(2)}
                 </span>
-                {product.stock <= 5 && product.stock > 0 && (
+                {stock <= 5 && stock > 0 && (
                   <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                    Apenas {product.stock} em estoque
+                    Apenas {stock} em estoque
                   </span>
                 )}
               </div>

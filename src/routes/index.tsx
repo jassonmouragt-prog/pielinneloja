@@ -38,10 +38,6 @@ function Index() {
         <Products />
         <KitsBanner />
         <InstagramSection />
-        <div className="hidden">
-          Implementar correções para garantir que eu consiga acessar o painel admin pelo dispositivo
-          mobile sem falhas de redirecionamento ou carregamento.
-        </div>
       </main>
       <SiteFooter />
     </div>

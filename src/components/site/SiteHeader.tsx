@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { CartDrawer } from "./CartDrawer";
 
 import logoAsset from "@/assets/logo.png.asset.json";
+import { resolveAssetUrl } from "@/lib/assets";
 import { navLinks } from "./data";
 
 export function SiteHeader() {
@@ -38,7 +39,7 @@ export function SiteHeader() {
         <div className="mx-auto grid max-w-[1200px] grid-cols-[auto_1fr] items-center gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[200px_1fr_auto] lg:gap-8 lg:py-5">
           <Link to="/" className="shrink-0">
             <img
-              src={logoAsset.url}
+              src={resolveAssetUrl(logoAsset)}
               alt="Sua Lojinha Maakeup"
               width={200}
               height={147}

@@ -14,7 +14,8 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:migrate": "tsx scripts/migrate.ts",
-    "db:bootstrap": "tsx scripts/bootstrap.ts"
+    "db:bootstrap": "tsx scripts/bootstrap.ts",
+    "assets:upload": "tsx scripts/upload-static-assets.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1119.0",

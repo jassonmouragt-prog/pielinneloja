@@ -3,7 +3,7 @@ import { z } from "zod";
 import { db, schema } from "@/db/client";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "@/lib/auth/auth-middleware";
-import { uploadFile, deleteFile, buildPublicUrl } from "@/lib/storage/r2";
+import { uploadFile, deleteFile } from "@/lib/storage/r2";
 import { randomUUID } from "node:crypto";
 
 const PRODUCT_KEY_PREFIX = "products";
@@ -183,4 +183,4 @@ export const listCategoriesAdmin = createServerFn({ method: "GET" })
     return db.select().from(schema.categories).orderBy(schema.categories.name);
   });
 
-export { buildPublicUrl };
+export { };
