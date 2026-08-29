@@ -78,10 +78,46 @@ export const upsertProduct = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { db: tx } = context;
-    const normalizedVariations = data.variations.map((v) => ({
-      name: v.name,
-      options: v.options.map((o) => (typeof o === "string" ? o : o.value)),
-    }));
+
+    // Normalize variations and extract options with stocks
+    const variationRowsToInsert: Array<{
+      productId: string;
+      variationName: string;
+      optionValue: string;
+      stock: number;
+      sortOrder: number;
+    }> = [];
+
+    let totalVariationStock = 0;
+    let hasVariationOptions = false;
+
+    const normalizedVariations = data.variations
+      .filter((v) => v.name && v.name.trim().length > 0)
+      .map((v) => {
+        const groupName = v.name.trim();
+        const validOptions = v.options.filter((o) => {
+          const val = typeof o === "string" ? o : o.value;
+          return Boolean(val && val.trim().length > 0);
+        });
+
+        return {
+          name: groupName,
+          options: validOptions.map((o, idx) => {
+            const val = typeof o === "string" ? o.trim() : o.value.trim();
+            const stock = typeof o === "object" && typeof o.stock === "number" ? Math.max(0, o.stock) : 0;
+            hasVariationOptions = true;
+            totalVariationStock += stock;
+            return val;
+          }),
+        };
+      });
+
+    // If variations have options configured, product stock is the sum of variations
+    // Otherwise, use the manually provided stockQuantity
+    const effectiveStock =
+      hasVariationOptions && totalVariationStock > 0
+        ? totalVariationStock
+        : data.stockQuantity;
 
     const payload = {
       name: data.name,
@@ -89,7 +125,7 @@ export const upsertProduct = createServerFn({ method: "POST" })
       description: data.description || null,
       price: data.price.toString(),
       categoryId: data.categoryId || null,
-      stockQuantity: data.stockQuantity,
+      stockQuantity: effectiveStock,
       status: data.status,
       variations: normalizedVariations,
       updatedAt: new Date(),
@@ -103,16 +139,45 @@ export const upsertProduct = createServerFn({ method: "POST" })
       const created = inserted[0];
       if (!created) throw new Error("Failed to create product");
       productId = created.id;
-      if (data.stockQuantity > 0 && productId) {
+      if (effectiveStock > 0 && productId) {
         await tx.insert(schema.stockMovements).values({
           productId,
-          quantity: data.stockQuantity,
+          quantity: effectiveStock,
           type: "in",
           notes: "Estoque inicial",
         });
       }
     } else {
       await tx.update(schema.products).set(payload).where(eq(schema.products.id, data.id!));
+    }
+
+    if (productId) {
+      // Sync product_variations rows
+      await tx
+        .delete(schema.productVariations)
+        .where(eq(schema.productVariations.productId, productId));
+
+      for (const v of data.variations) {
+        if (!v.name || !v.name.trim()) continue;
+        for (let i = 0; i < v.options.length; i++) {
+          const opt = v.options[i];
+          if (!opt) continue;
+          const optValue = typeof opt === "string" ? opt.trim() : opt.value.trim();
+          if (!optValue) continue;
+          const optStock = typeof opt === "object" && typeof opt.stock === "number" ? Math.max(0, opt.stock) : 0;
+          variationRowsToInsert.push({
+            productId,
+            variationName: v.name.trim(),
+            optionValue: optValue,
+            stock: optStock,
+            sortOrder: i,
+          });
+        }
+      }
+
+      if (variationRowsToInsert.length > 0) {
+        await tx.insert(schema.productVariations).values(variationRowsToInsert);
+      }
     }
 
     if (data.imageBase64 && data.imageContentType && data.imageFileName && productId) {

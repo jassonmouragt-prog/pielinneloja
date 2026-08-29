@@ -248,7 +248,12 @@ function AdminProductsPage() {
         .filter((v) => v.name.trim().length > 0)
         .map((v) => ({
           name: v.name.trim(),
-          options: v.options.filter((o) => o.value.trim().length > 0),
+          options: v.options
+            .filter((o) => o.value.trim().length > 0)
+            .map((o) => ({
+              value: o.value.trim(),
+              stock: typeof o.stock === "number" ? Math.max(0, o.stock) : 0,
+            })),
         }));
 
       await syncVariationsFn({
@@ -262,7 +267,7 @@ function AdminProductsPage() {
       setIsVariationDialogOpen(false);
       setVariationProduct(null);
       setActiveVariations([]);
-      refetch();
+      await refetch();
     } catch (error: any) {
       console.error("Erro ao salvar variações:", error);
       toast.error(error.message || "Erro ao salvar variações.");

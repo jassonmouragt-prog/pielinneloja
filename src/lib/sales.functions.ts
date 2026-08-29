@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db, schema } from "@/db/client";
-import { sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 export const registerPendingSale = createServerFn({ method: "POST" })
   .validator((data: unknown) =>
@@ -101,13 +101,33 @@ export const updateSaleStatus = createServerFn({ method: "POST" })
           .limit(1);
         const product = productRows[0];
         if (product) {
+          const updatedStock = Math.max(0, (product.stockQuantity ?? 0) - item.quantity);
           await db
             .update(schema.products)
             .set({
-              stockQuantity: (product.stockQuantity ?? 0) - item.quantity,
+              stockQuantity: updatedStock,
               updatedAt: new Date(),
             })
             .where(sql`${schema.products.id} = ${item.productId}`);
+        }
+
+        if (item.variations && typeof item.variations === "object") {
+          for (const [varName, optValue] of Object.entries(item.variations as Record<string, string>)) {
+            if (!varName || !optValue) continue;
+            await db
+              .update(schema.productVariations)
+              .set({
+                stock: sql`GREATEST(0, ${schema.productVariations.stock} - ${item.quantity})`,
+                updatedAt: new Date(),
+              })
+              .where(
+                and(
+                  eq(schema.productVariations.productId, item.productId),
+                  eq(schema.productVariations.variationName, varName),
+                  eq(schema.productVariations.optionValue, optValue),
+                ),
+              );
+          }
         }
       }
     }

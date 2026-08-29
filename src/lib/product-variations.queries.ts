@@ -59,14 +59,17 @@ export const syncProductVariations = createServerFn({ method: "POST" })
       }> = [];
 
       let totalStock = 0;
+      let hasAnyOptions = false;
+
       for (const v of data.variations) {
         for (let i = 0; i < v.options.length; i++) {
           const opt = v.options[i];
-          if (!opt) continue;
+          if (!opt || !opt.value.trim()) continue;
+          hasAnyOptions = true;
           rowsToInsert.push({
             productId: data.productId,
-            variationName: v.name,
-            optionValue: opt.value,
+            variationName: v.name.trim(),
+            optionValue: opt.value.trim(),
             stock: opt.stock,
             sortOrder: i,
           });
@@ -78,14 +81,25 @@ export const syncProductVariations = createServerFn({ method: "POST" })
         await tx.insert(schema.productVariations).values(rowsToInsert);
       }
 
-      await tx
-        .update(schema.products)
-        .set({
-          stockQuantity: totalStock,
-          variations: data.variations,
-          updatedAt: new Date(),
-        })
-        .where(eq(schema.products.id, data.productId));
+      if (hasAnyOptions) {
+        await tx
+          .update(schema.products)
+          .set({
+            stockQuantity: totalStock,
+            variations: data.variations,
+            updatedAt: new Date(),
+          })
+          .where(eq(schema.products.id, data.productId));
+      } else {
+        // If no variation options, just clear variations without resetting stockQuantity
+        await tx
+          .update(schema.products)
+          .set({
+            variations: [],
+            updatedAt: new Date(),
+          })
+          .where(eq(schema.products.id, data.productId));
+      }
     });
 
     return { success: true };
@@ -106,12 +120,32 @@ export const getProductWithVariations = createServerFn({ method: "GET" })
     const variations = await db
       .select()
       .from(schema.productVariations)
-      .where(eq(schema.productVariations.productId, data.productId));
+      .where(eq(schema.productVariations.productId, data.productId))
+      .orderBy(asc(schema.productVariations.variationName), asc(schema.productVariations.sortOrder));
 
     const grouped: Record<string, Array<{ value: string; stock: number; id: string }>> = {};
     for (const v of variations) {
       if (!grouped[v.variationName]) grouped[v.variationName] = [];
       grouped[v.variationName]!.push({ value: v.optionValue, stock: v.stock, id: v.id });
+    }
+
+    let resultVariations = Object.entries(grouped).map(([name, opts]) => ({ name, options: opts }));
+
+    // Fallback if product_variations table has no rows but product.variations JSON has data
+    if (resultVariations.length === 0 && Array.isArray(product.variations) && product.variations.length > 0) {
+      const parsed: Array<{ name: string; options: Array<{ value: string; stock: number; id: string }> }> = [];
+      for (const v of product.variations as any[]) {
+        if (!v?.name || !Array.isArray(v.options)) continue;
+        parsed.push({
+          name: v.name,
+          options: v.options.map((opt: any, idx: number) => ({
+            id: `legacy-${idx}`,
+            value: typeof opt === "string" ? opt : (opt?.value || ""),
+            stock: typeof opt === "object" && typeof opt?.stock === "number" ? opt.stock : (product.stockQuantity ?? 0),
+          })),
+        });
+      }
+      resultVariations = parsed;
     }
 
     return {
@@ -120,6 +154,6 @@ export const getProductWithVariations = createServerFn({ method: "GET" })
         name: product.name,
         stockQuantity: product.stockQuantity,
       },
-      variations: Object.entries(grouped).map(([name, opts]) => ({ name, options: opts })),
+      variations: resultVariations,
     };
   });
