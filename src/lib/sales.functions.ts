@@ -113,10 +113,3 @@ export const updateSaleStatus = createServerFn({ method: "POST" })
     }
     return { success: true };
   });
-
-export const resetAllSales = createServerFn({ method: "POST" }).handler(async () => {
-  await db.delete(schema.saleItems);
-  await db.delete(schema.stockMovements).where(sql`${schema.stockMovements.type} = 'sale'`);
-  await db.delete(schema.sales);
-  return { success: true };
-});

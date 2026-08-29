@@ -4,14 +4,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Loader2, Save, Upload, Pencil, AlertCircle } from "lucide-react";
+import { Plus, Trash2, Loader2, Save, Upload, Pencil } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -28,7 +26,6 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { resetAllSales } from "@/lib/sales.functions";
 import { upsertCategory, deleteCategory, listCategoriesAdmin } from "@/lib/admin/admin.queries";
 import { publicImageUrl } from "@/lib/storage/public-url";
 
@@ -45,14 +42,10 @@ export const Route = createFileRoute("/_admin/admin/configuracoes")({
 });
 
 function AdminSettingsPage() {
-  const queryClient = useQueryClient();
-  const resetSalesFn = useServerFn(resetAllSales);
   const listCategoriesAdminFn = useServerFn(listCategoriesAdmin);
   const upsertCategoryFn = useServerFn(upsertCategory);
   const deleteCategoryFn = useServerFn(deleteCategory);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
-  const [isResetting, setIsResetting] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -166,22 +159,6 @@ function AdminSettingsPage() {
       refetch();
     } catch (error: any) {
       toast.error("Erro ao excluir: " + error.message);
-    }
-  };
-
-  const handleResetSales = async () => {
-    setIsResetting(true);
-    try {
-      await resetSalesFn();
-      toast.success("Todas as vendas foram zeradas com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["admin-sales"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-billing-stats"] });
-      setIsResetDialogOpen(false);
-    } catch (error: any) {
-      toast.error("Erro ao zerar vendas: " + error.message);
-    } finally {
-      setIsResetting(false);
     }
   };
 
@@ -401,59 +378,6 @@ function AdminSettingsPage() {
           </CardContent>
         </Card>
       </div>
-
-      <Card className="mt-6 border-red-100 bg-red-50/10">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-red-600" />
-            <CardTitle className="text-red-600">Gerenciamento de Dados</CardTitle>
-          </div>
-          <CardDescription>Ações críticas que afetam os dados da loja.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border border-red-200 bg-red-50">
-            <div>
-              <p className="font-semibold text-red-900">Zerar Histórico de Vendas</p>
-              <p className="text-sm text-red-700">
-                Esta ação apagará permanentemente todas as vendas e itens registrados.
-              </p>
-            </div>
-
-            <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="destructive">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Zerar Vendas
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Você tem certeza absoluta?</DialogTitle>
-                  <DialogDescription>
-                    Esta ação é irreversível. Todas as vendas, itens de venda e movimentações de
-                    estoque vinculadas a vendas serão deletados permanentemente.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter className="mt-4 gap-2">
-                  <Button variant="outline" onClick={() => setIsResetDialogOpen(false)}>
-                    Cancelar
-                  </Button>
-                  <Button variant="destructive" onClick={handleResetSales} disabled={isResetting}>
-                    {isResetting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Zerando...
-                      </>
-                    ) : (
-                      "Sim, Zerar Tudo"
-                    )}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
