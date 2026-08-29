@@ -18,8 +18,8 @@ export const Route = createFileRoute("/categoria/$slug")({
   head: ({ params }) => {
     const slug = params.slug;
     const name = slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, " ");
-    const title = `${name} | Sua Lojinha Maakeup`;
-    const description = `Confira nossa seleção de ${name} na Sua Lojinha Maakeup. Melhores preços e qualidade para sua beleza.`;
+    const title = `${name} | Sua Lojinha Makeup`;
+    const description = `Confira nossa seleção de ${name} na Sua Lojinha Makeup. Melhores preços e qualidade para sua beleza.`;
 
     return {
       meta: [

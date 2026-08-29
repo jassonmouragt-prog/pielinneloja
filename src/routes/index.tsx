@@ -11,7 +11,7 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 import { Testimonials } from "@/components/site/Testimonials";
 import { TopSelling } from "@/components/site/TopSelling";
 
-const title = "Sua Lojinha Maakeup | Maquiagem e Beleza com Preço que Você Ama";
+const title = "Sua Lojinha Makeup | Loja Oficial";
 const description =
   "Loja de maquiagem, skincare, cabelos e kits de beleza. Frete para todo o Brasil e parcele em até 6x.";
 

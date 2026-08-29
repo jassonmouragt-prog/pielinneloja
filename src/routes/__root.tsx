@@ -78,13 +78,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Sua Lojinha Maakeup" },
+      { title: "Sua Lojinha Makeup | Loja Oficial" },
       {
         name: "description",
         content: "Maquiagem, skincare e kits de beleza com preços que você ama.",
       },
-      { name: "author", content: "Sua Lojinha Maakeup" },
-      { property: "og:title", content: "Sua Lojinha Maakeup" },
+      { name: "author", content: "Sua Lojinha Makeup" },
+      { property: "og:title", content: "Sua Lojinha Makeup | Loja Oficial" },
       {
         property: "og:description",
         content: "Maquiagem, skincare e kits de beleza com preços que você ama.",
