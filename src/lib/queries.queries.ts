@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db, schema } from "@/db/client";
-import { and, desc, eq, gte, lte, sql, sum } from "drizzle-orm";
+import { and, desc, eq, gt, gte, lte, sql, sum } from "drizzle-orm";
 import { optionalAuth, requireAuth } from "@/lib/auth/auth-middleware";
 
 export const listCategories = createServerFn({ method: "GET" }).handler(async () => {
@@ -27,7 +27,10 @@ export const listPublicProducts = createServerFn({ method: "GET" })
       .parse(data),
   )
   .handler(async ({ data }) => {
-    const conds = [eq(schema.products.status, "active")];
+    const conds = [
+      eq(schema.products.status, "active"),
+      gt(schema.products.stockQuantity, 0),
+    ];
     if (data?.categoryId) conds.push(eq(schema.products.categoryId, data.categoryId));
 
     const rows = await db

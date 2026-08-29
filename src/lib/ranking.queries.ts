@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { db, schema } from "@/db/client";
-import { and, eq, gte, sql, sum, desc } from "drizzle-orm";
+import { and, desc, eq, gt, gte, sql, sum } from "drizzle-orm";
 
 export const getTopSellingProducts = createServerFn({ method: "GET" }).handler(
   async () => {
@@ -23,6 +23,8 @@ export const getTopSellingProducts = createServerFn({ method: "GET" }).handler(
         and(
           eq(schema.sales.status, "confirmed"),
           gte(schema.sales.createdAt, firstDayOfMonth),
+          eq(schema.products.status, "active"),
+          gt(schema.products.stockQuantity, 0),
         ),
       )
       .groupBy(schema.saleItems.productId, schema.products.name, schema.products.subtitle, schema.products.price, schema.products.status)

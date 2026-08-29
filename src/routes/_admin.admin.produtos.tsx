@@ -140,6 +140,14 @@ function AdminProductsPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  const [variationProduct, setVariationProduct] = useState<any | null>(null);
+  const [isVariationDialogOpen, setIsVariationDialogOpen] = useState(false);
+  const [isLoadingVariations, setIsLoadingVariations] = useState(false);
+  const [isSavingVariations, setIsSavingVariations] = useState(false);
+  const [activeVariations, setActiveVariations] = useState<
+    Array<{ name: string; options: Array<{ value: string; stock: number }> }>
+  >([]);
+
   const listProductsFn = useServerFn(listAdminProducts);
   const listCategoriesFn = useServerFn(listCategories);
   const upsertProductFn = useServerFn(upsertProduct);
@@ -192,6 +200,74 @@ function AdminProductsPage() {
       form.setValue("variations", variationsForForm as any);
     } catch (e) {
       console.error("Failed to load product variations", e);
+    }
+  };
+
+  const handleOpenVariations = async (product: any) => {
+    setVariationProduct(product);
+    setIsVariationDialogOpen(true);
+    setIsLoadingVariations(true);
+    try {
+      const data = await getProductVariationsFn({ data: { productId: product.id } });
+      if (data && data.variations && data.variations.length > 0) {
+        setActiveVariations(
+          data.variations.map((v: any) => ({
+            name: v.name,
+            options: (v.options || []).map((o: any) => ({
+              value: typeof o === "string" ? o : o.value,
+              stock: typeof o === "object" && typeof o.stock === "number" ? o.stock : 0,
+            })),
+          })),
+        );
+      } else if (Array.isArray(product.variations) && product.variations.length > 0) {
+        setActiveVariations(
+          product.variations.map((v: any) => ({
+            name: v.name,
+            options: (v.options || []).map((o: any) => ({
+              value: typeof o === "string" ? o : o.value,
+              stock: typeof o === "object" && typeof o.stock === "number" ? o.stock : 0,
+            })),
+          })),
+        );
+      } else {
+        setActiveVariations([]);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar variações:", err);
+      toast.error("Erro ao carregar variações do produto.");
+    } finally {
+      setIsLoadingVariations(false);
+    }
+  };
+
+  const handleSaveVariations = async () => {
+    if (!variationProduct) return;
+    setIsSavingVariations(true);
+    try {
+      const cleaned = activeVariations
+        .filter((v) => v.name.trim().length > 0)
+        .map((v) => ({
+          name: v.name.trim(),
+          options: v.options.filter((o) => o.value.trim().length > 0),
+        }));
+
+      await syncVariationsFn({
+        data: {
+          productId: variationProduct.id,
+          variations: cleaned,
+        },
+      });
+
+      toast.success("Variações e estoque atualizados com sucesso!");
+      setIsVariationDialogOpen(false);
+      setVariationProduct(null);
+      setActiveVariations([]);
+      refetch();
+    } catch (error: any) {
+      console.error("Erro ao salvar variações:", error);
+      toast.error(error.message || "Erro ao salvar variações.");
+    } finally {
+      setIsSavingVariations(false);
     }
   };
 
@@ -770,13 +846,30 @@ function AdminProductsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1 sm:gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(product)}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 gap-1.5 px-2.5 text-xs text-foreground/80 hover:text-pink hover:border-pink/40"
+                          title="Gerenciar Variações"
+                          onClick={() => handleOpenVariations(product)}
+                        >
+                          <Tag className="h-3.5 w-3.5 text-pink" />
+                          <span className="hidden sm:inline">Variações</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          title="Editar Produto"
+                          onClick={() => handleEdit(product)}
+                        >
                           <Edit2 className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-red-500"
+                          className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                          title="Excluir Produto"
                           onClick={() => {
                             setProductToDelete(product.id);
                             setIsDeleteDialogOpen(true);
@@ -817,6 +910,227 @@ function AdminProductsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Modal de Edição Rápida de Variações */}
+      <Dialog open={isVariationDialogOpen} onOpenChange={setIsVariationDialogOpen}>
+        <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold">
+              <Tag className="size-5 text-pink" />
+              Editar Variações - {variationProduct?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Adicione ou altere variações (ex: Cores, Tons, Tamanhos) e configure o estoque específico de cada opção.
+            </DialogDescription>
+          </DialogHeader>
+
+          {isLoadingVariations ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-2 text-muted-foreground">
+              <Loader2 className="h-8 w-8 animate-spin text-pink" />
+              <p className="text-sm">Carregando variações...</p>
+            </div>
+          ) : (
+            <div className="space-y-5 py-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs text-muted-foreground">
+                    O estoque total do produto será sincronizado com a soma das opções:
+                  </span>
+                  <div className="text-sm font-semibold text-foreground">
+                    Total em estoque:{" "}
+                    <span className="text-pink font-bold">
+                      {activeVariations.reduce(
+                        (total, v) =>
+                          total + v.options.reduce((sum, opt) => sum + (Number(opt.stock) || 0), 0),
+                        0,
+                      )}
+                    </span>{" "}
+                    unidades
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setActiveVariations((prev) => [...prev, { name: "", options: [] }])
+                  }
+                  className="gap-1.5"
+                >
+                  <Plus className="size-4" />
+                  Novo Grupo
+                </Button>
+              </div>
+
+              {activeVariations.length === 0 ? (
+                <div className="p-8 text-center border border-dashed rounded-lg bg-muted/20 space-y-3">
+                  <Tag className="size-8 mx-auto text-muted-foreground/50" />
+                  <p className="text-sm text-muted-foreground">
+                    Este produto ainda não possui variações configuradas.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() =>
+                      setActiveVariations([{ name: "Cor", options: [] }])
+                    }
+                  >
+                    <Plus className="size-4 mr-1.5" />
+                    Adicionar Primeira Variação
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {activeVariations.map((group, gIndex) => (
+                    <div
+                      key={gIndex}
+                      className="p-4 rounded-xl border bg-muted/20 relative space-y-3.5"
+                    >
+                      <div className="flex items-center justify-between gap-3 pr-8">
+                        <div className="flex-1 max-w-xs">
+                          <Label className="text-xs font-semibold mb-1 block">
+                            Nome da Variação (ex: Cor, Tom, Tamanho)
+                          </Label>
+                          <Input
+                            placeholder="Ex: Cor ou Tom"
+                            value={group.name}
+                            onChange={(e) => {
+                              const updated = [...activeVariations];
+                              updated[gIndex] = { ...updated[gIndex]!, name: e.target.value };
+                              setActiveVariations(updated);
+                            }}
+                            className="h-8 bg-white text-sm"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-2 h-7 w-7 text-muted-foreground hover:text-destructive"
+                          onClick={() => {
+                            setActiveVariations((prev) => prev.filter((_, i) => i !== gIndex));
+                          }}
+                          title="Remover grupo de variação"
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </div>
+
+                      <div className="space-y-2 border-t pt-3">
+                        <Label className="text-xs font-medium text-foreground">
+                          Opções e Estoque Individual
+                        </Label>
+
+                        <div className="space-y-1.5">
+                          {group.options.map((opt, oIndex) => (
+                            <div
+                              key={oIndex}
+                              className="flex items-center gap-2 bg-white border rounded-md p-1.5 px-2.5 shadow-sm"
+                            >
+                              <span className="text-xs font-medium flex-1 truncate">{opt.value}</span>
+                              <div className="flex items-center gap-1.5">
+                                <Label className="text-[11px] text-muted-foreground whitespace-nowrap">
+                                  Qtd:
+                                </Label>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  className="h-7 w-20 text-xs text-center font-medium"
+                                  value={opt.stock}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value, 10);
+                                    const updated = [...activeVariations];
+                                    const updatedOptions = [...(updated[gIndex]?.options || [])];
+                                    updatedOptions[oIndex] = {
+                                      ...updatedOptions[oIndex]!,
+                                      stock: isNaN(val) ? 0 : Math.max(0, val),
+                                    };
+                                    updated[gIndex] = {
+                                      ...updated[gIndex]!,
+                                      options: updatedOptions,
+                                    };
+                                    setActiveVariations(updated);
+                                  }}
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = [...activeVariations];
+                                  const updatedOptions = (updated[gIndex]?.options || []).filter(
+                                    (_, i) => i !== oIndex,
+                                  );
+                                  updated[gIndex] = {
+                                    ...updated[gIndex]!,
+                                    options: updatedOptions,
+                                  };
+                                  setActiveVariations(updated);
+                                }}
+                                className="text-muted-foreground hover:text-destructive p-1 transition-colors"
+                                title="Excluir opção"
+                              >
+                                <X className="size-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="pt-1">
+                          <VariationOptionInput
+                            onAdd={(val) => {
+                              const updated = [...activeVariations];
+                              const currentOptions = updated[gIndex]?.options || [];
+                              if (!currentOptions.some((o) => o.value.toLowerCase() === val.toLowerCase())) {
+                                updated[gIndex] = {
+                                  ...updated[gIndex]!,
+                                  options: [...currentOptions, { value: val, stock: 0 }],
+                                };
+                                setActiveVariations(updated);
+                              } else {
+                                toast.error(`A opção "${val}" já existe neste grupo.`);
+                              }
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0 border-t pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsVariationDialogOpen(false);
+                setVariationProduct(null);
+              }}
+              disabled={isSavingVariations}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSaveVariations}
+              disabled={isSavingVariations || isLoadingVariations}
+              className="bg-pink hover:bg-pink-dark text-white font-medium"
+            >
+              {isSavingVariations ? (
+                <>
+                  <Loader2 className="size-4 animate-spin mr-2" />
+                  Salvando...
+                </>
+              ) : (
+                "Salvar Variações"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

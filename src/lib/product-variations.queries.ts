@@ -80,7 +80,11 @@ export const syncProductVariations = createServerFn({ method: "POST" })
 
       await tx
         .update(schema.products)
-        .set({ stockQuantity: totalStock, updatedAt: new Date() })
+        .set({
+          stockQuantity: totalStock,
+          variations: data.variations,
+          updatedAt: new Date(),
+        })
         .where(eq(schema.products.id, data.productId));
     });
 
