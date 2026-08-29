@@ -89,7 +89,6 @@ export const upsertProduct = createServerFn({ method: "POST" })
     }> = [];
 
     let totalVariationStock = 0;
-    let hasVariationOptions = false;
 
     const normalizedVariations = data.variations
       .filter((v) => v.name && v.name.trim().length > 0)
@@ -102,22 +101,22 @@ export const upsertProduct = createServerFn({ method: "POST" })
 
         return {
           name: groupName,
-          options: validOptions.map((o, idx) => {
+          options: validOptions.map((o) => {
             const val = typeof o === "string" ? o.trim() : o.value.trim();
             const stock = typeof o === "object" && typeof o.stock === "number" ? Math.max(0, o.stock) : 0;
-            hasVariationOptions = true;
             totalVariationStock += stock;
-            return val;
+            return { value: val, stock };
           }),
         };
       });
 
-    // If variations have options configured, product stock is the sum of variations
-    // Otherwise, use the manually provided stockQuantity
-    const effectiveStock =
-      hasVariationOptions && totalVariationStock > 0
-        ? totalVariationStock
-        : data.stockQuantity;
+    // The stock total of the product is the ceiling (admin-defined stockQuantity).
+    // Variations can only allocate up to this total.
+    if (totalVariationStock > data.stockQuantity) {
+      throw new Error(
+        `A soma do estoque das variações (${totalVariationStock}) excede o estoque total do produto (${data.stockQuantity}).`,
+      );
+    }
 
     const payload = {
       name: data.name,
@@ -125,7 +124,7 @@ export const upsertProduct = createServerFn({ method: "POST" })
       description: data.description || null,
       price: data.price.toString(),
       categoryId: data.categoryId || null,
-      stockQuantity: effectiveStock,
+      stockQuantity: data.stockQuantity,
       status: data.status,
       variations: normalizedVariations,
       updatedAt: new Date(),
@@ -139,10 +138,10 @@ export const upsertProduct = createServerFn({ method: "POST" })
       const created = inserted[0];
       if (!created) throw new Error("Failed to create product");
       productId = created.id;
-      if (effectiveStock > 0 && productId) {
+      if (data.stockQuantity > 0 && productId) {
         await tx.insert(schema.stockMovements).values({
           productId,
-          quantity: effectiveStock,
+          quantity: data.stockQuantity,
           type: "in",
           notes: "Estoque inicial",
         });

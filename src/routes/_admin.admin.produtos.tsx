@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Search, Edit2, Trash2, AlertCircle, Loader2, Upload, X, Tag } from "lucide-react";
+import { Plus, Minus, Search, Edit2, Trash2, AlertCircle, Loader2, Upload, X, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
@@ -114,6 +114,57 @@ function VariationOptionInput({ onAdd }: { onAdd: (val: string) => void }) {
   );
 }
 
+function StockControl({
+  value,
+  max,
+  onChange,
+}: {
+  value: number;
+  max: number;
+  onChange: (next: number) => void;
+}) {
+  const clamp = (n: number) => Math.max(0, Math.min(max, Math.floor(Number.isFinite(n) ? n : 0)));
+  return (
+    <div className="flex items-center gap-1">
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        className="h-7 w-7 shrink-0"
+        disabled={value <= 0}
+        onClick={() => onChange(clamp(value - 1))}
+        tabIndex={-1}
+        title="Diminuir"
+      >
+        <Minus className="size-3.5" />
+      </Button>
+      <input
+        type="number"
+        min={0}
+        max={max}
+        value={value}
+        onChange={(e) => onChange(clamp(e.target.valueAsNumber || 0))}
+        className="h-7 w-16 rounded-md border border-input bg-white px-1.5 text-center text-xs font-semibold tabular-nums"
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.currentTarget.blur();
+        }}
+      />
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        className="h-7 w-7 shrink-0"
+        disabled={value >= max}
+        onClick={() => onChange(clamp(value + 1))}
+        tabIndex={-1}
+        title="Aumentar"
+      >
+        <Plus className="size-3.5" />
+      </Button>
+    </div>
+  );
+}
+
 type ProductSearch = {
   editId?: string | undefined;
 };
@@ -144,6 +195,7 @@ function AdminProductsPage() {
   const [isVariationDialogOpen, setIsVariationDialogOpen] = useState(false);
   const [isLoadingVariations, setIsLoadingVariations] = useState(false);
   const [isSavingVariations, setIsSavingVariations] = useState(false);
+  const [variationStockTotal, setVariationStockTotal] = useState(0);
   const [activeVariations, setActiveVariations] = useState<
     Array<{ name: string; options: Array<{ value: string; stock: number }> }>
   >([]);
@@ -205,6 +257,7 @@ function AdminProductsPage() {
 
   const handleOpenVariations = async (product: any) => {
     setVariationProduct(product);
+    setVariationStockTotal(Number(product.stockQuantity) || 0);
     setIsVariationDialogOpen(true);
     setIsLoadingVariations(true);
     try {
@@ -244,6 +297,18 @@ function AdminProductsPage() {
     if (!variationProduct) return;
     setIsSavingVariations(true);
     try {
+      const allocatedTotal = activeVariations.reduce(
+        (total, v) => total + v.options.reduce((sum, o) => sum + (Number(o.stock) || 0), 0),
+        0,
+      );
+
+      if (allocatedTotal > variationStockTotal) {
+        toast.error(
+          `A soma do estoque das variações (${allocatedTotal}) excede o estoque total do produto (${variationStockTotal}).`,
+        );
+        return;
+      }
+
       const cleaned = activeVariations
         .filter((v) => v.name.trim().length > 0)
         .map((v) => ({
@@ -259,6 +324,7 @@ function AdminProductsPage() {
       await syncVariationsFn({
         data: {
           productId: variationProduct.id,
+          stockQuantity: variationStockTotal,
           variations: cleaned,
         },
       });
@@ -329,6 +395,17 @@ function AdminProductsPage() {
       return;
     }
 
+    const variationAllocated = (values.variations || []).reduce(
+      (total, v) => total + v.options.reduce((sum, o) => sum + (Number(o.stock) || 0), 0),
+      0,
+    );
+    if (variationAllocated > values.stock_quantity) {
+      toast.error(
+        `A soma do estoque das variações (${variationAllocated}) excede o estoque total do produto (${values.stock_quantity}).`,
+      );
+      return;
+    }
+
     setIsSubmitting(true);
     setUploadProgress(10);
     try {
@@ -376,7 +453,11 @@ function AdminProductsPage() {
         }));
         try {
           await syncVariationsFn({
-            data: { productId: finalProductId, variations: variationsForSync },
+            data: {
+              productId: finalProductId,
+              stockQuantity: values.stock_quantity,
+              variations: variationsForSync,
+            },
           });
         } catch (e) {
           console.error("Failed to sync variations", e);
@@ -628,27 +709,47 @@ function AdminProductsPage() {
                           />
 
                           <div className="space-y-2">
-                            <Label>Opções + Estoque por opção</Label>
+                            <Label>
+                              Opções + Estoque por opção{" "}
+                              <span className="text-[10px] text-muted-foreground font-normal">
+                                (alocação limitada ao estoque total)
+                              </span>
+                            </Label>
                             <div className="space-y-1.5 mb-2">
-                              {form.watch(`variations.${vIndex}.options`)?.map((opt, oIndex) => (
-                                <div
-                                  key={oIndex}
-                                  className="flex items-center gap-2 bg-white border rounded-md p-1.5 pr-1"
-                                >
-                                  <span className="text-xs flex-1 pl-1 truncate">{opt.value}</span>
-                                  <div className="flex items-center gap-1">
-                                    <Label className="text-[10px] text-muted-foreground">Estoque:</Label>
-                                    <Input
-                                      type="number"
-                                      min="0"
-                                      className="h-7 w-20 text-xs"
-                                      value={opt.stock}
-                                      onChange={(e) => {
+                              {form.watch(`variations.${vIndex}.options`)?.map((opt, oIndex) => {
+                                const allVariationOptions =
+                                  form
+                                    .watch("variations")
+                                    ?.flatMap((v) => v?.options || []) || [];
+                                const allocatedTotal = allVariationOptions.reduce(
+                                  (sum, o) => sum + (Number(o?.stock) || 0),
+                                  0,
+                                );
+                                const thisStock = Number(opt?.stock) || 0;
+                                const stockCeiling =
+                                  Number(form.watch("stock_quantity")) || 0;
+                                const maxForOption = Math.max(
+                                  0,
+                                  stockCeiling - (allocatedTotal - thisStock),
+                                );
+                                return (
+                                  <div
+                                    key={oIndex}
+                                    className="flex items-center gap-2 bg-white border rounded-md p-1.5 pr-1"
+                                  >
+                                    <span className="text-xs flex-1 pl-1 truncate">{opt.value}</span>
+                                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                                      até {maxForOption}
+                                    </span>
+                                    <StockControl
+                                      value={thisStock}
+                                      max={maxForOption}
+                                      onChange={(next) => {
                                         const currentOptions = form.getValues(
                                           `variations.${vIndex}.options`,
                                         );
                                         const updated = currentOptions.map((o, i) =>
-                                          i === oIndex ? { ...o, stock: parseInt(e.target.value) || 0 } : o,
+                                          i === oIndex ? { ...o, stock: next } : o,
                                         );
                                         form.setValue(
                                           `variations.${vIndex}.options`,
@@ -656,24 +757,24 @@ function AdminProductsPage() {
                                         );
                                       }}
                                     />
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const currentOptions = form.getValues(
+                                          `variations.${vIndex}.options`,
+                                        );
+                                        form.setValue(
+                                          `variations.${vIndex}.options`,
+                                          currentOptions.filter((_, i) => i !== oIndex),
+                                        );
+                                      }}
+                                      className="text-muted-foreground hover:text-destructive px-1"
+                                    >
+                                      <X className="size-3.5" />
+                                    </button>
                                   </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const currentOptions = form.getValues(
-                                        `variations.${vIndex}.options`,
-                                      );
-                                      form.setValue(
-                                        `variations.${vIndex}.options`,
-                                        currentOptions.filter((_, i) => i !== oIndex),
-                                      );
-                                    }}
-                                    className="text-muted-foreground hover:text-destructive px-1"
-                                  >
-                                    <X className="size-3.5" />
-                                  </button>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                             <VariationOptionInput
                               onAdd={(val) => {
@@ -936,21 +1037,49 @@ function AdminProductsPage() {
             </div>
           ) : (
             <div className="space-y-5 py-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-xs text-muted-foreground">
-                    O estoque total do produto será sincronizado com a soma das opções:
-                  </span>
-                  <div className="text-sm font-semibold text-foreground">
-                    Total em estoque:{" "}
-                    <span className="text-pink font-bold">
-                      {activeVariations.reduce(
-                        (total, v) =>
-                          total + v.options.reduce((sum, opt) => sum + (Number(opt.stock) || 0), 0),
-                        0,
-                      )}
-                    </span>{" "}
-                    unidades
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-2 flex-1">
+                  <div>
+                    <label className="text-xs text-muted-foreground block">
+                      Estoque total do produto (teto máximo):
+                    </label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <StockControl
+                        value={variationStockTotal}
+                        max={99999}
+                        onChange={(n) => setVariationStockTotal(n)}
+                      />
+                      <span className="text-xs text-muted-foreground">unidades</span>
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground space-y-0.5">
+                    <div>
+                      Alocado nas variações:{" "}
+                      <span className="font-semibold text-foreground">
+                        {activeVariations.reduce(
+                          (total, v) =>
+                            total + v.options.reduce((sum, opt) => sum + (Number(opt.stock) || 0), 0),
+                          0,
+                        )}
+                      </span>{" "}
+                      unidades
+                    </div>
+                    <div>
+                      Restante disponível:{" "}
+                      <span className="font-semibold text-foreground">
+                        {Math.max(
+                          0,
+                          variationStockTotal -
+                            activeVariations.reduce(
+                              (total, v) =>
+                                total +
+                                v.options.reduce((sum, opt) => sum + (Number(opt.stock) || 0), 0),
+                              0,
+                            ),
+                        )}
+                      </span>{" "}
+                      unidades
+                    </div>
                   </div>
                 </div>
                 <Button
@@ -1028,28 +1157,35 @@ function AdminProductsPage() {
                         </Label>
 
                         <div className="space-y-1.5">
-                          {group.options.map((opt, oIndex) => (
-                            <div
-                              key={oIndex}
-                              className="flex items-center gap-2 bg-white border rounded-md p-1.5 px-2.5 shadow-sm"
-                            >
-                              <span className="text-xs font-medium flex-1 truncate">{opt.value}</span>
-                              <div className="flex items-center gap-1.5">
-                                <Label className="text-[11px] text-muted-foreground whitespace-nowrap">
-                                  Qtd:
-                                </Label>
-                                <Input
-                                  type="number"
-                                  min="0"
-                                  className="h-7 w-20 text-xs text-center font-medium"
-                                  value={opt.stock}
-                                  onChange={(e) => {
-                                    const val = parseInt(e.target.value, 10);
+                          {group.options.map((opt, oIndex) => {
+                            const allocatedTotal = activeVariations.reduce(
+                              (total, v) =>
+                                total + v.options.reduce((sum, o) => sum + (Number(o.stock) || 0), 0),
+                              0,
+                            );
+                            const thisStock = Number(opt.stock) || 0;
+                            const maxForOption = Math.max(
+                              0,
+                              variationStockTotal - (allocatedTotal - thisStock),
+                            );
+                            return (
+                              <div
+                                key={oIndex}
+                                className="flex items-center gap-2 bg-white border rounded-md p-1.5 px-2.5 shadow-sm"
+                              >
+                                <span className="text-xs font-medium flex-1 truncate">{opt.value}</span>
+                                <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                                  até {maxForOption}
+                                </span>
+                                <StockControl
+                                  value={thisStock}
+                                  max={maxForOption}
+                                  onChange={(next) => {
                                     const updated = [...activeVariations];
                                     const updatedOptions = [...(updated[gIndex]?.options || [])];
                                     updatedOptions[oIndex] = {
                                       ...updatedOptions[oIndex]!,
-                                      stock: isNaN(val) ? 0 : Math.max(0, val),
+                                      stock: next,
                                     };
                                     updated[gIndex] = {
                                       ...updated[gIndex]!,
@@ -1058,27 +1194,27 @@ function AdminProductsPage() {
                                     setActiveVariations(updated);
                                   }}
                                 />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = [...activeVariations];
+                                    const updatedOptions = (updated[gIndex]?.options || []).filter(
+                                      (_, i) => i !== oIndex,
+                                    );
+                                    updated[gIndex] = {
+                                      ...updated[gIndex]!,
+                                      options: updatedOptions,
+                                    };
+                                    setActiveVariations(updated);
+                                  }}
+                                  className="text-muted-foreground hover:text-destructive p-1 transition-colors"
+                                  title="Excluir opção"
+                                >
+                                  <X className="size-3.5" />
+                                </button>
                               </div>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const updated = [...activeVariations];
-                                  const updatedOptions = (updated[gIndex]?.options || []).filter(
-                                    (_, i) => i !== oIndex,
-                                  );
-                                  updated[gIndex] = {
-                                    ...updated[gIndex]!,
-                                    options: updatedOptions,
-                                  };
-                                  setActiveVariations(updated);
-                                }}
-                                className="text-muted-foreground hover:text-destructive p-1 transition-colors"
-                                title="Excluir opção"
-                              >
-                                <X className="size-3.5" />
-                              </button>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
 
                         <div className="pt-1">

@@ -30,6 +30,7 @@ export const syncProductVariations = createServerFn({ method: "POST" })
     z
       .object({
         productId: z.string().uuid(),
+        stockQuantity: z.number().int().min(0).optional(),
         variations: z.array(
           z.object({
             name: z.string().min(1).max(100),
@@ -46,9 +47,16 @@ export const syncProductVariations = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     await db.transaction(async (tx) => {
-      await tx
-        .delete(schema.productVariations)
-        .where(eq(schema.productVariations.productId, data.productId));
+      const existingProductRows = await tx
+        .select()
+        .from(schema.products)
+        .where(eq(schema.products.id, data.productId))
+        .limit(1);
+      const existingProduct = existingProductRows[0];
+      if (!existingProduct) throw new Error("Produto não encontrado");
+
+      // Effective stock total: provided value or the current product stock
+      const totalProductStock = data.stockQuantity ?? existingProduct.stockQuantity ?? 0;
 
       const rowsToInsert: Array<{
         productId: string;
@@ -58,48 +66,60 @@ export const syncProductVariations = createServerFn({ method: "POST" })
         sortOrder: number;
       }> = [];
 
-      let totalStock = 0;
+      const variationsForJson: Array<{ name: string; options: Array<{ value: string; stock: number }> }> = [];
+
+      let allocatedStock = 0;
       let hasAnyOptions = false;
 
       for (const v of data.variations) {
+        const groupName = v.name.trim();
+        const cleanOptions: Array<{ value: string; stock: number }> = [];
         for (let i = 0; i < v.options.length; i++) {
           const opt = v.options[i];
           if (!opt || !opt.value.trim()) continue;
+          const optionValue = opt.value.trim();
+          const stock = Math.max(0, Math.floor(opt.stock));
           hasAnyOptions = true;
           rowsToInsert.push({
             productId: data.productId,
-            variationName: v.name.trim(),
-            optionValue: opt.value.trim(),
-            stock: opt.stock,
+            variationName: groupName,
+            optionValue,
+            stock,
             sortOrder: i,
           });
-          totalStock += opt.stock;
+          cleanOptions.push({ value: optionValue, stock });
+          allocatedStock += stock;
         }
+        if (groupName) variationsForJson.push({ name: groupName, options: cleanOptions });
       }
+
+      if (allocatedStock > totalProductStock) {
+        throw new Error(
+          `A soma do estoque das variações (${allocatedStock}) excede o estoque total do produto (${totalProductStock}).`,
+        );
+      }
+
+      await tx
+        .delete(schema.productVariations)
+        .where(eq(schema.productVariations.productId, data.productId));
 
       if (rowsToInsert.length > 0) {
         await tx.insert(schema.productVariations).values(rowsToInsert);
       }
 
-      if (hasAnyOptions) {
-        await tx
-          .update(schema.products)
-          .set({
-            stockQuantity: totalStock,
-            variations: data.variations,
-            updatedAt: new Date(),
-          })
-          .where(eq(schema.products.id, data.productId));
-      } else {
-        // If no variation options, just clear variations without resetting stockQuantity
-        await tx
-          .update(schema.products)
-          .set({
-            variations: [],
-            updatedAt: new Date(),
-          })
-          .where(eq(schema.products.id, data.productId));
-      }
+      // Keep the product stock as the total ceiling (admin-defined). If no registered
+      // product stock exists and variations were allocated, use the allocated sum.
+      const finalStock =
+        totalProductStock > 0 || !hasAnyOptions ? totalProductStock : allocatedStock;
+
+      await tx
+        .update(schema.products)
+        .set({
+          stockQuantity: finalStock,
+          variations: variationsForJson,
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.products.id, data.productId));
     });
 
     return { success: true };
