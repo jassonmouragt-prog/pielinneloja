@@ -27,6 +27,11 @@ const STATIC_ASSETS: Array<{
     folder: "site",
   },
   {
+    jsonPath: "src/assets/pielinne-logo-preta.png.asset.json",
+    binaryPath: "src/assets/pielinne-logo-preta.png",
+    folder: "site",
+  },
+  {
     jsonPath: "src/assets/pielinne-hero.png.asset.json",
     binaryPath: "src/assets/pielinne-hero.png",
     folder: "site",

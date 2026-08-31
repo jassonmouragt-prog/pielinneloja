@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import logoAsset from "@/assets/logo.png.asset.json";
+import logoAsset from "@/assets/pielinne-logo-preta.png.asset.json";
 import { resolveAssetUrl } from "@/lib/assets";
 import { useServerFn } from "@tanstack/react-start";
 import { signIn } from "@/lib/auth/auth.functions";
