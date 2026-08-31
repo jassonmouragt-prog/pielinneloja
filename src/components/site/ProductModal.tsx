@@ -58,8 +58,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
     return v.stockByOption[optValue] ?? null;
   };
 
-  const isComplete = !hasVariations ||
-    variations.every((v) => selectedVariations[v.name]);
+  const isComplete = !hasVariations || variations.every((v) => selectedVariations[v.name]);
 
   const selectedMaxStock = (() => {
     if (!hasVariations) return totalStock;
@@ -72,7 +71,8 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
     return min === Infinity ? null : min;
   })();
 
-  const isAnyOutOfStock = hasVariations &&
+  const isAnyOutOfStock =
+    hasVariations &&
     Object.entries(selectedVariations).some(([name, value]) => {
       const s = getOptionStock(name, value);
       return s !== null && s <= 0;
@@ -143,24 +143,25 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 )}
               </div>
 
-              <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="text-3xl font-bold text-pink">
-                  R$ {Number(product.price).toFixed(2)}
-                </span>
-                <span className="text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
-                  💰 no Pix
-                </span>
-              </div>
+<div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="text-3xl font-bold text-pink">
+                    R$ {Number(product.price).toFixed(2)}
+                  </span>
+                </div>
 
               {!hasVariations && totalStock > 0 && totalStock <= 5 && (
                 <div className="flex items-center gap-1.5 text-xs">
                   <AlertCircle className="size-3.5 text-yellow-600" />
-                  <span className="text-yellow-700 font-semibold">Apenas {totalStock} em estoque</span>
+                  <span className="text-yellow-700 font-semibold">
+                    Apenas {totalStock} em estoque
+                  </span>
                 </div>
               )}
 
               {hasVariations && isComplete && selectedMaxStock !== null && (
-                <div className={`flex items-center gap-1.5 text-xs ${selectedMaxStock <= 3 ? "text-yellow-700" : "text-muted-foreground"}`}>
+                <div
+                  className={`flex items-center gap-1.5 text-xs ${selectedMaxStock <= 3 ? "text-yellow-700" : "text-muted-foreground"}`}
+                >
                   <Package className="size-3.5" />
                   <span className="font-semibold">
                     {selectedMaxStock > 0
@@ -191,7 +192,9 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                             </span>
                           )}
                         </span>
-                        <span className="text-[10px] text-muted-foreground font-normal">obrigatório</span>
+                        <span className="text-[10px] text-muted-foreground font-normal">
+                          obrigatório
+                        </span>
                       </label>
                       <div className="flex flex-wrap gap-2">
                         {variation.options.map((option) => {

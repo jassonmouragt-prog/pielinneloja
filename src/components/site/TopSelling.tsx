@@ -4,7 +4,9 @@ import { Trophy, Crown, Medal, ShoppingBag, Loader2 } from "lucide-react";
 import { getTopSellingProducts } from "@/lib/ranking.queries";
 import { publicImageUrl } from "@/lib/storage/public-url";
 
-const podiumStyle = (position: number): {
+const podiumStyle = (
+  position: number,
+): {
   bg: string;
   ring: string;
   iconColor: string;
@@ -103,9 +105,7 @@ export function TopSelling() {
                 <div className="relative bg-white/60 p-4">
                   <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-full shadow-sm">
                     <Icon className={`size-4 ${style.iconColor}`} />
-                    <span className={`text-xs font-bold ${style.iconColor}`}>
-                      {style.label}
-                    </span>
+                    <span className={`text-xs font-bold ${style.iconColor}`}>{style.label}</span>
                   </div>
                   <div className="absolute top-3 right-3 bg-pink/10 text-pink text-[10px] font-bold px-2 py-1 rounded-full">
                     {product.totalSold} {product.totalSold === 1 ? "vendido" : "vendidos"}
@@ -136,13 +136,10 @@ export function TopSelling() {
                     </p>
                   )}
                   <div className="mt-auto pt-3 flex items-baseline gap-1.5">
-                    <span className="text-base font-bold text-foreground">
-                      R$ {Number(product.price).toFixed(2)}
-                    </span>
-                    <span className="text-[10px] font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
-                      no Pix
-                    </span>
-                  </div>
+<span className="text-base font-bold text-foreground">
+                    R$ {Number(product.price).toFixed(2)}
+                  </span>
+                </div>
                 </div>
               </div>
             );
