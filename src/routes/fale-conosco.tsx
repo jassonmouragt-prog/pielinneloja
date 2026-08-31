@@ -10,24 +10,24 @@ export const Route = createFileRoute("/fale-conosco")({
       </p>
       <div className="grid gap-6 sm:grid-cols-3">
         <a
-          href="https://wa.me/5584994085244"
+          href="https://wa.me/5541985073920"
           target="_blank"
-          className="flex flex-col items-center p-6 bg-cream/50 rounded-xl hover:bg-pink/10 transition-colors border border-pink/10"
+          className="flex flex-col items-center p-6 bg-beige/50 rounded-xl hover:bg-gold/10 transition-colors border border-gold/20"
         >
-          <MessageSquare className="size-8 text-pink mb-3" />
+          <MessageSquare className="size-8 text-gold-deep mb-3" />
           <span className="font-semibold text-foreground">WhatsApp</span>
-          <span className="text-xs text-muted-foreground mt-1">(84) 99408-5244</span>
+          <span className="text-xs text-muted-foreground mt-1">(41) 98507-3920</span>
         </a>
-        <div className="flex flex-col items-center p-6 bg-cream/50 rounded-xl border border-pink/10">
-          <Mail className="size-8 text-pink mb-3" />
+        <div className="flex flex-col items-center p-6 bg-beige/50 rounded-xl border border-gold/20">
+          <Mail className="size-8 text-gold-deep mb-3" />
           <span className="font-semibold text-foreground">E-mail</span>
-          <span className="text-xs text-muted-foreground mt-1">contato@lojinhamaakeup.com</span>
+          <span className="text-xs text-muted-foreground mt-1">contato@pielinne.com</span>
         </div>
-        <div className="flex flex-col items-center p-6 bg-cream/50 rounded-xl border border-pink/10">
-          <MapPin className="size-8 text-pink mb-3" />
+        <div className="flex flex-col items-center p-6 bg-beige/50 rounded-xl border border-gold/20">
+          <MapPin className="size-8 text-gold-deep mb-3" />
           <span className="font-semibold text-foreground">Endereço</span>
           <span className="text-xs text-muted-foreground mt-1 text-center italic">
-            Natal, RN - Brasil
+            Foz do Iguaçu &amp; Curitiba, PR - Brasil
           </span>
         </div>
       </div>

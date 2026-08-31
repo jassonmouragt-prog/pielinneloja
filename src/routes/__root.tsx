@@ -78,16 +78,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Sua Lojinha Makeup | Loja Oficial" },
+      { title: "Pielinne Semijoias | Loja Oficial" },
       {
         name: "description",
-        content: "Maquiagem, skincare e kits de beleza com preços que você ama.",
+        content:
+          "Semijoias elegantes: anéis, colares, brincos, pulseiras e conjuntos. Qualidade e sofisticação para todos os momentos.",
       },
-      { name: "author", content: "Sua Lojinha Makeup" },
-      { property: "og:title", content: "Sua Lojinha Makeup | Loja Oficial" },
+      { name: "author", content: "Pielinne Semijoias" },
+      { property: "og:title", content: "Pielinne Semijoias | Loja Oficial" },
       {
         property: "og:description",
-        content: "Maquiagem, skincare e kits de beleza com preços que você ama.",
+        content:
+          "Semijoias elegantes: anéis, colares, brincos, pulseiras e conjuntos. Qualidade e sofisticação para todos os momentos.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -97,7 +99,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Montserrat:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&display=swap",
       },
       {
         rel: "stylesheet",

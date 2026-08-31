@@ -4,8 +4,8 @@ import { eq } from "drizzle-orm";
 import { db, schema } from "@/db/client";
 
 const ALG = "HS256";
-const ISSUER = "sualojinhamakeup";
-const AUDIENCE = "sualojinhamakeup-admin";
+const ISSUER = "pielinnesemijoias";
+const AUDIENCE = "pielinnesemijoias-admin";
 const EXPIRES_IN = "7d";
 
 function getSecret(): Uint8Array {
@@ -98,5 +98,5 @@ export async function getUserRole(userId: string): Promise<"admin" | "user" | nu
 }
 
 export function isAdminEmail(email: string | null | undefined): boolean {
-  return (email ?? "").toLowerCase().trim() === "sualojinhaadmin@admin.com";
+  return (email ?? "").toLowerCase().trim() === "pielinneadmin@admin.com";
 }

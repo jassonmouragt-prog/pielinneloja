@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { Benefits } from "@/components/site/Benefits";
 import { Categories } from "@/components/site/Categories";
 import { Hero } from "@/components/site/Hero";
 import { InstagramSection } from "@/components/site/InstagramSection";
@@ -9,11 +8,10 @@ import { Products } from "@/components/site/Products";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Testimonials } from "@/components/site/Testimonials";
-import { TopSelling } from "@/components/site/TopSelling";
 
-const title = "Sua Lojinha Makeup | Loja Oficial";
+const title = "Pielinne Semijoias | Loja Oficial";
 const description =
-  "Loja de maquiagem, skincare, cabelos e kits de beleza. Frete para todo o Brasil e parcele em até 6x.";
+  "Semijoias elegantes: anéis, colares, brincos, pulseiras e conjuntos. Frete para todo o Brasil.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -35,12 +33,10 @@ function Index() {
       <SiteHeader />
       <main>
         <Hero />
-        <Benefits />
         <Categories />
         <Products />
-        <TopSelling />
-        <Testimonials />
         <KitsBanner />
+        <Testimonials />
         <InstagramSection />
       </main>
       <SiteFooter />

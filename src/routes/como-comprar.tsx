@@ -7,7 +7,7 @@ export const Route = createFileRoute("/como-comprar")({
       <ol className="space-y-6 list-decimal pl-4">
         <li>
           <strong className="text-foreground">Navegue:</strong> Explore nossas categorias e escolha
-          seus produtos favoritos de R$10, R$15 ou R$20.
+          suas semijoias preferidas.
         </li>
         <li>
           <strong className="text-foreground">Carrinho:</strong> Adicione os itens desejados ao

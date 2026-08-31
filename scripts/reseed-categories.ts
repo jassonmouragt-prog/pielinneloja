@@ -12,15 +12,14 @@ const connection = neon(url);
 const db = drizzle(connection);
 
 const NEW_CATEGORIES = [
-  { name: "Pele", tone: "#F06292" },
-  { name: "Olhos", tone: "#F06292" },
-  { name: "Lábios", tone: "#F06292" },
-  { name: "Sobrancelhas", tone: "#F06292" },
-  { name: "Perfumaria", tone: "#F06292" },
-  { name: "Skincare", tone: "#F06292" },
-  { name: "Cabelos", tone: "#F06292" },
-  { name: "Corpo", tone: "#F06292" },
-  { name: "Acessórios", tone: "#F06292" },
+  { name: "Anéis", tone: "#C9A15A" },
+  { name: "Colares", tone: "#C9A15A" },
+  { name: "Brincos", tone: "#C9A15A" },
+  { name: "Pulseiras", tone: "#C9A15A" },
+  { name: "Conjuntos", tone: "#C9A15A" },
+  { name: "Relógios", tone: "#C9A15A" },
+  { name: "Alianças", tone: "#C9A15A" },
+  { name: "Acessórios", tone: "#C9A15A" },
 ];
 
 async function main() {
@@ -41,7 +40,9 @@ async function main() {
       );
       const productCount = Number((products.rows[0] as any)?.count ?? 0);
       if (productCount > 0) {
-        console.log(`  ⚠️  ${name}: has ${productCount} products linked. Their category will be set to NULL.`);
+        console.log(
+          `  ⚠️  ${name}: has ${productCount} products linked. Their category will be set to NULL.`,
+        );
       }
       await db.execute(sql`DELETE FROM public.categories WHERE name = ${name}`);
       console.log(`  ✓ Deleted: ${name}`);

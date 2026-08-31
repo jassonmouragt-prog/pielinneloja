@@ -16,24 +16,28 @@ export function InstagramSection() {
 
   return (
     <section id="favoritos" className="bg-background">
-      <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:py-14">
+      <div className="mx-auto max-w-[1400px] px-6 py-20 lg:px-[60px] lg:py-28">
         <Reveal className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <h2 className="text-xl font-bold text-foreground sm:text-2xl">
-              Siga a <span className="text-pink">@sualojinhamakeup</span>
+            <p className="mb-3 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-gold-deep">
+              <span className="inline-block h-px w-10 bg-gold-deep" />
+              Instagram
+            </p>
+            <h2 className="font-serif text-3xl font-semibold text-ink sm:text-4xl">
+              Siga a <span className="italic text-gold-deep">@pielinne_semijoias</span>
             </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Dicas, lançamentos, promoções e muito mais!
+            <p className="mt-3 text-sm text-muted-foreground">
+              Novidades, dicas de uso e lançamentos no nosso feed!
             </p>
           </div>
           <a
-            href="https://www.instagram.com/sualojinhamakeup/"
+            href="https://www.instagram.com/pielinne_semijoias/"
             target="_blank"
             rel="noreferrer"
-            className="shrink-0 flex items-center gap-2 rounded-md border border-pink-soft px-4 py-2 text-xs font-medium text-pink transition-colors duration-300 hover:bg-blush"
+            className="shrink-0 flex items-center gap-2 border border-gold/50 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-gold-deep transition-colors duration-300 hover:bg-gold hover:text-ink"
           >
             <Instagram className="size-4" />
-            Seguir no Instagram
+            Seguir
           </a>
         </Reveal>
 

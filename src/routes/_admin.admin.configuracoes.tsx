@@ -357,7 +357,7 @@ function AdminSettingsPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">WhatsApp de Vendas</label>
               <div className="flex gap-2">
-                <Input defaultValue="5584994085244" readOnly className="bg-gray-50" />
+                <Input defaultValue="5541985073920" readOnly className="bg-gray-50" />
               </div>
               <p className="text-[10px] text-muted-foreground italic">
                 * O número é fixo conforme requisitos do projeto.
@@ -366,7 +366,7 @@ function AdminSettingsPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">URL do Instagram</label>
               <Input
-                defaultValue="https://www.instagram.com/sualojinhamakeup/"
+                defaultValue="https://www.instagram.com/pielinne_semijoias/"
                 readOnly
                 className="bg-gray-50"
               />

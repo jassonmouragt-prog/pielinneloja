@@ -12,7 +12,7 @@ export const Route = createFileRoute("/trocas-e-devolucoes")({
       </p>
       <h2 className="text-xl font-semibold text-foreground mt-8">Como solicitar</h2>
       <p>
-        Entre em contato conosco pelo WhatsApp (5584994085244) com o número do seu pedido e o motivo
+        Entre em contato conosco pelo WhatsApp (5541985073920) com o número do seu pedido e o motivo
         da troca. Nossa equipe orientará sobre os próximos passos.
       </p>
     </InstitutionalLayout>

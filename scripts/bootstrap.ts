@@ -4,6 +4,8 @@ import { neon } from "@neondatabase/serverless";
 import { sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
+const TONE = "#C9A15A";
+
 const url = process.env["DATABASE_URL"] || process.env["NEON_DATABASE_URL"];
 if (!url) {
   throw new Error("DATABASE_URL is required to seed");
@@ -109,8 +111,8 @@ async function createPolicies() {
 }
 
 async function seedAdminUser() {
-  const adminEmail = "sualojinhaadmin@admin.com";
-  const adminPassword = process.env["ADMIN_SEED_PASSWORD"] || "ChangeMe123!";
+  const adminEmail = "pielinneadmin@admin.com";
+  const adminPassword = process.env["ADMIN_SEED_PASSWORD"] || "PielinneAdmin123!";
 
   const existing = await db.execute(
     sql`SELECT id FROM public.users WHERE email = ${adminEmail} LIMIT 1`,
@@ -131,13 +133,14 @@ async function seedAdminUser() {
 
 async function seedCategories() {
   const seed = [
-    { name: "Maquiagem", tone: "#F06292" },
-    { name: "Skincare", tone: "#F06292" },
-    { name: "Cabelos", tone: "#F06292" },
-    { name: "Corpo", tone: "#F06292" },
-    { name: "Kits", tone: "#F06292" },
-    { name: "Acessórios", tone: "#F06292" },
-    { name: "Novidades", tone: "#F06292" },
+    { name: "Anéis", tone: TONE },
+    { name: "Colares", tone: TONE },
+    { name: "Brincos", tone: TONE },
+    { name: "Pulseiras", tone: TONE },
+    { name: "Conjuntos", tone: TONE },
+    { name: "Relógios", tone: TONE },
+    { name: "Alianças", tone: TONE },
+    { name: "Acessórios", tone: TONE },
   ];
   for (const cat of seed) {
     const existing = await db.execute(

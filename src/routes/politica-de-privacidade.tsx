@@ -5,7 +5,7 @@ export const Route = createFileRoute("/politica-de-privacidade")({
   component: () => (
     <InstitutionalLayout title="Política de Privacidade">
       <p>
-        Na Sua Lojinha Maakeup, a sua privacidade é uma prioridade. Esta política descreve como
+        Na Pielinne Semijoias, a sua privacidade é uma prioridade. Esta política descreve como
         coletamos e protegemos suas informações.
       </p>
       <h2 className="text-xl font-semibold text-foreground mt-8">Coleta de Dados</h2>

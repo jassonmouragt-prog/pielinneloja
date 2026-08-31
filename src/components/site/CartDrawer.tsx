@@ -25,7 +25,7 @@ export function CartDrawer() {
   const [customerName, setCustomerName] = useState("");
   const [nameError, setNameError] = useState(false);
   const registerSale = useServerFn(registerPendingSale);
-  const WHATSAPP_NUMBER = "5584994085244";
+  const WHATSAPP_NUMBER = "5541985073920";
 
   const handleCheckout = async () => {
     setNameError(false);

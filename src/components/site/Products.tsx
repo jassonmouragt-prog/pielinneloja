@@ -1,30 +1,12 @@
-import { ArrowRight, Heart, ShoppingBag, Star, Loader2 } from "lucide-react";
+import { ArrowRight, ShoppingBag, Loader2 } from "lucide-react";
 import { Reveal } from "./Reveal";
-import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ProductModal } from "./ProductModal";
 import { useServerFn } from "@tanstack/react-start";
 import { listPublicProducts } from "@/lib/queries.queries";
 import { publicImageUrl } from "@/lib/storage/public-url";
-
-
-function Stars({ rating }: { rating: number }) {
-  return (
-    <span className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Star
-          key={star}
-          className={`size-3 ${
-            star <= Math.round(rating)
-              ? "fill-pink-light text-pink-light"
-              : "fill-blush text-blush"
-          }`}
-        />
-      ))}
-    </span>
-  );
-}
+import { Link } from "@tanstack/react-router";
 
 function resolveProductImage(product: any): string | null {
   const images = product.product_images ?? product.productImages ?? [];
@@ -39,33 +21,41 @@ export function Products({ products: initialProducts }: { products?: any[] }) {
   const listPublicProductsFn = useServerFn(listPublicProducts);
 
   const { data: products, isLoading } = useQuery({
-    queryKey: ['public-products'],
+    queryKey: ["public-products"],
     queryFn: async () => {
       if (initialProducts) return initialProducts;
-      return listPublicProductsFn({ data: { limit: 10 } });
+      return listPublicProductsFn({ data: { limit: 6 } });
     },
-    enabled: !initialProducts
+    enabled: !initialProducts,
   });
 
   const displayProducts = (initialProducts || products) as any[];
 
   return (
-    <section id="mais-vendidos" className="bg-background">
-      <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:py-14">
-        <Reveal className="flex items-end justify-between gap-4">
-          <h2 className="text-xl font-bold text-foreground sm:text-2xl">Mais vendidos</h2>
-          <a
-            href="#produtos"
-            className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground transition-colors duration-300 hover:text-pink"
+    <section id="produtos" className="bg-[oklch(0.985_0.008_84)]">
+      <div className="mx-auto max-w-[1400px] px-6 py-20 lg:px-[60px] lg:py-28">
+        <Reveal className="mb-14 flex items-end justify-between gap-4">
+          <div>
+            <p className="mb-3 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-gold-deep">
+              <span className="inline-block h-px w-10 bg-gold-deep" />
+              Destaques
+            </p>
+            <h2 className="font-serif text-3xl font-semibold text-ink sm:text-4xl">
+              Nossas peças mais amadas
+            </h2>
+          </div>
+          <Link
+            to="/categoria/colares"
+            className="hidden shrink-0 items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gold-deep transition-colors duration-300 hover:text-ink sm:flex"
           >
-            Ver todos <ArrowRight className="size-3.5" />
-          </a>
+            Ver todas <ArrowRight className="size-3.5" />
+          </Link>
         </Reveal>
 
-        <div className="mt-7 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 lg:gap-5">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3">
           {isLoading && (
-            <div className="col-span-full flex justify-center py-10">
-              <Loader2 className="h-8 w-8 animate-spin text-pink" />
+            <div className="col-span-full flex justify-center py-16">
+              <Loader2 className="h-8 w-8 animate-spin text-gold" />
             </div>
           )}
           {displayProducts?.map?.((product: any, index: number) => {
@@ -74,54 +64,36 @@ export function Products({ products: initialProducts }: { products?: any[] }) {
               <Reveal key={product.id} delay={index * 60}>
                 <article
                   onClick={() => setSelectedProduct(product)}
-                  className="group relative h-full overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:shadow-card hover:-translate-y-0.5 active:scale-[0.98] cursor-pointer"
+                  className="group cursor-pointer"
                 >
-                  <div className="relative">
-                    <button
-                      type="button"
-                      aria-label={`Favoritar ${product.name}`}
-                      className="absolute top-0 right-0 z-10 grid size-7 place-items-center rounded-full border border-border bg-white/80 text-pink transition-colors duration-300 hover:bg-blush"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Heart className="size-3.5" />
-                    </button>
-                    <div className="relative overflow-hidden bg-cream/30 p-2">
-                      {imageUrl ? (
-                        <img
-                          src={imageUrl}
-                          alt={`${product.name} ${product.subtitle || ''}`}
-                          loading="lazy"
-                          width={600}
-                          height={600}
-                          className="mx-auto h-32 w-auto object-contain transition-transform duration-500 group-hover:scale-105 sm:h-36"
-                        />
-                      ) : (
-                        <div className="grid h-32 sm:h-36 place-items-center text-muted-foreground text-xs">
-                          Sem imagem
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="p-3">
-                    <h3 className="text-[12px] sm:text-[13px] leading-snug font-medium text-foreground line-clamp-2 min-h-[3em]">
-                      {product.name}
-                      <br />
-                      <span className="text-muted-foreground font-normal">{product.subtitle || ''}</span>
-                    </h3>
-                    <div className="mt-2 flex items-center gap-1.5">
-                      <Stars rating={4.5} />
-                      <span className="text-[11px] text-muted-foreground">(120)</span>
-                    </div>
-                    <div className="mt-2 flex items-baseline gap-1.5">
-                      <span className="text-sm font-bold text-foreground">
-                        R$ {Number(product.price).toFixed(2)}
-                      </span>
-                      <span className="text-[10px] font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
-                        no Pix
+                  <div className="relative aspect-square w-full overflow-hidden bg-beige-light">
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={product.name}
+                        loading="lazy"
+                        width={600}
+                        height={600}
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="grid h-full w-full place-items-center text-xs text-muted-foreground">
+                        Em breve
+                      </div>
+                    )}
+                    <div className="absolute inset-0 grid place-items-center bg-ink/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                      <span className="inline-flex items-center gap-2 border border-gold bg-gold px-6 py-3 text-[11px] font-bold uppercase tracking-[0.2em] text-ink">
+                        <ShoppingBag className="size-3.5" />
+                        Ver peça
                       </span>
                     </div>
                   </div>
+                  <h3 className="mt-5 text-[13px] font-medium uppercase tracking-[0.12em] text-ink">
+                    {product.name}
+                  </h3>
+                  <p className="mt-1.5 text-sm font-normal text-ink/60">
+                    R$ {Number(product.price).toFixed(2)}
+                  </p>
                 </article>
               </Reveal>
             );

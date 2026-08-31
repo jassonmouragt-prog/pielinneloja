@@ -5,18 +5,22 @@ export const Route = createFileRoute("/prazo-de-entrega")({
   component: () => (
     <InstitutionalLayout title="Prazo de Entrega">
       <p>Entregamos em todo o Brasil! O prazo varia de acordo com a sua região:</p>
-      <div className="mt-8 overflow-hidden rounded-lg border border-pink/20">
+      <div className="mt-8 overflow-hidden rounded-lg border border-gold/20">
         <table className="w-full text-sm text-left">
-          <thead className="bg-cream text-foreground uppercase text-[10px] font-bold">
+          <thead className="bg-beige text-foreground uppercase text-[10px] font-bold">
             <tr>
-              <th className="px-4 py-3 border-b border-pink/10">Região</th>
-              <th className="px-4 py-3 border-b border-pink/10">Prazo Estimado</th>
+              <th className="px-4 py-3 border-b border-gold/10">Região</th>
+              <th className="px-4 py-3 border-b border-gold/10">Prazo Estimado</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-pink/10">
+          <tbody className="divide-y divide-gold/10">
             <tr>
-              <td className="px-4 py-3">Nordeste</td>
+              <td className="px-4 py-3">Sul (PR, SC, RS)</td>
               <td className="px-4 py-3">2 a 5 dias úteis</td>
+            </tr>
+            <tr>
+              <td className="px-4 py-3">Sudeste e Centro-Oeste</td>
+              <td className="px-4 py-3">5 a 10 dias úteis</td>
             </tr>
             <tr>
               <td className="px-4 py-3">Demais Regiões</td>

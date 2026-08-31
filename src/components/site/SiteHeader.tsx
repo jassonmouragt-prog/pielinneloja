@@ -1,189 +1,169 @@
-import { Heart, Menu, Search, ShoppingBag, ChevronRight } from "lucide-react";
-import { useState, useRef } from "react";
+import { Heart, Menu, Search, ShoppingBag, X } from "lucide-react";
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { CartDrawer } from "./CartDrawer";
 
-import logoAsset from "@/assets/logo.png.asset.json";
-import { resolveAssetUrl } from "@/lib/assets";
-import { navLinks } from "./data";
-import { AnnouncementBar } from "./AnnouncementBar";
-
 export function SiteHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
-
-  const handleMouseEnter = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setIsMenuOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => {
-      setIsMenuOpen(false);
-    }, 150);
-  };
 
   return (
-    <header>
-      <AnnouncementBar />
+    <header className="sticky top-0 z-50 bg-ink text-beige">
+      <div className="mx-auto grid h-[80px] max-w-[1400px] grid-cols-[auto_1fr_auto] items-center gap-6 px-6 lg:grid-cols-[1fr_auto_1fr] lg:px-[60px]">
+        {/* Logo — left */}
+        <Link to="/" className="group flex flex-col items-start leading-none">
+          <span className="inline-flex items-center gap-1.5 text-xl font-bold uppercase tracking-[0.35em] text-white">
+            <span className="text-gold">✦</span>
+            Pielinne
+          </span>
+          <span className="mt-1 text-[10px] font-medium uppercase tracking-[0.6em] text-gold">
+            Semijoias
+          </span>
+        </Link>
 
-      {/* main bar */}
-      <div className="bg-background">
-        <div className="mx-auto grid max-w-[1200px] grid-cols-[auto_1fr] items-center gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[200px_1fr_auto] lg:gap-8 lg:py-5">
-          <Link to="/" className="shrink-0">
-            <img
-              src={resolveAssetUrl(logoAsset)}
-              alt="Sua Lojinha Maakeup"
-              width={200}
-              height={147}
-              className="h-10 w-auto sm:h-12 lg:h-[68px]"
-            />
+        {/* Menu — center (desktop) */}
+        <nav className="hidden items-center justify-center gap-10 lg:flex">
+          <Link
+            to="/categoria/colares"
+            className="text-xs font-semibold uppercase tracking-[0.25em] text-beige/90 transition-colors duration-300 hover:text-gold"
+          >
+            Coleções
           </Link>
+          <Link
+            to="/sobre-nos"
+            className="text-xs font-semibold uppercase tracking-[0.25em] text-beige/90 transition-colors duration-300 hover:text-gold"
+          >
+            Sobre
+          </Link>
+          <Link
+            to="/fale-conosco"
+            className="text-xs font-semibold uppercase tracking-[0.25em] text-beige/90 transition-colors duration-300 hover:text-gold"
+          >
+            Contato
+          </Link>
+        </nav>
 
-          <div className="order-3 col-span-2 lg:order-none lg:col-span-1">
-            <form
-              className="flex h-11 items-stretch overflow-hidden rounded-full border border-border bg-background"
-              onSubmit={(event) => event.preventDefault()}
-            >
-              <label htmlFor="site-search" className="sr-only">
-                Buscar produtos
-              </label>
-              <input
-                id="site-search"
-                type="search"
-                placeholder="O que você está procurando?"
-                className="min-w-0 flex-1 bg-transparent px-5 text-sm text-foreground outline-none placeholder:text-muted-foreground"
-              />
-              <button
-                type="submit"
-                aria-label="Buscar"
-                className="grid w-12 shrink-0 place-items-center gradient-pink text-primary-foreground transition-opacity duration-300 hover:opacity-90"
-              >
-                <Search className="size-4" />
-              </button>
-            </form>
-          </div>
+        {/* Actions — right */}
+        <div className="flex items-center justify-end gap-5">
+          <button
+            aria-label="Buscar"
+            className="hidden text-beige/80 transition-colors duration-300 hover:text-gold md:block"
+          >
+            <Search className="size-[18px] stroke-[1.5]" />
+          </button>
+          <a
+            href="https://www.instagram.com/pielinne_semijoias/"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Instagram"
+            className="hidden text-beige/80 transition-colors duration-300 hover:text-gold md:block"
+          >
+            <InstagramIcon />
+          </a>
+          <CartDrawer />
 
-          <div className="flex items-center justify-end gap-4 sm:gap-6">
-            <a
-              href="#favoritos"
-              aria-label="Favoritos"
-              className="text-pink transition-transform duration-300 hover:scale-110"
-            >
-              <Heart className="size-5 stroke-[1.5]" />
-            </a>
-            <CartDrawer />
-          </div>
+          <button
+            aria-label="Abrir menu"
+            onClick={() => setIsMenuOpen(true)}
+            className="text-beige/80 transition-colors duration-300 hover:text-gold lg:hidden"
+          >
+            <Menu className="size-5 stroke-[1.5]" />
+          </button>
         </div>
       </div>
 
-      {/* pink nav */}
-      <nav className="gradient-nav text-primary-foreground relative overflow-visible">
-        <div className="mx-auto flex max-w-[1200px] items-center px-4 py-3.5 text-[13px] font-medium sm:px-6">
-          <div
-            className="flex items-center gap-2 cursor-pointer group shrink-0 relative z-20"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            <Menu className="size-4" />
-            Todas as categorias
-            {/* Desktop Cascade Menu */}
-            <div
-              className={`hidden lg:flex absolute top-full left-0 pt-4 transition-all duration-300 origin-top-left ${isMenuOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}`}
-            >
-              <div className="bg-white text-foreground shadow-xl rounded-lg overflow-hidden border border-border min-w-[220px]">
-                {navLinks.map((link, index) => (
-                  <Link
-                    key={link}
-                    to="/categoria/$slug"
-                    params={{
-                      slug: link
-                        .toLowerCase()
-                        .normalize("NFD")
-                        .replace(/[\u0300-\u036f]/g, "")
-                        .replace(/\s+/g, "-"),
-                    }}
-                    className="flex items-center justify-between px-5 py-3 hover:bg-pink/5 hover:text-pink transition-all duration-300"
-                    style={{
-                      animation: isMenuOpen ? `slideInRight 0.3s forwards ${index * 50}ms` : "none",
-                      opacity: 0, // Start hidden for animation
-                    }}
-                  >
-                    {link}
-                    <ChevronRight className="size-3.5 opacity-50" />
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="hidden lg:flex items-center gap-6 overflow-x-auto ml-6 whitespace-nowrap lg:gap-8 no-scrollbar">
-            {navLinks.map((link) => (
-              <Link
-                key={link}
-                to="/categoria/$slug"
-                params={{
-                  slug: link
-                    .toLowerCase()
-                    .normalize("NFD")
-                    .replace(/[\u0300-\u036f]/g, "")
-                    .replace(/\s+/g, "-"),
-                }}
-                className="shrink-0 transition-opacity duration-300 hover:opacity-75"
-              >
-                {link}
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Mobile Slide-in Menu */}
+      {/* Mobile menu */}
+      <div
+        className={`fixed inset-0 z-[60] transition-all duration-500 lg:hidden ${
+          isMenuOpen ? "visible" : "invisible"
+        }`}
+      >
         <div
-          className={`lg:hidden fixed inset-0 z-50 transition-all duration-500 ${isMenuOpen ? "visible" : "invisible"}`}
+          className={`absolute inset-0 bg-black/60 transition-opacity duration-500 ${
+            isMenuOpen ? "opacity-100" : "opacity-0"
+          }`}
+          onClick={() => setIsMenuOpen(false)}
+        />
+        <div
+          className={`absolute top-0 right-0 h-full w-[300px] bg-ink text-beige shadow-2xl transition-transform duration-500 ease-out ${
+            isMenuOpen ? "translate-x-0" : "translate-x-full"
+          }`}
         >
-          <div
-            className={`absolute inset-0 bg-black/40 transition-opacity duration-500 ${isMenuOpen ? "opacity-100" : "opacity-0"}`}
-            onClick={() => setIsMenuOpen(false)}
-          />
-          <div
-            className={`absolute top-0 right-0 h-full w-[280px] bg-white text-foreground shadow-2xl transition-transform duration-500 ease-out ${isMenuOpen ? "translate-x-0" : "translate-x-full"}`}
-          >
-            <div className="p-6 border-b border-border flex items-center justify-between">
-              <span className="font-bold text-lg text-pink">Categorias</span>
-              <button onClick={() => setIsMenuOpen(false)} className="text-muted-foreground">
-                Fechar
-              </button>
-            </div>
-            <div className="py-2">
-              {navLinks.map((link, index) => (
-                <Link
-                  key={link}
-                  to="/categoria/$slug"
-                  params={{
-                    slug: link
-                      .toLowerCase()
-                      .normalize("NFD")
-                      .replace(/[\u0300-\u036f]/g, "")
-                      .replace(/\s+/g, "-"),
-                  }}
-                  className="flex items-center justify-between px-6 py-4 hover:bg-pink/5 border-b border-border/50 last:border-0"
-                  style={{
-                    transitionDelay: `${index * 50}ms`,
-                    transform: isMenuOpen ? "translateX(0)" : "translateX(20px)",
-                    opacity: isMenuOpen ? 1 : 0,
-                    transition: "all 0.3s ease-out",
-                  }}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <span className="font-medium">{link}</span>
-                  <ChevronRight className="size-4 text-pink" />
-                </Link>
-              ))}
-            </div>
+          <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
+            <span className="text-sm font-bold uppercase tracking-[0.3em] text-white">Menu</span>
+            <button
+              onClick={() => setIsMenuOpen(false)}
+              aria-label="Fechar menu"
+              className="text-beige/70 hover:text-gold"
+            >
+              <X className="size-5" />
+            </button>
           </div>
+          <nav className="flex flex-col py-4">
+            <Link
+              to="/categoria/colares"
+              onClick={() => setIsMenuOpen(false)}
+              className="border-b border-white/10 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] hover:text-gold"
+            >
+              Coleções
+            </Link>
+            <Link
+              to="/sobre-nos"
+              onClick={() => setIsMenuOpen(false)}
+              className="border-b border-white/10 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] hover:text-gold"
+            >
+              Sobre
+            </Link>
+            <Link
+              to="/fale-conosco"
+              onClick={() => setIsMenuOpen(false)}
+              className="border-b border-white/10 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] hover:text-gold"
+            >
+              Contato
+            </Link>
+            <Link
+              to="/categoria/aneis"
+              onClick={() => setIsMenuOpen(false)}
+              className="border-b border-white/10 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-gold hover:text-gold-light"
+            >
+              Anéis
+            </Link>
+            <Link
+              to="/categoria/pulseiras"
+              onClick={() => setIsMenuOpen(false)}
+              className="border-b border-white/10 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-gold hover:text-gold-light"
+            >
+              Pulseiras
+            </Link>
+            <Link
+              to="/categoria/brincos"
+              onClick={() => setIsMenuOpen(false)}
+              className="border-b border-white/10 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-gold hover:text-gold-light"
+            >
+              Brincos
+            </Link>
+          </nav>
         </div>
-      </nav>
+      </div>
     </header>
+  );
+}
+
+function InstagramIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="size-[18px]"
+    >
+      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+    </svg>
   );
 }

@@ -16,9 +16,9 @@ export const Route = createFileRoute("/rastreamento")({
           Lembre-se que o prazo para postagem é de até 48h após a confirmação do pagamento.
         </p>
         <a
-          href="https://wa.me/5584994085244"
+          href="https://wa.me/5541985073920"
           target="_blank"
-          className="mt-6 inline-flex items-center justify-center px-6 py-2.5 gradient-pink text-white rounded-full text-sm font-bold shadow-lg transition-transform hover:scale-105"
+          className="mt-6 inline-flex items-center justify-center px-6 py-2.5 bg-gold text-ink rounded-full text-sm font-bold shadow-lg transition-transform hover:scale-105"
         >
           Consultar status no WhatsApp
         </a>

@@ -1,8 +1,8 @@
-import { createFileRoute, redirect, useRouter, Link } from '@tanstack/react-router'
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { createFileRoute, redirect, useRouter, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -10,25 +10,25 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
-import logoAsset from "@/assets/logo.png.asset.json"
-import { resolveAssetUrl } from "@/lib/assets"
-import { useServerFn } from '@tanstack/react-start'
-import { signIn } from '@/lib/auth/auth.functions'
-import { tokenStorage } from '@/lib/auth/token-storage'
+} from "@/components/ui/card";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import logoAsset from "@/assets/logo.png.asset.json";
+import { resolveAssetUrl } from "@/lib/assets";
+import { useServerFn } from "@tanstack/react-start";
+import { signIn } from "@/lib/auth/auth.functions";
+import { tokenStorage } from "@/lib/auth/token-storage";
 
-export const Route = createFileRoute('/admin/login')({
+export const Route = createFileRoute("/admin/login")({
   beforeLoad: async () => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     const token = tokenStorage.get();
     if (token) {
-      throw redirect({ to: '/admin/dashboard' });
+      throw redirect({ to: "/admin/dashboard" });
     }
   },
   component: AdminLoginPage,
-})
+});
 
 function parseLoginError(error: any): string {
   if (!error) return "Erro ao realizar login. Tente novamente.";
@@ -38,10 +38,19 @@ function parseLoginError(error: any): string {
   const raw = error.message ?? error.error?.message ?? "";
   const lower = String(raw).toLowerCase();
 
-  if (lower.includes("e-mail ou senha incorretos")) return "E-mail ou senha incorretos. Verifique e tente novamente.";
-  if (lower.includes("credenciais") || lower.includes("invalid login") || lower.includes("invalid credentials"))
+  if (lower.includes("e-mail ou senha incorretos"))
     return "E-mail ou senha incorretos. Verifique e tente novamente.";
-  if (lower.includes("acesso negado") || lower.includes("não autorizado") || lower.includes("forbidden"))
+  if (
+    lower.includes("credenciais") ||
+    lower.includes("invalid login") ||
+    lower.includes("invalid credentials")
+  )
+    return "E-mail ou senha incorretos. Verifique e tente novamente.";
+  if (
+    lower.includes("acesso negado") ||
+    lower.includes("não autorizado") ||
+    lower.includes("forbidden")
+  )
     return "Acesso negado. Apenas administradores podem acessar esta área.";
   if (lower.includes("obrigatório") || lower.includes("required"))
     return "E-mail e senha são obrigatórios.";
@@ -80,7 +89,7 @@ function AdminLoginPage() {
       toast.success("Login realizado com sucesso!");
 
       await router.invalidate();
-      router.navigate({ to: '/admin/dashboard' });
+      router.navigate({ to: "/admin/dashboard" });
     } catch (error: any) {
       console.error("Erro no login:", error);
       const message = parseLoginError(error);
@@ -99,7 +108,7 @@ function AdminLoginPage() {
               <img src={resolveAssetUrl(logoAsset)} alt="Logo" className="h-20 w-auto" />
             </Link>
           </div>
-          <CardTitle className="text-center text-2xl font-bold">Admin Sua Lojinha</CardTitle>
+          <CardTitle className="text-center text-2xl font-bold">Admin Pielinne</CardTitle>
           <CardDescription className="text-center">
             Entre com suas credenciais para gerenciar a loja
           </CardDescription>
@@ -139,5 +148,5 @@ function AdminLoginPage() {
         </form>
       </Card>
     </div>
-  )
+  );
 }

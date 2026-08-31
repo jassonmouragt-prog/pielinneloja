@@ -13,10 +13,10 @@ export function InstitutionalLayout({ children, title }: InstitutionalLayoutProp
       <SiteHeader />
       <main className="mx-auto max-w-[800px] px-4 py-16 sm:px-6">
         <header className="mb-12 text-center">
-          <h1 className="text-4xl font-bold text-foreground mb-4">{title}</h1>
-          <div className="h-1.5 w-20 bg-pink mx-auto rounded-full" />
+          <h1 className="font-serif text-4xl font-semibold text-foreground mb-4">{title}</h1>
+          <div className="h-px w-20 bg-gold mx-auto" />
         </header>
-        <div className="prose prose-pink max-w-none text-muted-foreground leading-relaxed space-y-6">
+        <div className="prose prose-gold max-w-none text-muted-foreground leading-relaxed space-y-6">
           {children}
         </div>
       </main>

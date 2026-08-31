@@ -1,12 +1,11 @@
 export const navLinks = [
-  "Pele",
-  "Olhos",
-  "Lábios",
-  "Sobrancelhas",
-  "Perfumaria",
-  "Skincare",
-  "Cabelos",
-  "Corpo",
+  "Anéis",
+  "Colares",
+  "Brincos",
+  "Pulseiras",
+  "Conjuntos",
+  "Relógios",
+  "Alianças",
   "Acessórios",
 ];
 
@@ -33,6 +32,15 @@ export const footerColumns = [
   },
   {
     title: "Categorias",
-    links: ["Pele", "Olhos", "Lábios", "Sobrancelhas", "Perfumaria", "Skincare", "Cabelos", "Corpo", "Acessórios"],
+    links: [
+      "Anéis",
+      "Colares",
+      "Brincos",
+      "Pulseiras",
+      "Conjuntos",
+      "Relógios",
+      "Alianças",
+      "Acessórios",
+    ],
   },
 ];

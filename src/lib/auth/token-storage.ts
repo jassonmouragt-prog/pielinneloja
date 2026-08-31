@@ -1,4 +1,4 @@
-const TOKEN_KEY = "sualojinha_token";
+const TOKEN_KEY = "pielinne_token";
 
 export const tokenStorage = {
   get(): string | null {

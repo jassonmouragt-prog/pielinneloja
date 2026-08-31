@@ -12,10 +12,11 @@ export const Route = createFileRoute("/perguntas-frequentes")({
     <InstitutionalLayout title="Perguntas Frequentes">
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="item-1">
-          <AccordionTrigger>Como funcionam os preços únicos?</AccordionTrigger>
+          <AccordionTrigger>Como escolho minha semijoia?</AccordionTrigger>
           <AccordionContent>
-            Todos os produtos da nossa loja são categorizados em três faixas de preço: R$10, R$15 ou
-            R$20. Isso facilita suas compras e garante sempre o melhor custo-benefício.
+            Navegue pelas categorias (anéis, colares, brincos, pulseiras e conjuntos) e escolha a
+            peça que combina com o seu estilo. Cada produto tem descrição detalhada e fotos de
+            qualidade para facilitar a sua escolha.
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value="item-2">
