@@ -22,18 +22,18 @@ const STATIC_ASSETS: Array<{
   folder: "site";
 }> = [
   {
-    jsonPath: "src/assets/logo.png.asset.json",
-    binaryPath: "src/assets/logo.png",
+    jsonPath: "src/assets/pielinne-logo.png.asset.json",
+    binaryPath: "src/assets/pielinne-logo.png",
     folder: "site",
   },
   {
-    jsonPath: "src/assets/hero-banner-new.png.asset.json",
-    binaryPath: null,
+    jsonPath: "src/assets/pielinne-hero.png.asset.json",
+    binaryPath: "src/assets/pielinne-hero.png",
     folder: "site",
   },
   {
-    jsonPath: "src/assets/banner-kits-new.png.asset.json",
-    binaryPath: null,
+    jsonPath: "src/assets/pielinne-banner.png.asset.json",
+    binaryPath: "src/assets/pielinne-banner.png",
     folder: "site",
   },
 ];
@@ -68,7 +68,11 @@ async function downloadFile(url: string): Promise<Buffer> {
   return Buffer.from(arr);
 }
 
-async function checkR2ObjectExists(client: S3Client, bucket: string, key: string): Promise<boolean> {
+async function checkR2ObjectExists(
+  client: S3Client,
+  bucket: string,
+  key: string,
+): Promise<boolean> {
   try {
     await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
     return true;

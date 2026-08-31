@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import heroAsset from "@/assets/banner-kits-new.png.asset.json";
+import heroAsset from "@/assets/pielinne-hero.png.asset.json";
 import { resolveAssetUrl } from "@/lib/assets";
 import { Star } from "lucide-react";
 

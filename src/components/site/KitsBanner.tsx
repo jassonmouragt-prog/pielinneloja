@@ -1,7 +1,10 @@
 import { Reveal } from "./Reveal";
 import { Star } from "lucide-react";
+import bannerAsset from "@/assets/pielinne-banner.png.asset.json";
+import { resolveAssetUrl } from "@/lib/assets";
 
 export function KitsBanner() {
+  const bannerUrl = resolveAssetUrl(bannerAsset);
   return (
     <Reveal as="section" className="bg-ink">
       <div className="grid grid-cols-1 lg:grid-cols-2">
@@ -41,15 +44,15 @@ export function KitsBanner() {
           </div>
         </div>
 
-        {/* Image side — will be replaced with still-life photo */}
-        <div className="relative min-h-[300px] bg-gradient-to-br from-ink via-ink-soft to-gold-deep/30 lg:min-h-[480px]">
-          <div
-            aria-hidden
-            className="absolute inset-0 m-auto grid size-40 place-items-center rounded-full border border-gold/30 lg:size-56"
-          >
-            <span className="text-4xl text-gold lg:text-5xl">✦</span>
-          </div>
-          <p className="absolute bottom-8 right-8 text-[10px] font-medium uppercase tracking-[0.3em] text-beige/50">
+        {/* Image side */}
+        <div className="relative min-h-[300px] lg:min-h-[480px]">
+          <img
+            src={bannerUrl}
+            alt="Pielinne Semijoias — coleção"
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="lazy"
+          />
+          <p className="absolute bottom-8 right-8 text-[10px] font-medium uppercase tracking-[0.3em] text-beige/70">
             Piercing · Brilho · Beleza
           </p>
         </div>

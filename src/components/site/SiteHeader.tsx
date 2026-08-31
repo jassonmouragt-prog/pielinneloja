@@ -2,22 +2,24 @@ import { Heart, Menu, Search, ShoppingBag, X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { CartDrawer } from "./CartDrawer";
+import logoAsset from "@/assets/pielinne-logo.png.asset.json";
+import { resolveAssetUrl } from "@/lib/assets";
 
 export function SiteHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const logoUrl = resolveAssetUrl(logoAsset);
 
   return (
     <header className="sticky top-0 z-50 bg-ink text-beige">
       <div className="mx-auto grid h-[80px] max-w-[1400px] grid-cols-[auto_1fr_auto] items-center gap-6 px-6 lg:grid-cols-[1fr_auto_1fr] lg:px-[60px]">
         {/* Logo — left */}
-        <Link to="/" className="group flex flex-col items-start leading-none">
-          <span className="inline-flex items-center gap-1.5 text-xl font-bold uppercase tracking-[0.35em] text-white">
-            <span className="text-gold">✦</span>
-            Pielinne
-          </span>
-          <span className="mt-1 text-[10px] font-medium uppercase tracking-[0.6em] text-gold">
-            Semijoias
-          </span>
+        <Link to="/" className="group flex items-center leading-none">
+          <img
+            src={logoUrl}
+            alt="Pielinne Semijoias"
+            className="h-10 w-auto object-contain lg:h-12"
+            loading="eager"
+          />
         </Link>
 
         {/* Menu — center (desktop) */}
