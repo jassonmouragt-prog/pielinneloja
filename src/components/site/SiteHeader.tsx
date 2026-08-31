@@ -25,7 +25,7 @@ export function SiteHeader() {
         {/* Menu — center (desktop) */}
         <nav className="hidden items-center justify-center gap-10 lg:flex">
           <Link
-            to="/categoria/colares"
+            to="/colecoes"
             className="text-xs font-semibold uppercase tracking-[0.25em] text-beige/90 transition-colors duration-300 hover:text-gold"
           >
             Coleções
@@ -102,7 +102,7 @@ export function SiteHeader() {
           </div>
           <nav className="flex flex-col py-4">
             <Link
-              to="/categoria/colares"
+              to="/colecoes"
               onClick={() => setIsMenuOpen(false)}
               className="border-b border-white/10 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] hover:text-gold"
             >

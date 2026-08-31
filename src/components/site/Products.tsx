@@ -16,7 +16,13 @@ function resolveProductImage(product: any): string | null {
   return publicImageUrl(url);
 }
 
-export function Products({ products: initialProducts }: { products?: any[] }) {
+export function Products({
+  products: initialProducts,
+  hideHeader = false,
+}: {
+  products?: any[];
+  hideHeader?: boolean;
+}) {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const listPublicProductsFn = useServerFn(listPublicProducts);
 
@@ -34,23 +40,25 @@ export function Products({ products: initialProducts }: { products?: any[] }) {
   return (
     <section id="produtos" className="bg-[oklch(0.985_0.008_84)]">
       <div className="mx-auto max-w-[1400px] px-6 py-20 lg:px-[60px] lg:py-28">
-        <Reveal className="mb-14 flex items-end justify-between gap-4">
-          <div>
-            <p className="mb-3 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-gold-deep">
-              <span className="inline-block h-px w-10 bg-gold-deep" />
-              Destaques
-            </p>
-            <h2 className="font-serif text-3xl font-semibold text-ink sm:text-4xl">
-              Nossas peças mais amadas
-            </h2>
-          </div>
-          <Link
-            to="/categoria/colares"
-            className="hidden shrink-0 items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gold-deep transition-colors duration-300 hover:text-ink sm:flex"
-          >
-            Ver todas <ArrowRight className="size-3.5" />
-          </Link>
-        </Reveal>
+        {!hideHeader && (
+          <Reveal className="mb-14 flex items-end justify-between gap-4">
+            <div>
+              <p className="mb-3 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-gold-deep">
+                <span className="inline-block h-px w-10 bg-gold-deep" />
+                Destaques
+              </p>
+              <h2 className="font-serif text-3xl font-semibold text-ink sm:text-4xl">
+                Nossas peças mais amadas
+              </h2>
+            </div>
+            <Link
+              to="/categoria/colares"
+              className="hidden shrink-0 items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gold-deep transition-colors duration-300 hover:text-ink sm:flex"
+            >
+              Ver todas <ArrowRight className="size-3.5" />
+            </Link>
+          </Reveal>
+        )}
 
         <div className="grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3">
           {isLoading && (
