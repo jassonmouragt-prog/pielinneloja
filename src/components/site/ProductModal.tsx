@@ -120,9 +120,12 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[95vw] max-w-4xl p-0 overflow-hidden sm:rounded-2xl max-h-[90vh] overflow-y-auto glass-strong">
+      <DialogContent className="w-[95vw] max-w-4xl p-0 overflow-hidden sm:rounded-2xl max-h-[90vh] overflow-y-auto bg-white border-white/40">
+        <div className="pointer-events-none absolute -inset-px rounded-2xl overflow-hidden" aria-hidden="true">
+          <div className="led-border" />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2">
-          <div className="bg-gray-50/50 p-8 flex items-center justify-center relative min-h-[300px] md:min-h-[500px]">
+          <div className="bg-gray-50 p-8 flex items-center justify-center relative min-h-[300px] md:min-h-[500px] border-r border-gray-100">
             {mainImage ? (
               <img
                 src={mainImage}
