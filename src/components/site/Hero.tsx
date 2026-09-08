@@ -1,9 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import heroAsset from "@/assets/pielinne-hero.png.asset.json";
-import { resolveAssetUrl } from "@/lib/assets";
 
 export function Hero() {
-  const heroUrl = resolveAssetUrl(heroAsset);
   return (
     <section className="py-12 lg:py-20">
       <div className="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-4">
@@ -13,7 +10,7 @@ export function Hero() {
           aria-label="Ver coleções mais vendidas"
         >
           <img
-            src={heroUrl}
+            src="/hero-banner-v2.png"
             alt="Pielinne Semijoias"
             className="h-[350px] sm:h-[450px] lg:h-[550px] w-full object-cover transition-transform duration-700 hover:scale-[1.02]"
             loading="eager"
