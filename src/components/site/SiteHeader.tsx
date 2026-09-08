@@ -17,9 +17,12 @@ export function SiteHeader() {
     const onScroll = () => {
       const scrolled = window.scrollY > 40;
       if (scrolled !== isScrolled) {
+        const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+        const base = isDesktop ? 80 : 64;
+        const collapsed = isDesktop ? 56 : 52;
         setIsScrolled(scrolled);
         gsap.to(header, {
-          height: scrolled ? 56 : 80,
+          height: scrolled ? collapsed : base,
           duration: 0.6,
           ease: "elastic.out(1, 0.75)",
         });
@@ -34,7 +37,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 px-4 sm:px-6 lg:px-8 pt-3">
       <div
         ref={headerRef}
-        className={`mx-auto grid h-[80px] max-w-[1400px] grid-cols-[auto_1fr_auto] items-center gap-6 px-6 lg:grid-cols-[1fr_auto_1fr] lg:px-[60px] rounded-2xl transition-[backdrop-filter,background,box-shadow] duration-500 ${
+        className={`mx-auto grid h-16 lg:h-[80px] max-w-[1400px] grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-6 lg:grid-cols-[1fr_auto_1fr] lg:px-[60px] rounded-2xl transition-[backdrop-filter,background,box-shadow] duration-500 ${
           isScrolled
             ? "bg-white/40 backdrop-blur-[40px] shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/30"
             : "bg-white/60 backdrop-blur-xl shadow-glass border border-white/20"

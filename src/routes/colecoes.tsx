@@ -40,12 +40,12 @@ function ColecoesPage() {
       <SiteHeader />
 
       <main className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6">
-        <header className="mb-12 text-center">
+        <header className="mb-8 sm:mb-12 text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Trophy className="size-8 text-silver-deep" />
-            <h1 className="text-4xl font-bold text-ink">Coleções Mais Vendidas</h1>
+            <Trophy className="size-6 sm:size-8 text-silver-deep" />
+            <h1 className="text-3xl font-bold text-ink sm:text-4xl">Coleções Mais Vendidas</h1>
           </div>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
             As peças que nossas clientes mais amam. Descubra o que está em alta.
           </p>
           <div className="h-1 w-20 bg-silver-deep mx-auto rounded-full mt-6" />

@@ -27,8 +27,8 @@ const TESTIMONIALS: Testimonial[] = [
 export function Testimonials() {
   return (
     <section className="bg-gradient-hero">
-      <div className="mx-auto max-w-[1400px] px-6 py-20 lg:px-[60px] lg:py-28">
-        <div className="mb-14 text-center">
+      <div className="mx-auto max-w-[1400px] px-6 py-16 sm:py-20 lg:px-[60px] lg:py-28">
+        <div className="mb-10 text-center sm:mb-14">
           <p className="mb-3 inline-flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-silver-deep">
             <span className="inline-block h-px w-10 bg-silver-deep" />
             Depoimentos
@@ -39,7 +39,7 @@ export function Testimonials() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 gap-y-10 md:grid-cols-3 md:gap-0 md:divide-x md:divide-gray-200">
+        <div className="grid grid-cols-1 gap-y-8 md:grid-cols-3 md:gap-0 md:divide-x md:divide-gray-200">
           {TESTIMONIALS.map((t) => (
             <div key={t.name} className="flex flex-col items-center px-4 text-center md:px-8">
               <div className="mb-6 flex items-center justify-center gap-1">

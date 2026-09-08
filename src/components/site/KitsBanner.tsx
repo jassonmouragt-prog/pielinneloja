@@ -4,7 +4,7 @@ import { resolveAssetUrl } from "@/lib/assets";
 export function KitsBanner() {
   const bannerUrl = resolveAssetUrl(bannerAsset);
   return (
-    <section className="relative w-full h-[300px] sm:h-[400px] lg:h-[500px] overflow-hidden glass">
+    <section className="relative w-full h-[220px] sm:h-[400px] lg:h-[500px] overflow-hidden glass">
       <img
         src={bannerUrl}
         alt="Pielinne Semijoias — coleção"

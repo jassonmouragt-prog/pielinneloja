@@ -94,9 +94,9 @@ function CategoryPage() {
     <div className="min-h-screen bg-white">
       <SiteHeader />
 
-      <main className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6">
-        <header className="mb-12 text-center">
-          <h1 className="text-4xl font-bold text-ink mb-4">{categoryName}</h1>
+      <main className="mx-auto max-w-[1200px] px-4 py-10 sm:px-6 sm:py-12">
+        <header className="mb-8 sm:mb-12 text-center">
+          <h1 className="text-3xl font-bold text-ink mb-3 sm:text-4xl sm:mb-4">{categoryName}</h1>
           <div className="h-1 w-20 bg-silver-deep mx-auto rounded-full" />
         </header>
 
@@ -107,7 +107,7 @@ function CategoryPage() {
         ) : (categoryProducts as any[])?.length > 0 ? (
           <>
             <div className="mb-8 flex items-center justify-center">
-              <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white/80 backdrop-blur-sm px-5 py-3 shadow-glass">
+              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm px-4 py-2.5 sm:px-5 sm:py-3 shadow-glass">
                 <SlidersHorizontal className="size-4 text-muted-foreground" />
                 <span className="text-sm font-medium text-ink">Filtrar por preço:</span>
                 <div className="flex items-center gap-2">

@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 export function SiteFooter() {
   return (
     <footer className="bg-white/80 backdrop-blur-xl border-t border-gray-200">
-      <div className="mx-auto grid max-w-[1400px] gap-12 px-6 py-16 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] lg:gap-10 lg:px-[60px] lg:py-20">
+      <div className="mx-auto grid max-w-[1400px] gap-10 px-6 py-14 sm:grid-cols-2 sm:py-16 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] lg:gap-10 lg:px-[60px] lg:py-20">
         {/* Col 1 — logo + social */}
         <div>
           <div className="flex flex-col leading-none">

@@ -16,7 +16,7 @@ export function InstagramSection() {
 
   return (
     <section id="favoritos" className="bg-white">
-      <div className="mx-auto max-w-[1400px] px-6 py-20 lg:px-[60px] lg:py-28">
+      <div className="mx-auto max-w-[1400px] px-6 py-16 sm:py-20 lg:px-[60px] lg:py-28">
         <Reveal className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:items-center sm:justify-between">
           <div className="min-w-0">
             <p className="mb-3 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-silver-deep">

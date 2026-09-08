@@ -39,9 +39,9 @@ export function Products({
 
   return (
     <section id="produtos" className="bg-white">
-      <div className="mx-auto max-w-[1400px] px-6 py-20 lg:px-[60px] lg:py-28">
+      <div className="mx-auto max-w-[1400px] px-6 py-16 sm:py-20 lg:px-[60px] lg:py-28">
         {!hideHeader && (
-          <Reveal className="mb-14 flex items-end justify-between gap-4">
+          <Reveal className="mb-8 flex items-end justify-between gap-4 sm:mb-14">
             <div>
               <p className="mb-3 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-silver-deep">
                 <span className="inline-block h-px w-10 bg-silver-deep" />
@@ -60,7 +60,7 @@ export function Products({
           </Reveal>
         )}
 
-        <div className="grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-12">
           {isLoading && (
             <div className="col-span-full flex justify-center py-16">
               <Loader2 className="h-8 w-8 animate-spin text-silver-deep" />
@@ -96,10 +96,10 @@ export function Products({
                       </span>
                     </div>
                   </div>
-                  <h3 className="mt-5 text-[13px] font-medium uppercase tracking-[0.12em] text-ink">
+                  <h3 className="mt-4 sm:mt-5 text-[12px] sm:text-[13px] font-medium uppercase tracking-[0.12em] text-ink">
                     {product.name}
                   </h3>
-                  <p className="mt-1.5 text-sm font-normal text-ink/60">
+                  <p className="mt-1 text-sm font-normal text-ink/60">
                     R$ {Number(product.price).toFixed(2)}
                   </p>
                 </article>

@@ -125,7 +125,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
           <div className="led-border" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2">
-          <div className="bg-gray-50 p-8 flex items-center justify-center relative min-h-[300px] md:min-h-[500px] border-r border-gray-100">
+          <div className="bg-gray-50 p-6 sm:p-8 flex items-center justify-center relative min-h-[220px] sm:min-h-[300px] md:min-h-[500px] border-r border-gray-100">
             {mainImage ? (
               <img
                 src={mainImage}
