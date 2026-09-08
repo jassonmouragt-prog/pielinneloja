@@ -12,6 +12,7 @@ O objetivo deste plano é simplificar a interface de login do administrador, rem
 ### Login do Administrador
 
 #### [src/routes/admin.login.tsx]
+
 - Remover o estado `debugInfo` e a função `updateDebugInfo`.
 - Remover o componente visual do "Painel de Diagnóstico (Admin)" (linhas 201 a 246).
 - Ajustar o layout do contêiner principal para centralizar apenas o cartão de login, removendo o empilhamento vertical com o diagnóstico.
@@ -26,6 +27,7 @@ O objetivo deste plano é simplificar a interface de login do administrador, rem
 ## Verification Plan
 
 ### Manual Verification
+
 - Acessar `/admin/login` em desktop e dispositivos móveis (via DevTools).
 - Verificar se o painel escuro de diagnóstico desapareceu.
 - Testar o login com credenciais válidas e inválidas para garantir que os Toasts de sucesso/erro continuam funcionando.

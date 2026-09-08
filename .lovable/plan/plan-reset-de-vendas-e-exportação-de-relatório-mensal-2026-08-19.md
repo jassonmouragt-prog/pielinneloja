@@ -12,11 +12,13 @@ Implementação de ferramentas de gerenciamento de vendas no painel administrati
 ### Admin Panel Improvements
 
 #### 1. Faturamento & Vendas (Exportação)
+
 - Adicionar um botão "Exportar Relatório (CSV)" na página de Faturamento ou Vendas.
 - O relatório incluirá: ID da Venda, Data, Cliente, Itens (Quantidade x Produto), Valor Total e Status.
 - Lógica client-side para gerar e baixar o arquivo CSV com base nos filtros atuais.
 
 #### 2. Configurações (Reset de Vendas)
+
 - Adicionar uma nova seção "Gerenciamento de Dados" na página de Configurações.
 - Botão "Zerar Todas as Vendas" com um modal de confirmação "destrutivo" (exigindo que o usuário confirme a ação).
 - Ação no servidor para limpar as tabelas `sales`, `sale_items` e `stock_movements` relacionadas de forma atômica.

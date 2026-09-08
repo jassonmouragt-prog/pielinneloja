@@ -103,7 +103,8 @@ export const upsertProduct = createServerFn({ method: "POST" })
           name: groupName,
           options: validOptions.map((o) => {
             const val = typeof o === "string" ? o.trim() : o.value.trim();
-            const stock = typeof o === "object" && typeof o.stock === "number" ? Math.max(0, o.stock) : 0;
+            const stock =
+              typeof o === "object" && typeof o.stock === "number" ? Math.max(0, o.stock) : 0;
             totalVariationStock += stock;
             return { value: val, stock };
           }),
@@ -163,7 +164,8 @@ export const upsertProduct = createServerFn({ method: "POST" })
           if (!opt) continue;
           const optValue = typeof opt === "string" ? opt.trim() : opt.value.trim();
           if (!optValue) continue;
-          const optStock = typeof opt === "object" && typeof opt.stock === "number" ? Math.max(0, opt.stock) : 0;
+          const optStock =
+            typeof opt === "object" && typeof opt.stock === "number" ? Math.max(0, opt.stock) : 0;
           variationRowsToInsert.push({
             productId,
             variationName: v.name.trim(),
@@ -273,4 +275,4 @@ export const listCategoriesAdmin = createServerFn({ method: "GET" })
     return db.select().from(schema.categories).orderBy(schema.categories.name);
   });
 
-export { };
+export {};

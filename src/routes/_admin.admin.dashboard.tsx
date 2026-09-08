@@ -16,7 +16,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useServerFn } from "@tanstack/react-start";
-import { getRecentSales, getProductsForDashboard, getDashboardSummary } from "@/lib/queries.queries";
+import {
+  getRecentSales,
+  getProductsForDashboard,
+  getDashboardSummary,
+} from "@/lib/queries.queries";
 
 export const Route = createFileRoute("/_admin/admin/dashboard")({
   component: AdminDashboard,
@@ -183,23 +187,42 @@ function AdminDashboard() {
           {stats?.recentSales && stats.recentSales.length > 0 ? (
             <div className="space-y-4">
               {stats.recentSales.map((sale: any) => (
-                <div key={sale.id} className="flex items-center justify-between border-b pb-2 last:border-0">
+                <div
+                  key={sale.id}
+                  className="flex items-center justify-between border-b pb-2 last:border-0"
+                >
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none">
                       {sale.customerName || "Cliente WhatsApp"}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {sale.sale_items?.map((i: any) => `${i.quantity}x ${i.products?.name}`).join(", ")}
+                      {sale.sale_items
+                        ?.map((i: any) => `${i.quantity}x ${i.products?.name}`)
+                        .join(", ")}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <Badge
                       variant={
-                        sale.status === "pending" ? "secondary" : sale.status === "confirmed" ? "default" : "outline"
+                        sale.status === "pending"
+                          ? "secondary"
+                          : sale.status === "confirmed"
+                            ? "default"
+                            : "outline"
                       }
-                      className={sale.status === "pending" ? "bg-yellow-100 text-yellow-800" : sale.status === "confirmed" ? "bg-green-500" : ""}
+                      className={
+                        sale.status === "pending"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : sale.status === "confirmed"
+                            ? "bg-green-500"
+                            : ""
+                      }
                     >
-                      {sale.status === "pending" ? "Pendente" : sale.status === "confirmed" ? "Ok" : "Canc."}
+                      {sale.status === "pending"
+                        ? "Pendente"
+                        : sale.status === "confirmed"
+                          ? "Ok"
+                          : "Canc."}
                     </Badge>
                     <div className="text-right">
                       <p className="text-sm font-bold">R$ {Number(sale.totalAmount).toFixed(2)}</p>

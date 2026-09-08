@@ -27,10 +27,7 @@ export const listPublicProducts = createServerFn({ method: "GET" })
       .parse(data),
   )
   .handler(async ({ data }) => {
-    const conds = [
-      eq(schema.products.status, "active"),
-      gt(schema.products.stockQuantity, 0),
-    ];
+    const conds = [eq(schema.products.status, "active"), gt(schema.products.stockQuantity, 0)];
     if (data?.categoryId) conds.push(eq(schema.products.categoryId, data.categoryId));
 
     const rows = await db
@@ -92,7 +89,7 @@ export const listPublicProducts = createServerFn({ method: "GET" })
 
     return rows.map((p) => {
       const stockMap = stockByProduct.get(p.id);
-      const hasSpecificStock = (stockMap && stockMap.size > 0);
+      const hasSpecificStock = stockMap && stockMap.size > 0;
       const baseVariations: any = p.variations ?? [];
       const variationsForClient = Array.isArray(baseVariations)
         ? baseVariations.map((v: any) => {
@@ -100,12 +97,15 @@ export const listPublicProducts = createServerFn({ method: "GET" })
             const cleanOptions: string[] = [];
             if (Array.isArray(v.options)) {
               for (const opt of v.options) {
-                const optValue = typeof opt === "string" ? opt : (opt?.value || "");
+                const optValue = typeof opt === "string" ? opt : opt?.value || "";
                 if (!optValue) continue;
                 cleanOptions.push(optValue);
                 const stock = hasSpecificStock
-                  ? (stockMap?.get(`${v.name}::${optValue}`) ?? (typeof opt === "object" && typeof opt?.stock === "number" ? opt.stock : 0))
-                  : (typeof opt === "object" && typeof opt?.stock === "number" ? opt.stock : (p.stockQuantity ?? 0));
+                  ? (stockMap?.get(`${v.name}::${optValue}`) ??
+                    (typeof opt === "object" && typeof opt?.stock === "number" ? opt.stock : 0))
+                  : typeof opt === "object" && typeof opt?.stock === "number"
+                    ? opt.stock
+                    : (p.stockQuantity ?? 0);
                 stockByOption[optValue] = stock;
               }
             }

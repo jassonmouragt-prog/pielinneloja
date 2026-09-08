@@ -112,7 +112,9 @@ export const updateSaleStatus = createServerFn({ method: "POST" })
         }
 
         if (item.variations && typeof item.variations === "object") {
-          for (const [varName, optValue] of Object.entries(item.variations as Record<string, string>)) {
+          for (const [varName, optValue] of Object.entries(
+            item.variations as Record<string, string>,
+          )) {
             if (!varName || !optValue) continue;
             await db
               .update(schema.productVariations)

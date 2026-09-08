@@ -12,7 +12,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Minus, Search, Edit2, Trash2, AlertCircle, Loader2, Upload, X, Tag } from "lucide-react";
+import {
+  Plus,
+  Minus,
+  Search,
+  Edit2,
+  Trash2,
+  AlertCircle,
+  Loader2,
+  Upload,
+  X,
+  Tag,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
@@ -229,7 +240,7 @@ function AdminProductsPage() {
       status: "active",
       variations: [],
     },
-  })
+  });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -718,16 +729,13 @@ function AdminProductsPage() {
                             <div className="space-y-1.5 mb-2">
                               {form.watch(`variations.${vIndex}.options`)?.map((opt, oIndex) => {
                                 const allVariationOptions =
-                                  form
-                                    .watch("variations")
-                                    ?.flatMap((v) => v?.options || []) || [];
+                                  form.watch("variations")?.flatMap((v) => v?.options || []) || [];
                                 const allocatedTotal = allVariationOptions.reduce(
                                   (sum, o) => sum + (Number(o?.stock) || 0),
                                   0,
                                 );
                                 const thisStock = Number(opt?.stock) || 0;
-                                const stockCeiling =
-                                  Number(form.watch("stock_quantity")) || 0;
+                                const stockCeiling = Number(form.watch("stock_quantity")) || 0;
                                 const maxForOption = Math.max(
                                   0,
                                   stockCeiling - (allocatedTotal - thisStock),
@@ -737,7 +745,9 @@ function AdminProductsPage() {
                                     key={oIndex}
                                     className="flex items-center gap-2 bg-white border rounded-md p-1.5 pr-1"
                                   >
-                                    <span className="text-xs flex-1 pl-1 truncate">{opt.value}</span>
+                                    <span className="text-xs flex-1 pl-1 truncate">
+                                      {opt.value}
+                                    </span>
                                     <span className="text-[10px] text-muted-foreground whitespace-nowrap">
                                       até {maxForOption}
                                     </span>
@@ -751,10 +761,7 @@ function AdminProductsPage() {
                                         const updated = currentOptions.map((o, i) =>
                                           i === oIndex ? { ...o, stock: next } : o,
                                         );
-                                        form.setValue(
-                                          `variations.${vIndex}.options`,
-                                          updated,
-                                        );
+                                        form.setValue(`variations.${vIndex}.options`, updated);
                                       }}
                                     />
                                     <button
@@ -1026,7 +1033,8 @@ function AdminProductsPage() {
               Editar Variações - {variationProduct?.name}
             </DialogTitle>
             <DialogDescription>
-              Adicione ou altere variações (ex: Cores, Tons, Tamanhos) e configure o estoque específico de cada opção.
+              Adicione ou altere variações (ex: Cores, Tons, Tamanhos) e configure o estoque
+              específico de cada opção.
             </DialogDescription>
           </DialogHeader>
 
@@ -1058,7 +1066,8 @@ function AdminProductsPage() {
                       <span className="font-semibold text-foreground">
                         {activeVariations.reduce(
                           (total, v) =>
-                            total + v.options.reduce((sum, opt) => sum + (Number(opt.stock) || 0), 0),
+                            total +
+                            v.options.reduce((sum, opt) => sum + (Number(opt.stock) || 0), 0),
                           0,
                         )}
                       </span>{" "}
@@ -1106,9 +1115,7 @@ function AdminProductsPage() {
                     type="button"
                     variant="secondary"
                     size="sm"
-                    onClick={() =>
-                      setActiveVariations([{ name: "Cor", options: [] }])
-                    }
+                    onClick={() => setActiveVariations([{ name: "Cor", options: [] }])}
                   >
                     <Plus className="size-4 mr-1.5" />
                     Adicionar Primeira Variação
@@ -1160,7 +1167,8 @@ function AdminProductsPage() {
                           {group.options.map((opt, oIndex) => {
                             const allocatedTotal = activeVariations.reduce(
                               (total, v) =>
-                                total + v.options.reduce((sum, o) => sum + (Number(o.stock) || 0), 0),
+                                total +
+                                v.options.reduce((sum, o) => sum + (Number(o.stock) || 0), 0),
                               0,
                             );
                             const thisStock = Number(opt.stock) || 0;
@@ -1173,7 +1181,9 @@ function AdminProductsPage() {
                                 key={oIndex}
                                 className="flex items-center gap-2 bg-white border rounded-md p-1.5 px-2.5 shadow-sm"
                               >
-                                <span className="text-xs font-medium flex-1 truncate">{opt.value}</span>
+                                <span className="text-xs font-medium flex-1 truncate">
+                                  {opt.value}
+                                </span>
                                 <span className="text-[10px] text-muted-foreground whitespace-nowrap">
                                   até {maxForOption}
                                 </span>
@@ -1222,7 +1232,11 @@ function AdminProductsPage() {
                             onAdd={(val) => {
                               const updated = [...activeVariations];
                               const currentOptions = updated[gIndex]?.options || [];
-                              if (!currentOptions.some((o) => o.value.toLowerCase() === val.toLowerCase())) {
+                              if (
+                                !currentOptions.some(
+                                  (o) => o.value.toLowerCase() === val.toLowerCase(),
+                                )
+                              ) {
                                 updated[gIndex] = {
                                   ...updated[gIndex]!,
                                   options: [...currentOptions, { value: val, stock: 0 }],

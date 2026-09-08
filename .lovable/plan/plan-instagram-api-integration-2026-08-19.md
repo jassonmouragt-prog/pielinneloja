@@ -6,6 +6,7 @@ Integrate the Instagram Basic Display API to automatically fetch and display the
 
 > [!IMPORTANT]
 > To integrate the Instagram API, you need to provide a **Long-Lived Access Token**. Since I cannot access your Facebook Developer account, you must:
+>
 > 1. Create an app on [Facebook Developers](https://developers.facebook.com/).
 > 2. Add "Instagram Basic Display".
 > 3. Generate a User Token for `@sualojinhamakeup`.
@@ -16,6 +17,7 @@ Integrate the Instagram Basic Display API to automatically fetch and display the
 ### Backend (Server Functions)
 
 #### [NEW] `src/lib/instagram.functions.ts`
+
 - Create a server function `getInstagramPosts` to fetch media from the Instagram Basic Display API.
 - Use `process.env.INSTAGRAM_ACCESS_TOKEN` for authentication.
 - Implement caching to avoid hitting API limits.
@@ -23,6 +25,7 @@ Integrate the Instagram Basic Display API to automatically fetch and display the
 ### Frontend (Components)
 
 #### `src/components/site/InstagramSection.tsx`
+
 - Replace the static image implementation with a dynamic feed.
 - Use `useQuery` to call the `getInstagramPosts` server function.
 - Display a loading state while fetching.

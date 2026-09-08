@@ -12,7 +12,17 @@ export const listExpenses = createServerFn({ method: "GET" })
         from: z.string().optional(),
         to: z.string().optional(),
         type: z
-          .enum(["funcionaria", "fornecedores", "agua", "luz", "internet", "aluguel", "marketing", "impostos", "outros"])
+          .enum([
+            "funcionaria",
+            "fornecedores",
+            "agua",
+            "luz",
+            "internet",
+            "aluguel",
+            "marketing",
+            "impostos",
+            "outros",
+          ])
           .optional(),
         limit: z.number().int().positive().max(500).optional(),
       })
@@ -48,7 +58,17 @@ export const createExpense = createServerFn({ method: "POST" })
   .validator((data: unknown) =>
     z
       .object({
-        type: z.enum(["funcionaria", "fornecedores", "agua", "luz", "internet", "aluguel", "marketing", "impostos", "outros"]),
+        type: z.enum([
+          "funcionaria",
+          "fornecedores",
+          "agua",
+          "luz",
+          "internet",
+          "aluguel",
+          "marketing",
+          "impostos",
+          "outros",
+        ]),
         description: z.string().min(2, "Descrição obrigatória").max(255),
         amount: z.number().positive("Valor deve ser maior que zero"),
         expenseDate: z.string().optional(),

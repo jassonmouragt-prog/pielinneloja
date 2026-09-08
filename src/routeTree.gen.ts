@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as CancelamentosRouteImport } from './routes/cancelamentos'
+import { Route as ColecoesRouteImport } from './routes/colecoes'
 import { Route as ComoComprarRouteImport } from './routes/como-comprar'
 import { Route as FaleConoscoRouteImport } from './routes/fale-conosco'
 import { Route as FormasDePagamentoRouteImport } from './routes/formas-de-pagamento'
@@ -43,6 +44,11 @@ const AdminRoute = AdminRouteImport.update({
 const CancelamentosRoute = CancelamentosRouteImport.update({
   id: '/cancelamentos',
   path: '/cancelamentos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ColecoesRoute = ColecoesRouteImport.update({
+  id: '/colecoes',
+  path: '/colecoes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ComoComprarRoute = ComoComprarRouteImport.update({
@@ -139,6 +145,7 @@ const AdminAdminVendasRoute = AdminAdminVendasRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cancelamentos': typeof CancelamentosRoute
+  '/colecoes': typeof ColecoesRoute
   '/como-comprar': typeof ComoComprarRoute
   '/fale-conosco': typeof FaleConoscoRoute
   '/formas-de-pagamento': typeof FormasDePagamentoRoute
@@ -161,6 +168,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cancelamentos': typeof CancelamentosRoute
+  '/colecoes': typeof ColecoesRoute
   '/como-comprar': typeof ComoComprarRoute
   '/fale-conosco': typeof FaleConoscoRoute
   '/formas-de-pagamento': typeof FormasDePagamentoRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_admin': typeof AdminRouteWithChildren
   '/cancelamentos': typeof CancelamentosRoute
+  '/colecoes': typeof ColecoesRoute
   '/como-comprar': typeof ComoComprarRoute
   '/fale-conosco': typeof FaleConoscoRoute
   '/formas-de-pagamento': typeof FormasDePagamentoRoute
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/cancelamentos'
+    | '/colecoes'
     | '/como-comprar'
     | '/fale-conosco'
     | '/formas-de-pagamento'
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/cancelamentos'
+    | '/colecoes'
     | '/como-comprar'
     | '/fale-conosco'
     | '/formas-de-pagamento'
@@ -254,6 +265,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_admin'
     | '/cancelamentos'
+    | '/colecoes'
     | '/como-comprar'
     | '/fale-conosco'
     | '/formas-de-pagamento'
@@ -278,6 +290,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   CancelamentosRoute: typeof CancelamentosRoute
+  ColecoesRoute: typeof ColecoesRoute
   ComoComprarRoute: typeof ComoComprarRoute
   FaleConoscoRoute: typeof FaleConoscoRoute
   FormasDePagamentoRoute: typeof FormasDePagamentoRoute
@@ -312,6 +325,13 @@ declare module '@tanstack/react-router' {
       path: '/cancelamentos'
       fullPath: '/cancelamentos'
       preLoaderRoute: typeof CancelamentosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/colecoes': {
+      id: '/colecoes'
+      path: '/colecoes'
+      fullPath: '/colecoes'
+      preLoaderRoute: typeof ColecoesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/como-comprar': {
@@ -469,6 +489,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   CancelamentosRoute: CancelamentosRoute,
+  ColecoesRoute: ColecoesRoute,
   ComoComprarRoute: ComoComprarRoute,
   FaleConoscoRoute: FaleConoscoRoute,
   FormasDePagamentoRoute: FormasDePagamentoRoute,

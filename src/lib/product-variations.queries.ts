@@ -12,7 +12,10 @@ export const listProductVariations = createServerFn({ method: "GET" })
       .select()
       .from(schema.productVariations)
       .where(eq(schema.productVariations.productId, data.productId))
-      .orderBy(asc(schema.productVariations.variationName), asc(schema.productVariations.optionValue));
+      .orderBy(
+        asc(schema.productVariations.variationName),
+        asc(schema.productVariations.optionValue),
+      );
 
     return rows.map((r) => ({
       id: r.id,
@@ -66,7 +69,10 @@ export const syncProductVariations = createServerFn({ method: "POST" })
         sortOrder: number;
       }> = [];
 
-      const variationsForJson: Array<{ name: string; options: Array<{ value: string; stock: number }> }> = [];
+      const variationsForJson: Array<{
+        name: string;
+        options: Array<{ value: string; stock: number }>;
+      }> = [];
 
       let allocatedStock = 0;
       let hasAnyOptions = false;
@@ -141,7 +147,10 @@ export const getProductWithVariations = createServerFn({ method: "GET" })
       .select()
       .from(schema.productVariations)
       .where(eq(schema.productVariations.productId, data.productId))
-      .orderBy(asc(schema.productVariations.variationName), asc(schema.productVariations.sortOrder));
+      .orderBy(
+        asc(schema.productVariations.variationName),
+        asc(schema.productVariations.sortOrder),
+      );
 
     const grouped: Record<string, Array<{ value: string; stock: number; id: string }>> = {};
     for (const v of variations) {
@@ -152,16 +161,26 @@ export const getProductWithVariations = createServerFn({ method: "GET" })
     let resultVariations = Object.entries(grouped).map(([name, opts]) => ({ name, options: opts }));
 
     // Fallback if product_variations table has no rows but product.variations JSON has data
-    if (resultVariations.length === 0 && Array.isArray(product.variations) && product.variations.length > 0) {
-      const parsed: Array<{ name: string; options: Array<{ value: string; stock: number; id: string }> }> = [];
+    if (
+      resultVariations.length === 0 &&
+      Array.isArray(product.variations) &&
+      product.variations.length > 0
+    ) {
+      const parsed: Array<{
+        name: string;
+        options: Array<{ value: string; stock: number; id: string }>;
+      }> = [];
       for (const v of product.variations as any[]) {
         if (!v?.name || !Array.isArray(v.options)) continue;
         parsed.push({
           name: v.name,
           options: v.options.map((opt: any, idx: number) => ({
             id: `legacy-${idx}`,
-            value: typeof opt === "string" ? opt : (opt?.value || ""),
-            stock: typeof opt === "object" && typeof opt?.stock === "number" ? opt.stock : (product.stockQuantity ?? 0),
+            value: typeof opt === "string" ? opt : opt?.value || "",
+            stock:
+              typeof opt === "object" && typeof opt?.stock === "number"
+                ? opt.stock
+                : (product.stockQuantity ?? 0),
           })),
         });
       }

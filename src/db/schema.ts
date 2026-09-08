@@ -155,7 +155,9 @@ export const stockMovements = pgTable(
     productId: uuid("product_id")
       .notNull()
       .references(() => products.id, { onDelete: "cascade" }),
-    variationId: uuid("variation_id").references(() => productVariations.id, { onDelete: "set null" }),
+    variationId: uuid("variation_id").references(() => productVariations.id, {
+      onDelete: "set null",
+    }),
     quantity: integer("quantity").notNull(),
     type: varchar("type", { length: 32 }).notNull(),
     saleId: uuid("sale_id").references(() => sales.id, { onDelete: "set null" }),
@@ -177,10 +179,7 @@ export const expenses = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
-  (t) => [
-    index("expenses_type_idx").on(t.type),
-    index("expenses_date_idx").on(t.expenseDate),
-  ],
+  (t) => [index("expenses_type_idx").on(t.type), index("expenses_date_idx").on(t.expenseDate)],
 );
 
 export type User = typeof users.$inferSelect;

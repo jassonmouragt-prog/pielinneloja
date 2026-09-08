@@ -2,13 +2,13 @@
 
 Este projeto foi migrado de **Supabase** (Auth + Postgres + Storage) para uma stack totalmente serverless-friendly:
 
-| Camada | Antes (Supabase) | Depois |
-|---|---|---|
-| Banco de dados | Supabase Postgres | **Neon Postgres** (serverless) |
-| ORM | PostgREST (auto API) | **Drizzle ORM** |
-| Auth | Supabase Auth (JWT) | **Custom JWT + bcryptjs** (jose) |
-| Storage | Supabase Storage | **Cloudflare R2** (S3-compatible) |
-| RLS | Supabase RLS | Postgres RLS (BYPASSRLS no app user) |
+| Camada         | Antes (Supabase)     | Depois                               |
+| -------------- | -------------------- | ------------------------------------ |
+| Banco de dados | Supabase Postgres    | **Neon Postgres** (serverless)       |
+| ORM            | PostgREST (auto API) | **Drizzle ORM**                      |
+| Auth           | Supabase Auth (JWT)  | **Custom JWT + bcryptjs** (jose)     |
+| Storage        | Supabase Storage     | **Cloudflare R2** (S3-compatible)    |
+| RLS            | Supabase RLS         | Postgres RLS (BYPASSRLS no app user) |
 
 ## Setup Pós-Migração
 
@@ -53,6 +53,7 @@ bun run db:bootstrap  # cria função has_role, habilita RLS, cria policies, sem
 ```
 
 **Credenciais admin criadas pelo bootstrap**:
+
 - Email: `sualojinhaadmin@admin.com`
 - Senha: `ChangeMe123!` (defina `ADMIN_SEED_PASSWORD` no `.env` antes de rodar para customizar)
 
@@ -118,10 +119,12 @@ Diferente do Supabase (que tem um `service_role` que bypassa RLS automaticamente
 Todos os dados passam por **TanStack Start server functions** com `useServerFn`:
 
 ### Públicos (sem auth)
+
 - `listCategories()` → `GET /_serverFn/listCategories`
 - `listPublicProducts({ categoryId?, limit? })`
 
 ### Admin (com `requireAuth`)
+
 - `listAdminProducts()`, `listAdminProductsMinimal()`, `listProductsForStock()`
 - `listStockMovements()`, `listSales()`, `getRecentSales()`, `getMonthSalesStats()`
 - `getProductsForDashboard()`, `getBillingData()`

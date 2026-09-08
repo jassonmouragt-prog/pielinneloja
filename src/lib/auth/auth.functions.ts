@@ -54,27 +54,25 @@ export const signIn = createServerFn({ method: "POST" })
     };
   });
 
-export const getCurrentSession = createServerFn({ method: "GET" }).handler(
-  async () => {
-    try {
-      const request = getRequest();
-      const authHeader = request?.headers.get("authorization");
-      if (!authHeader?.startsWith("Bearer ")) return null;
-      const token = authHeader.replace("Bearer ", "");
-      const claims = await verifySessionToken(token);
-      if (!claims) return null;
-      const role = await getUserRole(claims.sub);
-      return {
-        userId: claims.sub,
-        email: claims.email,
-        role: role ?? "user",
-      };
-    } catch (e) {
-      console.warn("[auth] getCurrentSession failed", e);
-      return null;
-    }
-  },
-);
+export const getCurrentSession = createServerFn({ method: "GET" }).handler(async () => {
+  try {
+    const request = getRequest();
+    const authHeader = request?.headers.get("authorization");
+    if (!authHeader?.startsWith("Bearer ")) return null;
+    const token = authHeader.replace("Bearer ", "");
+    const claims = await verifySessionToken(token);
+    if (!claims) return null;
+    const role = await getUserRole(claims.sub);
+    return {
+      userId: claims.sub,
+      email: claims.email,
+      role: role ?? "user",
+    };
+  } catch (e) {
+    console.warn("[auth] getCurrentSession failed", e);
+    return null;
+  }
+});
 
 export const bootstrapAdmin = createServerFn({ method: "POST" })
   .validator((data: unknown) =>
@@ -98,10 +96,7 @@ export const bootstrapAdmin = createServerFn({ method: "POST" })
       return { ok: true, created: false, userId: found.id };
     }
     const passwordHash = await hashPassword(data.password);
-    const inserted = await db
-      .insert(schema.users)
-      .values({ email, passwordHash })
-      .returning();
+    const inserted = await db.insert(schema.users).values({ email, passwordHash }).returning();
     const user = inserted[0];
     if (!user) throw new Error("Failed to create user");
     await db.insert(schema.userRoles).values({ userId: user.id, role: "admin" });
