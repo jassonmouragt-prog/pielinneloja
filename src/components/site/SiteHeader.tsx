@@ -2,14 +2,12 @@ import { Heart, Menu, Search, ShoppingBag, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { CartDrawer } from "./CartDrawer";
-import logoAsset from "@/assets/pielinne-logo.png.asset.json";
-import { resolveAssetUrl } from "@/lib/assets";
 import gsap from "gsap";
 
 export function SiteHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const logoUrl = resolveAssetUrl(logoAsset);
+  const logoUrl = "/logo-preta.png";
   const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -47,7 +45,7 @@ export function SiteHeader() {
           <img
             src={logoUrl}
             alt="Pielinne Semijoias"
-            className="h-10 w-auto object-contain lg:h-12"
+            className="h-8 w-auto object-contain lg:h-9"
             loading="eager"
           />
         </Link>
