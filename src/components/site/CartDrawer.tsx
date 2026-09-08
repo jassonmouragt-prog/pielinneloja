@@ -114,22 +114,22 @@ export function CartDrawer() {
       <SheetTrigger asChild>
         <button
           aria-label="Carrinho"
-          className="relative text-foreground/80 transition-transform duration-300 hover:scale-110 cursor-pointer"
+          className="relative text-ink/80 transition-transform duration-300 hover:scale-110 cursor-pointer"
         >
           <ShoppingBag className="size-5 stroke-[1.5]" />
           {hydrated && totalItems() > 0 && (
-            <span className="absolute -top-2 -right-2 grid size-4 place-items-center rounded-full bg-pink text-[10px] font-bold text-primary-foreground">
+            <span className="absolute -top-2 -right-2 grid size-4 place-items-center rounded-full bg-silver-deep text-[10px] font-bold text-white">
               {totalItems()}
             </span>
           )}
         </button>
       </SheetTrigger>
       <SheetContent
-        className="flex w-full flex-col p-0 sm:max-w-md z-[100] max-h-screen overflow-y-auto"
+        className="flex w-full flex-col p-0 sm:max-w-md z-[100] max-h-screen overflow-y-auto glass-strong"
         side="right"
       >
-        <SheetHeader className="border-b px-6 py-4">
-          <SheetTitle className="flex items-center gap-2 text-pink">
+        <SheetHeader className="border-b border-gray-200 px-6 py-4">
+          <SheetTitle className="flex items-center gap-2 text-silver-deep">
             <ShoppingBag className="size-5" />
             Meu Carrinho
           </SheetTitle>
@@ -138,7 +138,7 @@ export function CartDrawer() {
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
             <ShoppingBag className="mb-4 size-12 text-muted-foreground/30" />
-            <p className="text-lg font-medium">Seu carrinho está vazio</p>
+            <p className="text-lg font-medium text-ink">Seu carrinho está vazio</p>
             <p className="mt-2 text-sm text-muted-foreground">
               Adicione produtos para começar a comprar.
             </p>
@@ -146,10 +146,10 @@ export function CartDrawer() {
         ) : (
           <div className="flex flex-1 flex-col overflow-hidden">
             <ScrollArea className="flex-1 px-6">
-              <div className="divide-y divide-border py-4">
+              <div className="divide-y divide-gray-200 py-4">
                 {items.map((item: CartItem) => (
                   <div key={item.name} className="flex gap-4 py-4">
-                    <div className="size-20 shrink-0 overflow-hidden rounded-md border border-border bg-muted">
+                    <div className="size-20 shrink-0 overflow-hidden rounded-md border border-gray-200 bg-gray-100">
                       <img
                         src={item.image}
                         alt={item.name}
@@ -159,7 +159,7 @@ export function CartDrawer() {
                     <div className="flex flex-1 flex-col justify-between">
                       <div>
                         <div className="flex items-start justify-between gap-2">
-                          <h4 className="text-sm font-medium leading-tight">{item.name}</h4>
+                          <h4 className="text-sm font-medium leading-tight text-ink">{item.name}</h4>
                           <button
                             onClick={() => removeItem(item.name, item.selectedVariations)}
                             className="text-muted-foreground hover:text-destructive cursor-pointer"
@@ -173,7 +173,7 @@ export function CartDrawer() {
                             {Object.entries(item.selectedVariations).map(([key, value]) => (
                               <span
                                 key={key}
-                                className="inline-flex items-center gap-1 bg-pink/5 text-[10px] text-pink px-2 py-0.5 rounded-full border border-pink/10 font-medium"
+                                className="inline-flex items-center gap-1 bg-silver-soft text-[10px] text-silver-deep px-2 py-0.5 rounded-full border border-gray-200 font-medium"
                               >
                                 <Tag className="size-2" />
                                 {key}: {value}
@@ -183,24 +183,24 @@ export function CartDrawer() {
                         )}
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-pink">{item.price}</span>
-                        <div className="flex items-center gap-2 rounded-full border border-border px-2 py-1">
+                        <span className="text-sm font-bold text-silver-deep">{item.price}</span>
+                        <div className="flex items-center gap-2 rounded-full border border-gray-200 px-2 py-1">
                           <button
                             onClick={() =>
                               updateQuantity(item.name, item.quantity - 1, item.selectedVariations)
                             }
-                            className="text-muted-foreground hover:text-pink cursor-pointer"
+                            className="text-muted-foreground hover:text-silver-deep cursor-pointer"
                           >
                             <Minus className="size-3" />
                           </button>
-                          <span className="min-w-[20px] text-center text-xs font-medium">
+                          <span className="min-w-[20px] text-center text-xs font-medium text-ink">
                             {item.quantity}
                           </span>
                           <button
                             onClick={() =>
                               updateQuantity(item.name, item.quantity + 1, item.selectedVariations)
                             }
-                            className="text-muted-foreground hover:text-pink cursor-pointer"
+                            className="text-muted-foreground hover:text-silver-deep cursor-pointer"
                           >
                             <Plus className="size-3" />
                           </button>
@@ -212,10 +212,10 @@ export function CartDrawer() {
               </div>
             </ScrollArea>
 
-            <SheetFooter className="mt-auto border-t bg-muted/30 px-6 py-6 sm:flex-col">
+            <SheetFooter className="mt-auto border-t border-gray-200 bg-gray-50/50 px-6 py-6 sm:flex-col">
               <div className="mb-4 flex items-center justify-between text-lg font-bold w-full">
-                <span>Total</span>
-                <span className="text-pink">
+                <span className="text-ink">Total</span>
+                <span className="text-silver-deep">
                   R${" "}
                   {items
                     .reduce((acc: number, item: CartItem) => {
@@ -227,7 +227,7 @@ export function CartDrawer() {
                 </span>
               </div>
               <div className="mb-6 space-y-2 w-full">
-                <Label htmlFor="customerName" className="text-sm font-medium">
+                <Label htmlFor="customerName" className="text-sm font-medium text-ink">
                   Seu Nome
                 </Label>
                 <Input
@@ -238,7 +238,7 @@ export function CartDrawer() {
                     setCustomerName(e.target.value);
                     if (e.target.value.trim()) setNameError(false);
                   }}
-                  className={`rounded-full border-pink/30 focus-visible:ring-pink ${nameError ? "border-red-500 ring-1 ring-red-500" : ""}`}
+                  className={`rounded-full border-gray-300 focus-visible:ring-silver-deep ${nameError ? "border-red-500 ring-1 ring-red-500" : ""}`}
                 />
                 {nameError && (
                   <p className="text-[10px] text-red-500 mt-1 ml-2 italic">
@@ -249,7 +249,7 @@ export function CartDrawer() {
               <Button
                 onClick={handleCheckout}
                 disabled={isRegistering}
-                className="h-12 w-full gap-2 rounded-full gradient-pink text-primary-foreground hover:opacity-90 cursor-pointer"
+                className="h-12 w-full gap-2 rounded-full bg-silver-deep text-white hover:bg-silver/90 cursor-pointer"
               >
                 {isRegistering ? (
                   <>

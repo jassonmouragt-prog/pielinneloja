@@ -10,7 +10,7 @@ export function SiteHeader() {
   const logoUrl = resolveAssetUrl(logoAsset);
 
   return (
-    <header className="sticky top-0 z-50 bg-ink text-beige">
+    <header className="sticky top-0 z-50 glass-strong">
       <div className="mx-auto grid h-[80px] max-w-[1400px] grid-cols-[auto_1fr_auto] items-center gap-6 px-6 lg:grid-cols-[1fr_auto_1fr] lg:px-[60px]">
         {/* Logo — left */}
         <Link to="/" className="group flex items-center leading-none">
@@ -26,19 +26,19 @@ export function SiteHeader() {
         <nav className="hidden items-center justify-center gap-10 lg:flex">
           <Link
             to="/colecoes"
-            className="text-xs font-semibold uppercase tracking-[0.25em] text-beige/90 transition-colors duration-300 hover:text-gold"
+            className="text-xs font-semibold uppercase tracking-[0.25em] text-ink/70 transition-colors duration-300 hover:text-silver-deep"
           >
             Coleções
           </Link>
           <Link
             to="/sobre-nos"
-            className="text-xs font-semibold uppercase tracking-[0.25em] text-beige/90 transition-colors duration-300 hover:text-gold"
+            className="text-xs font-semibold uppercase tracking-[0.25em] text-ink/70 transition-colors duration-300 hover:text-silver-deep"
           >
             Sobre
           </Link>
           <Link
             to="/fale-conosco"
-            className="text-xs font-semibold uppercase tracking-[0.25em] text-beige/90 transition-colors duration-300 hover:text-gold"
+            className="text-xs font-semibold uppercase tracking-[0.25em] text-ink/70 transition-colors duration-300 hover:text-silver-deep"
           >
             Contato
           </Link>
@@ -48,7 +48,7 @@ export function SiteHeader() {
         <div className="flex items-center justify-end gap-5">
           <button
             aria-label="Buscar"
-            className="hidden text-beige/80 transition-colors duration-300 hover:text-gold md:block"
+            className="hidden text-ink/60 transition-colors duration-300 hover:text-silver-deep md:block"
           >
             <Search className="size-[18px] stroke-[1.5]" />
           </button>
@@ -57,7 +57,7 @@ export function SiteHeader() {
             target="_blank"
             rel="noreferrer"
             aria-label="Instagram"
-            className="hidden text-beige/80 transition-colors duration-300 hover:text-gold md:block"
+            className="hidden text-ink/60 transition-colors duration-300 hover:text-silver-deep md:block"
           >
             <InstagramIcon />
           </a>
@@ -66,7 +66,7 @@ export function SiteHeader() {
           <button
             aria-label="Abrir menu"
             onClick={() => setIsMenuOpen(true)}
-            className="text-beige/80 transition-colors duration-300 hover:text-gold lg:hidden"
+            className="text-ink/60 transition-colors duration-300 hover:text-silver-deep lg:hidden"
           >
             <Menu className="size-5 stroke-[1.5]" />
           </button>
@@ -80,22 +80,22 @@ export function SiteHeader() {
         }`}
       >
         <div
-          className={`absolute inset-0 bg-black/60 transition-opacity duration-500 ${
+          className={`absolute inset-0 bg-ink/60 backdrop-blur-sm transition-opacity duration-500 ${
             isMenuOpen ? "opacity-100" : "opacity-0"
           }`}
           onClick={() => setIsMenuOpen(false)}
         />
         <div
-          className={`absolute top-0 right-0 h-full w-[300px] bg-ink text-beige shadow-2xl transition-transform duration-500 ease-out ${
+          className={`absolute top-0 right-0 h-full w-[300px] glass-strong shadow-glass transition-transform duration-500 ease-out ${
             isMenuOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
-          <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
-            <span className="text-sm font-bold uppercase tracking-[0.3em] text-white">Menu</span>
+          <div className="flex items-center justify-between border-b border-white/20 px-6 py-5">
+            <span className="text-sm font-bold uppercase tracking-[0.3em] text-ink">Menu</span>
             <button
               onClick={() => setIsMenuOpen(false)}
               aria-label="Fechar menu"
-              className="text-beige/70 hover:text-gold"
+              className="text-ink/60 hover:text-silver-deep"
             >
               <X className="size-5" />
             </button>
@@ -104,42 +104,42 @@ export function SiteHeader() {
             <Link
               to="/colecoes"
               onClick={() => setIsMenuOpen(false)}
-              className="border-b border-white/10 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] hover:text-gold"
+              className="border-b border-white/15 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-ink/70 hover:text-silver-deep"
             >
               Coleções
             </Link>
             <Link
               to="/sobre-nos"
               onClick={() => setIsMenuOpen(false)}
-              className="border-b border-white/10 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] hover:text-gold"
+              className="border-b border-white/15 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-ink/70 hover:text-silver-deep"
             >
               Sobre
             </Link>
             <Link
               to="/fale-conosco"
               onClick={() => setIsMenuOpen(false)}
-              className="border-b border-white/10 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] hover:text-gold"
+              className="border-b border-white/15 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-ink/70 hover:text-silver-deep"
             >
               Contato
             </Link>
             <Link
               to="/categoria/aneis"
               onClick={() => setIsMenuOpen(false)}
-              className="border-b border-white/10 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-gold hover:text-gold-light"
+              className="border-b border-white/15 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-silver-deep hover:text-silver"
             >
               Anéis
             </Link>
             <Link
               to="/categoria/pulseiras"
               onClick={() => setIsMenuOpen(false)}
-              className="border-b border-white/10 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-gold hover:text-gold-light"
+              className="border-b border-white/15 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-silver-deep hover:text-silver"
             >
               Pulseiras
             </Link>
             <Link
               to="/categoria/brincos"
               onClick={() => setIsMenuOpen(false)}
-              className="border-b border-white/10 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-gold hover:text-gold-light"
+              className="border-b border-white/15 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-silver-deep hover:text-silver"
             >
               Brincos
             </Link>

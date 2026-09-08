@@ -44,14 +44,14 @@ export function Categories() {
   const display = ordered.length > 0 ? ordered : (categories ?? []).slice(0, 4);
 
   return (
-    <section id="categorias" className="bg-beige border-b border-gold/20">
+    <section id="categorias" className="bg-gradient-hero">
       <div className="mx-auto max-w-[1400px] px-4 py-10 sm:px-6 lg:px-[60px] lg:py-12">
         {isLoading ? (
           <div className="flex justify-center py-8">
-            <Loader2 className="h-7 w-7 animate-spin text-gold" />
+            <Loader2 className="h-7 w-7 animate-spin text-silver-deep" />
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-y-8 md:grid-cols-4 md:gap-0 md:divide-x md:divide-gold/25">
+          <div className="grid grid-cols-2 gap-y-8 md:grid-cols-4 md:gap-0 md:divide-x md:divide-gray-200">
             {display.map((category: any, index: number) => {
               const Icon = getIcon(category.name);
               const slug = slugify(category.name);
@@ -60,13 +60,13 @@ export function Categories() {
                   <Link
                     to="/categoria/$slug"
                     params={{ slug }}
-                    className="group flex w-full flex-col items-center justify-center gap-3 px-4 text-center md:py-2"
+                    className="group flex w-full flex-col items-center justify-center gap-3 px-4 py-6 text-center glass rounded-2xl hover:glass-strong transition-all duration-300 md:py-4"
                   >
                     <Icon
-                      className="size-8 stroke-[1.2] text-gold-deep transition-transform duration-300 group-hover:scale-110"
+                      className="size-9 stroke-[1.2] text-silver-deep transition-transform duration-300 group-hover:scale-110"
                       strokeWidth={1.2}
                     />
-                    <span className="text-xs font-semibold uppercase tracking-[0.3em] text-ink transition-colors duration-300 group-hover:text-gold-deep">
+                    <span className="text-xs font-semibold uppercase tracking-[0.3em] text-ink transition-colors duration-300 group-hover:text-silver-deep">
                       {category.name}
                     </span>
                   </Link>

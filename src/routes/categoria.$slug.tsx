@@ -91,25 +91,25 @@ function CategoryPage() {
   }, [slug]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <SiteHeader />
 
       <main className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6">
         <header className="mb-12 text-center">
-          <h1 className="text-4xl font-bold text-foreground mb-4">{categoryName}</h1>
-          <div className="h-1 w-20 bg-pink mx-auto rounded-full" />
+          <h1 className="text-4xl font-bold text-ink mb-4">{categoryName}</h1>
+          <div className="h-1 w-20 bg-silver-deep mx-auto rounded-full" />
         </header>
 
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-pink" />
+            <Loader2 className="h-8 w-8 animate-spin text-silver-deep" />
           </div>
         ) : (categoryProducts as any[])?.length > 0 ? (
           <>
             <div className="mb-8 flex items-center justify-center">
-              <div className="flex items-center gap-3 rounded-xl border border-border bg-white px-5 py-3 shadow-sm">
+              <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white/80 backdrop-blur-sm px-5 py-3 shadow-glass">
                 <SlidersHorizontal className="size-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">Filtrar por preço:</span>
+                <span className="text-sm font-medium text-ink">Filtrar por preço:</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Até</span>
                   <div className="relative">
@@ -126,14 +126,14 @@ function CategoryPage() {
                         const val = e.target.value;
                         setMaxPrice(val === "" ? "" : Number(val));
                       }}
-                      className="h-9 w-28 rounded-lg border border-input bg-background pl-10 pr-2 text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-gold/50"
+                      className="h-9 w-28 rounded-lg border border-gray-300 bg-gray-50 pl-10 pr-2 text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-silver-deep/50"
                     />
                   </div>
                 </div>
                 {maxPrice !== "" && maxPrice > 0 && (
                   <button
                     onClick={() => setMaxPrice("")}
-                    className="ml-1 text-xs font-medium text-gold-deep hover:text-ink transition-colors"
+                    className="ml-1 text-xs font-medium text-silver-deep hover:text-ink transition-colors"
                   >
                     Limpar
                   </button>
@@ -144,13 +144,13 @@ function CategoryPage() {
             {filteredProducts.length > 0 ? (
               <Products products={filteredProducts} hideHeader={true} />
             ) : (
-              <div className="text-center py-20 bg-cream/30 rounded-2xl border border-dashed border-pink/20">
+              <div className="text-center py-20 bg-gray-100 rounded-2xl border border-dashed border-gray-300">
                 <p className="text-muted-foreground text-lg">
                   Nenhum produto encontrado até R$ {maxPrice.toFixed(2)} nesta categoria.
                 </p>
                 <button
                   onClick={() => setMaxPrice("")}
-                  className="mt-4 text-sm font-medium text-gold-deep hover:text-ink transition-colors"
+                  className="mt-4 text-sm font-medium text-silver-deep hover:text-ink transition-colors"
                 >
                   Limpar filtro
                 </button>
@@ -158,7 +158,7 @@ function CategoryPage() {
             )}
           </>
         ) : (
-          <div className="text-center py-20 bg-cream/30 rounded-2xl border border-dashed border-pink/20">
+          <div className="text-center py-20 bg-gray-100 rounded-2xl border border-dashed border-gray-300">
             <p className="text-muted-foreground text-lg">
               Nenhum produto encontrado nesta categoria no momento.
             </p>

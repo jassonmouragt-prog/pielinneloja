@@ -120,9 +120,9 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[95vw] max-w-4xl p-0 overflow-hidden sm:rounded-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-4xl p-0 overflow-hidden sm:rounded-2xl max-h-[90vh] overflow-y-auto glass-strong">
         <div className="grid grid-cols-1 md:grid-cols-2">
-          <div className="bg-cream/30 p-8 flex items-center justify-center relative min-h-[300px] md:min-h-[500px]">
+          <div className="bg-gray-50/50 p-8 flex items-center justify-center relative min-h-[300px] md:min-h-[500px]">
             {mainImage ? (
               <img
                 src={mainImage}
@@ -137,22 +137,22 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
           <div className="p-6 sm:p-8 flex flex-col">
             <div className="space-y-4 flex-1">
               <div>
-                <h2 className="text-2xl font-bold text-foreground sm:text-3xl">{product.name}</h2>
+                <h2 className="text-2xl font-bold text-ink sm:text-3xl">{product.name}</h2>
                 {product.subtitle && (
                   <p className="text-base text-muted-foreground mt-1">{product.subtitle}</p>
                 )}
               </div>
 
-<div className="flex items-baseline gap-2 flex-wrap">
-                  <span className="text-3xl font-bold text-pink">
-                    R$ {Number(product.price).toFixed(2)}
-                  </span>
-                </div>
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className="text-3xl font-bold text-silver-deep">
+                  R$ {Number(product.price).toFixed(2)}
+                </span>
+              </div>
 
               {!hasVariations && totalStock > 0 && totalStock <= 5 && (
                 <div className="flex items-center gap-1.5 text-xs">
-                  <AlertCircle className="size-3.5 text-yellow-600" />
-                  <span className="text-yellow-700 font-semibold">
+                  <AlertCircle className="size-3.5 text-amber-600" />
+                  <span className="text-amber-700 font-semibold">
                     Apenas {totalStock} em estoque
                   </span>
                 </div>
@@ -160,7 +160,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
 
               {hasVariations && isComplete && selectedMaxStock !== null && (
                 <div
-                  className={`flex items-center gap-1.5 text-xs ${selectedMaxStock <= 3 ? "text-yellow-700" : "text-muted-foreground"}`}
+                  className={`flex items-center gap-1.5 text-xs ${selectedMaxStock <= 3 ? "text-amber-700" : "text-muted-foreground"}`}
                 >
                   <Package className="size-3.5" />
                   <span className="font-semibold">
@@ -180,14 +180,14 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
               )}
 
               {hasVariations && (
-                <div className="space-y-4 py-4 border-t border-border">
+                <div className="space-y-4 py-4 border-t border-gray-200">
                   {variations.map((variation) => (
                     <div key={variation.name} className="space-y-2">
-                      <label className="text-sm font-semibold text-foreground flex items-center justify-between">
+                      <label className="text-sm font-semibold text-ink flex items-center justify-between">
                         <span>
                           {variation.name}
                           {selectedVariations[variation.name] && (
-                            <span className="text-pink font-bold ml-1.5">
+                            <span className="text-silver-deep font-bold ml-1.5">
                               — {selectedVariations[variation.name]}
                             </span>
                           )}
@@ -216,10 +216,10 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                               }
                               className={`relative px-3 py-2 rounded-lg text-xs font-medium transition-all border flex flex-col items-center gap-0.5 ${
                                 isSelected
-                                  ? "bg-pink border-pink text-white shadow-sm"
+                                  ? "bg-silver-deep border-silver-deep text-white shadow-sm"
                                   : isOut
-                                    ? "bg-muted/50 border-border text-muted-foreground cursor-not-allowed"
-                                    : "bg-white border-border text-foreground hover:border-pink/50"
+                                    ? "bg-muted/50 border-gray-200 text-muted-foreground cursor-not-allowed"
+                                    : "bg-white border-gray-200 text-ink hover:border-silver-deep/50"
                               }`}
                             >
                               <span className="flex items-center gap-1.5">
@@ -235,7 +235,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                                       : isOut
                                         ? "text-red-500"
                                         : isLow
-                                          ? "text-yellow-600"
+                                          ? "text-amber-600"
                                           : "text-muted-foreground"
                                   }`}
                                 >
@@ -253,7 +253,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
 
               {effectiveMax > 0 && (
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-foreground">Quantidade</label>
+                  <label className="text-sm font-semibold text-ink">Quantidade</label>
                   <div className="flex items-center gap-2">
                     <Button
                       type="button"
@@ -293,11 +293,11 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 </div>
               )}
 
-              <div className="pt-4 border-t border-border">
+              <div className="pt-4 border-t border-gray-200">
                 <Button
                   onClick={handleAddToCart}
                   disabled={!isComplete || isAnyOutOfStock || effectiveMax <= 0}
-                  className="w-full h-12 gradient-pink text-primary-foreground font-bold rounded-xl gap-3 shadow-lg hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-12 bg-silver-deep text-white font-bold rounded-xl gap-3 shadow-glass hover:bg-silver/90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ShoppingBag className="size-5" />
                   {effectiveMax <= 0

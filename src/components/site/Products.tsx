@@ -38,13 +38,13 @@ export function Products({
   const displayProducts = (initialProducts || products) as any[];
 
   return (
-    <section id="produtos" className="bg-[oklch(0.985_0.008_84)]">
+    <section id="produtos" className="bg-white">
       <div className="mx-auto max-w-[1400px] px-6 py-20 lg:px-[60px] lg:py-28">
         {!hideHeader && (
           <Reveal className="mb-14 flex items-end justify-between gap-4">
             <div>
-              <p className="mb-3 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-gold-deep">
-                <span className="inline-block h-px w-10 bg-gold-deep" />
+              <p className="mb-3 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-silver-deep">
+                <span className="inline-block h-px w-10 bg-silver-deep" />
                 Destaques
               </p>
               <h2 className="font-serif text-3xl font-semibold text-ink sm:text-4xl">
@@ -53,7 +53,7 @@ export function Products({
             </div>
             <Link
               to="/categoria/colares"
-              className="hidden shrink-0 items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gold-deep transition-colors duration-300 hover:text-ink sm:flex"
+              className="hidden shrink-0 items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-silver-deep transition-colors duration-300 hover:text-ink sm:flex"
             >
               Ver todas <ArrowRight className="size-3.5" />
             </Link>
@@ -63,7 +63,7 @@ export function Products({
         <div className="grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3">
           {isLoading && (
             <div className="col-span-full flex justify-center py-16">
-              <Loader2 className="h-8 w-8 animate-spin text-gold" />
+              <Loader2 className="h-8 w-8 animate-spin text-silver-deep" />
             </div>
           )}
           {displayProducts?.map?.((product: any, index: number) => {
@@ -74,7 +74,7 @@ export function Products({
                   onClick={() => setSelectedProduct(product)}
                   className="group cursor-pointer"
                 >
-                  <div className="relative aspect-square w-full overflow-hidden bg-beige-light">
+                  <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-gray-100 glass">
                     {imageUrl ? (
                       <img
                         src={imageUrl}
@@ -89,8 +89,8 @@ export function Products({
                         Em breve
                       </div>
                     )}
-                    <div className="absolute inset-0 grid place-items-center bg-ink/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                      <span className="inline-flex items-center gap-2 border border-gold bg-gold px-6 py-3 text-[11px] font-bold uppercase tracking-[0.2em] text-ink">
+                    <div className="absolute inset-0 flex items-center justify-center bg-ink/30 backdrop-blur-sm opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                      <span className="inline-flex items-center gap-2 border border-white/30 bg-white/20 backdrop-blur-sm px-6 py-3 text-[11px] font-bold uppercase tracking-[0.2em] text-ink shadow-glass">
                         <ShoppingBag className="size-3.5" />
                         Ver peça
                       </span>

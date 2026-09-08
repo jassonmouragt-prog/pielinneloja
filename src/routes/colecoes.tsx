@@ -36,29 +36,29 @@ function ColecoesPage() {
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <SiteHeader />
 
       <main className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6">
         <header className="mb-12 text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Trophy className="size-8 text-gold" />
-            <h1 className="text-4xl font-bold text-foreground">Coleções Mais Vendidas</h1>
+            <Trophy className="size-8 text-silver-deep" />
+            <h1 className="text-4xl font-bold text-ink">Coleções Mais Vendidas</h1>
           </div>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             As peças que nossas clientes mais amam. Descubra o que está em alta.
           </p>
-          <div className="h-1 w-20 bg-gold mx-auto rounded-full mt-6" />
+          <div className="h-1 w-20 bg-silver-deep mx-auto rounded-full mt-6" />
         </header>
 
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-gold" />
+            <Loader2 className="h-8 w-8 animate-spin text-silver-deep" />
           </div>
         ) : (topProducts as any[])?.length > 0 ? (
           <Products products={topProducts as any} hideHeader={true} />
         ) : (
-          <div className="text-center py-20 bg-cream/30 rounded-2xl border border-dashed border-gold/20">
+          <div className="text-center py-20 bg-gray-100 rounded-2xl border border-dashed border-gray-300">
             <Trophy className="size-12 mx-auto text-muted-foreground/50 mb-4" />
             <p className="text-muted-foreground text-lg">
               Ainda não temos vendas registradas para exibir as coleções mais vendidas.
