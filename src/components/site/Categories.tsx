@@ -1,4 +1,4 @@
-import { Loader2, Gem, Circle, CircleDot, Ear } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Reveal } from "./Reveal";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -13,18 +13,17 @@ function slugify(name: string): string {
     .replace(/\s+/g, "-");
 }
 
-const CATEGORY_ICONS: Record<string, any> = {
-  brincos: Ear,
-  colares: Gem,
-  pulseiras: Circle,
-  anéis: CircleDot,
-  aneis: CircleDot,
+const CATEGORY_ICONS: Record<string, string> = {
+  brincos: "/brincos.png",
+  colares: "/colares.png",
+  pulseiras: "/pulseiras.png",
+  "anéis": "/aneis.png",
+  aneis: "/aneis.png",
 };
 
-function getIcon(name: string) {
+function getIconSrc(name: string): string | null {
   const slug = slugify(name);
-  if (CATEGORY_ICONS[slug]) return CATEGORY_ICONS[slug];
-  return Gem;
+  return CATEGORY_ICONS[slug] ?? null;
 }
 
 const FEATURED = ["Brincos", "Colares", "Pulseiras", "Anéis"];
@@ -53,8 +52,8 @@ export function Categories() {
         ) : (
           <div className="grid grid-cols-2 gap-y-8 md:grid-cols-4 md:gap-0 md:divide-x md:divide-gray-200">
             {display.map((category: any, index: number) => {
-              const Icon = getIcon(category.name);
               const slug = slugify(category.name);
+              const iconSrc = getIconSrc(category.name);
               return (
                 <Reveal key={category.id} delay={index * 60} className="flex">
                   <Link
@@ -62,10 +61,15 @@ export function Categories() {
                     params={{ slug }}
                     className="group flex w-full flex-col items-center justify-center gap-3 px-4 py-6 text-center glass rounded-2xl hover:glass-strong transition-all duration-300 md:py-4"
                   >
-                    <Icon
-                      className="size-9 stroke-[1.2] text-silver-deep transition-transform duration-300 group-hover:scale-110"
-                      strokeWidth={1.2}
-                    />
+                    {iconSrc ? (
+                      <img
+                        src={iconSrc}
+                        alt={category.name}
+                        className="h-10 w-10 object-contain transition-transform duration-300 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="h-10 w-10" />
+                    )}
                     <span className="text-xs font-semibold uppercase tracking-[0.3em] text-ink transition-colors duration-300 group-hover:text-silver-deep">
                       {category.name}
                     </span>
