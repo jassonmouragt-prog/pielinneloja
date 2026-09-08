@@ -1,17 +1,47 @@
 import { Heart, Menu, Search, ShoppingBag, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { CartDrawer } from "./CartDrawer";
 import logoAsset from "@/assets/pielinne-logo.png.asset.json";
 import { resolveAssetUrl } from "@/lib/assets";
+import gsap from "gsap";
 
 export function SiteHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const logoUrl = resolveAssetUrl(logoAsset);
+  const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
+    const onScroll = () => {
+      const scrolled = window.scrollY > 40;
+      if (scrolled !== isScrolled) {
+        setIsScrolled(scrolled);
+        gsap.to(header, {
+          height: scrolled ? 56 : 80,
+          duration: 0.6,
+          ease: "elastic.out(1, 0.75)",
+        });
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isScrolled]);
 
   return (
-    <header className="sticky top-0 z-50 glass-strong">
-      <div className="mx-auto grid h-[80px] max-w-[1400px] grid-cols-[auto_1fr_auto] items-center gap-6 px-6 lg:grid-cols-[1fr_auto_1fr] lg:px-[60px]">
+    <header className="sticky top-0 z-50 px-4 sm:px-6 lg:px-8 pt-3">
+      <div
+        ref={headerRef}
+        className={`mx-auto grid h-[80px] max-w-[1400px] grid-cols-[auto_1fr_auto] items-center gap-6 px-6 lg:grid-cols-[1fr_auto_1fr] lg:px-[60px] rounded-2xl transition-[backdrop-filter,background,box-shadow] duration-500 ${
+          isScrolled
+            ? "bg-white/40 backdrop-blur-[40px] shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/30"
+            : "bg-white/60 backdrop-blur-xl shadow-glass border border-white/20"
+        }`}
+      >
         {/* Logo — left */}
         <Link to="/" className="group flex items-center leading-none">
           <img
