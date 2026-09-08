@@ -6,7 +6,7 @@ export function Hero() {
   const heroUrl = resolveAssetUrl(heroAsset);
   return (
     <section className="py-12 lg:py-20">
-      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-4">
         <Link
           to="/colecoes"
           className="relative block overflow-hidden rounded-3xl shadow-glass"
