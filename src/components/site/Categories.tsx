@@ -1,4 +1,4 @@
-import { Loader2, Gem, Circle, CircleDashed, CircleDot } from "lucide-react";
+import { Loader2, Gem, Circle, CircleDot, Ear } from "lucide-react";
 import { Reveal } from "./Reveal";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -14,11 +14,11 @@ function slugify(name: string): string {
 }
 
 const CATEGORY_ICONS: Record<string, any> = {
-  brincos: CircleDot,
+  brincos: Ear,
   colares: Gem,
-  pulseiras: CircleDashed,
-  anéis: Circle,
-  aneis: Circle,
+  pulseiras: Circle,
+  anéis: CircleDot,
+  aneis: CircleDot,
 };
 
 function getIcon(name: string) {
