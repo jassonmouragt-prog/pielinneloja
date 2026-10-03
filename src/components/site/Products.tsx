@@ -52,7 +52,8 @@ export function Products({
               </h2>
             </div>
             <Link
-              to="/categoria/colares"
+              to="/categoria/$slug"
+              params={{ slug: "colares" }}
               className="hidden shrink-0 items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-silver-deep transition-colors duration-300 hover:text-ink sm:flex"
             >
               Ver todas <ArrowRight className="size-3.5" />

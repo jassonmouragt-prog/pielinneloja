@@ -8,7 +8,34 @@ export interface CartItem {
   price: string;
   image: string;
   quantity: number;
+  maxQuantity?: number;
+  stockQuantity?: number;
+  variationStock?: Record<string, Record<string, number>>;
   selectedVariations?: Record<string, string> | undefined;
+}
+
+export function getCartItemLimit(items: CartItem[], item: CartItem): number {
+  const otherQuantity = items.reduce((sum, other) => {
+    if (other === item || !item.id || other.id !== item.id) return sum;
+    return sum + other.quantity;
+  }, 0);
+  let limit = Math.min(
+    item.maxQuantity ?? Infinity,
+    (item.stockQuantity ?? Infinity) - otherQuantity,
+  );
+  for (const [name, value] of Object.entries(item.selectedVariations ?? {})) {
+    const stock = item.variationStock?.[name]?.[value];
+    if (stock === undefined) continue;
+    const used = items.reduce(
+      (sum, other) =>
+        other !== item && other.id === item.id && other.selectedVariations?.[name] === value
+          ? sum + other.quantity
+          : sum,
+      0,
+    );
+    limit = Math.min(limit, stock - used);
+  }
+  return Math.max(0, limit);
 }
 
 interface CartStore {
@@ -36,18 +63,27 @@ export const useCart = create<CartStore>()(
         );
 
         if (existingItem) {
+          const updated = { ...existingItem, ...product };
+          const limit = getCartItemLimit(
+            currentItems.filter((item) => item !== existingItem),
+            updated,
+          );
+          if (limit < 1) return;
           set({
             items: currentItems.map((item) =>
               item.name === product.name &&
               JSON.stringify(item.selectedVariations) === JSON.stringify(product.selectedVariations)
-                ? { ...item, quantity: item.quantity + quantity }
+                ? { ...updated, quantity: Math.min(item.quantity + quantity, limit) }
                 : item,
             ),
             isOpen: true,
           });
         } else {
+          const newItem = { ...product, quantity };
+          const limit = getCartItemLimit(currentItems, newItem);
+          if (limit < 1) return;
           set({
-            items: [...currentItems, { ...product, quantity }],
+            items: [...currentItems, { ...newItem, quantity: Math.min(quantity, limit) }],
             isOpen: true,
           });
         }
@@ -64,15 +100,18 @@ export const useCart = create<CartStore>()(
         });
       },
       updateQuantity: (name: string, quantity: number, variations?: Record<string, string>) => {
-        if (quantity <= 0) {
-          get().removeItem(name, variations);
-          return;
-        }
+        if (!Number.isFinite(quantity)) return;
         set({
           items: get().items.map((item) =>
             item.name === name &&
             JSON.stringify(item.selectedVariations) === JSON.stringify(variations)
-              ? { ...item, quantity }
+              ? {
+                  ...item,
+                  quantity: Math.max(
+                    1,
+                    Math.min(Math.floor(quantity), getCartItemLimit(get().items, item)),
+                  ),
+                }
               : item,
           ),
         });

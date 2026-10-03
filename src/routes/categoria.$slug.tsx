@@ -146,7 +146,7 @@ function CategoryPage() {
             ) : (
               <div className="text-center py-20 bg-gray-100 rounded-2xl border border-dashed border-gray-300">
                 <p className="text-muted-foreground text-lg">
-                  Nenhum produto encontrado até R$ {maxPrice.toFixed(2)} nesta categoria.
+                  Nenhum produto encontrado até R$ {Number(maxPrice).toFixed(2)} nesta categoria.
                 </p>
                 <button
                   onClick={() => setMaxPrice("")}

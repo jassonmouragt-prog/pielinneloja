@@ -21,14 +21,27 @@ export const listPublicProducts = createServerFn({ method: "GET" })
     z
       .object({
         categoryId: z.string().uuid().optional(),
+        productId: z.string().uuid().optional(),
+        search: z.string().trim().max(100).optional(),
         limit: z.number().int().positive().max(100).optional(),
       })
       .optional()
       .parse(data),
   )
   .handler(async ({ data }) => {
-    const conds = [eq(schema.products.status, "active"), gt(schema.products.stockQuantity, 0)];
+    const conds = [eq(schema.products.status, "active")];
+    if (data?.productId) conds.push(eq(schema.products.id, data.productId));
+    else conds.push(gt(schema.products.stockQuantity, 0));
     if (data?.categoryId) conds.push(eq(schema.products.categoryId, data.categoryId));
+    if (data?.search) {
+      const term = data.search
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+      conds.push(
+        sql`strpos(translate(lower(concat_ws(' ', ${schema.products.name}, ${schema.products.subtitle}, ${schema.products.description})), 'áàâãäéèêëíìîïóòôõöúùûüç', 'aaaaaeeeeiiiiooooouuuuc'), ${term}) > 0`,
+      );
+    }
 
     const rows = await db
       .select({
@@ -91,7 +104,11 @@ export const listPublicProducts = createServerFn({ method: "GET" })
       const stockMap = stockByProduct.get(p.id);
       const hasSpecificStock = stockMap && stockMap.size > 0;
       const baseVariations: any = p.variations ?? [];
-      const variationsForClient = Array.isArray(baseVariations)
+      const variationsForClient: Array<{
+        name: string;
+        options: string[];
+        stockByOption: Record<string, number>;
+      }> = Array.isArray(baseVariations)
         ? baseVariations.map((v: any) => {
             const stockByOption: Record<string, number> = {};
             const cleanOptions: string[] = [];
@@ -135,6 +152,8 @@ export const listPublicProducts = createServerFn({ method: "GET" })
       };
     });
   });
+
+export type PublicProduct = Awaited<ReturnType<typeof listPublicProducts>>[number];
 
 export const listAdminProducts = createServerFn({ method: "GET" })
   .middleware([requireAuth])

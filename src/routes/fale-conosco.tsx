@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { socialLinks } from "@/lib/site-config";
 import { InstitutionalLayout } from "@/components/site/InstitutionalLayout";
 import { MessageSquare, Mail, MapPin } from "lucide-react";
 
@@ -10,7 +11,7 @@ export const Route = createFileRoute("/fale-conosco")({
       </p>
       <div className="grid gap-6 sm:grid-cols-3">
         <a
-          href="https://wa.me/5541985073920"
+          href={socialLinks.whatsapp}
           target="_blank"
           className="flex flex-col items-center p-6 bg-beige/50 rounded-xl hover:bg-gold/10 transition-colors border border-gold/20"
         >

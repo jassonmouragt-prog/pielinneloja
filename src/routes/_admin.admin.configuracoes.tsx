@@ -381,3 +381,4 @@ function AdminSettingsPage() {
     </div>
   );
 }
+import { socialLinks } from "@/lib/site-config";

@@ -1,14 +1,16 @@
-import { Heart, Menu, Search, ShoppingBag, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { CartDrawer } from "./CartDrawer";
 import gsap from "gsap";
+import { ProductSearch } from "./ProductSearch";
+import { socialLinks } from "@/lib/site-config";
 
 export function SiteHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const logoUrl = "/logo-preta.png";
-  const headerRef = useRef<HTMLElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const header = headerRef.current;
@@ -37,20 +39,30 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 px-4 sm:px-6 lg:px-8 pt-3">
       <div
         ref={headerRef}
-        className={`mx-auto grid h-16 lg:h-[80px] max-w-[1400px] grid-cols-[auto_1fr_auto] items-center gap-4 px-4 sm:px-6 lg:grid-cols-[1fr_auto_1fr] lg:px-[60px] rounded-2xl transition-[backdrop-filter,background,box-shadow] duration-500 ${
+        className={`mx-auto grid h-16 lg:h-[80px] max-w-[1400px] grid-cols-[1fr_auto] items-center gap-2 px-3 sm:gap-4 sm:px-6 lg:grid-cols-[1fr_auto_1fr] lg:px-[60px] rounded-2xl transition-[backdrop-filter,background,box-shadow] duration-500 ${
           isScrolled
             ? "bg-white/40 backdrop-blur-[40px] shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/30"
             : "bg-white/60 backdrop-blur-xl shadow-glass border border-white/20"
         }`}
       >
         {/* Logo — left */}
-        <Link to="/" className="group flex items-center leading-none">
-          <img
-            src={logoUrl}
-            alt="Pielinne Semijoias"
-            className="h-8 w-auto object-contain lg:h-9"
-            loading="eager"
-          />
+        <Link to="/" className="group flex min-w-0 items-center leading-none">
+          <span className="relative inline-flex">
+            <img
+              src={logoUrl}
+              alt="Pielinne Semijoias"
+              className="h-8 w-auto object-contain lg:h-9"
+              loading="eager"
+            />
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 bg-gray-500"
+              style={{
+                mask: `url(${logoUrl}) center / contain no-repeat`,
+                clipPath: "inset(0 0 49% 0)",
+              }}
+            />
+          </span>
         </Link>
 
         {/* Menu — center (desktop) */}
@@ -76,17 +88,12 @@ export function SiteHeader() {
         </nav>
 
         {/* Actions — right */}
-        <div className="flex items-center justify-end gap-5">
-          <button
-            aria-label="Buscar"
-            className="hidden text-ink/60 transition-colors duration-300 hover:text-silver-deep md:block"
-          >
-            <Search className="size-[18px] stroke-[1.5]" />
-          </button>
+        <div className="flex items-center justify-end gap-1 sm:gap-3 lg:gap-5">
+          <ProductSearch />
           <a
-            href="https://www.instagram.com/pielinne_semijoias/"
+            href={socialLinks.instagram}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             aria-label="Instagram"
             className="hidden text-ink/60 transition-colors duration-300 hover:text-silver-deep md:block"
           >
@@ -97,7 +104,7 @@ export function SiteHeader() {
           <button
             aria-label="Abrir menu"
             onClick={() => setIsMenuOpen(true)}
-            className="text-ink/60 transition-colors duration-300 hover:text-silver-deep lg:hidden"
+            className="grid size-10 shrink-0 place-items-center rounded-full text-ink/60 transition-colors duration-300 hover:text-silver-deep focus-visible:outline-2 focus-visible:outline-silver-deep lg:hidden"
           >
             <Menu className="size-5 stroke-[1.5]" />
           </button>
@@ -154,21 +161,24 @@ export function SiteHeader() {
               Contato
             </Link>
             <Link
-              to="/categoria/aneis"
+              to="/categoria/$slug"
+              params={{ slug: "aneis" }}
               onClick={() => setIsMenuOpen(false)}
               className="border-b border-white/15 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-silver-deep hover:text-silver"
             >
               Anéis
             </Link>
             <Link
-              to="/categoria/pulseiras"
+              to="/categoria/$slug"
+              params={{ slug: "pulseiras" }}
               onClick={() => setIsMenuOpen(false)}
               className="border-b border-white/15 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-silver-deep hover:text-silver"
             >
               Pulseiras
             </Link>
             <Link
-              to="/categoria/brincos"
+              to="/categoria/$slug"
+              params={{ slug: "brincos" }}
               onClick={() => setIsMenuOpen(false)}
               className="border-b border-white/15 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-silver-deep hover:text-silver"
             >

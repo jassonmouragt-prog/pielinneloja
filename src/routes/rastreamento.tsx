@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { socialLinks } from "@/lib/site-config";
 import { InstitutionalLayout } from "@/components/site/InstitutionalLayout";
 import { Search } from "lucide-react";
 
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/rastreamento")({
           Lembre-se que o prazo para postagem é de até 48h após a confirmação do pagamento.
         </p>
         <a
-          href="https://wa.me/5541985073920"
+          href={socialLinks.whatsapp}
           target="_blank"
           className="mt-6 inline-flex items-center justify-center px-6 py-2.5 bg-gold text-ink rounded-full text-sm font-bold shadow-lg transition-transform hover:scale-105"
         >

@@ -2,6 +2,7 @@ import { Reveal } from "./Reveal";
 import { useQuery } from "@tanstack/react-query";
 import { getInstagramPosts } from "@/lib/instagram.functions";
 import { Loader2, Instagram } from "lucide-react";
+import { socialLinks } from "@/lib/site-config";
 
 export function InstagramSection() {
   const {
@@ -31,7 +32,7 @@ export function InstagramSection() {
             </p>
           </div>
           <a
-            href="https://www.instagram.com/pielinne_semijoias/"
+            href={socialLinks.instagram}
             target="_blank"
             rel="noreferrer"
             className="shrink-0 flex items-center gap-2 border border-gray-300 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-silver-deep transition-colors duration-300 hover:bg-gray-100 hover:text-ink"

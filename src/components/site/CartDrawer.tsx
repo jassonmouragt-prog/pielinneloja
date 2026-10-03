@@ -1,10 +1,12 @@
-import { ShoppingBag, X, Plus, Minus, MessageSquare, Loader2, Tag } from "lucide-react";
-import { useCart, type CartItem } from "@/hooks/useCart";
+import { ShoppingCart, X, Plus, Minus, MessageSquare, Loader2, Tag } from "lucide-react";
+import { useCart, getCartItemLimit, type CartItem } from "@/hooks/useCart";
 import { useHydrated } from "@/hooks/useHydrated";
 import { registerPendingSale } from "@/lib/sales.functions";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { socialLinks } from "@/lib/site-config";
+import { buildOrderMessage } from "@/lib/order-message";
 import {
   Sheet,
   SheetContent,
@@ -14,7 +16,6 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -25,7 +26,7 @@ export function CartDrawer() {
   const [customerName, setCustomerName] = useState("");
   const [nameError, setNameError] = useState(false);
   const registerSale = useServerFn(registerPendingSale);
-  const WHATSAPP_NUMBER = "5541985073920";
+  const titleRef = useRef<HTMLHeadingElement>(null);
 
   const handleCheckout = async () => {
     setNameError(false);
@@ -50,18 +51,7 @@ export function CartDrawer() {
         return acc + priceVal * item.quantity;
       }, 0);
 
-      let message = `Olá! Meu nome é ${customerName}. Gostaria de finalizar o pedido com os seguintes produtos:\n\n`;
-      items.forEach((item: CartItem) => {
-        message += `• ${item.name} (${item.subtitle})\n`;
-        if (item.selectedVariations) {
-          const variationsStr = Object.entries(item.selectedVariations)
-            .map(([key, value]) => `${key}: ${value}`)
-            .join(", ");
-          message += `  Variações: ${variationsStr}\n`;
-        }
-        message += `  Qtd: ${item.quantity} x ${item.price}\n\n`;
-      });
-      message += `Total: R$ ${totalPrice.toFixed(2).replace(".", ",")}\n`;
+      const message = buildOrderMessage(items, customerName, totalPrice);
 
       // 1. Registra no dashboard PRIMEIRO
       await registerSale({
@@ -80,7 +70,7 @@ export function CartDrawer() {
 
       // 2. Só então redireciona para o WhatsApp
       const encodedMessage = encodeURIComponent(message);
-      const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+      const whatsappUrl = `${socialLinks.whatsapp}?text=${encodedMessage}`;
 
       // Tenta abrir em nova janela
       const newWindow = window.open(whatsappUrl, "_blank");
@@ -93,9 +83,9 @@ export function CartDrawer() {
       clearCart();
       setIsOpen(false);
       toast.success("Pedido enviado! Aguarde o contato no WhatsApp.");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error during checkout:", error);
-      if (error.message === "WHATSAPP_BLOCKED") {
+      if (error instanceof Error && error.message === "WHATSAPP_BLOCKED") {
         toast.error(
           "O redirecionamento para o WhatsApp foi bloqueado pelo navegador. Por favor, permita pop-ups.",
         );
@@ -113,61 +103,78 @@ export function CartDrawer() {
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <button
-          aria-label="Carrinho"
-          className="relative text-ink/80 transition-transform duration-300 hover:scale-110 cursor-pointer"
+          type="button"
+          aria-label="Abrir carrinho"
+          className="relative grid size-10 shrink-0 place-items-center rounded-full text-ink/80 transition-transform duration-300 hover:scale-110 cursor-pointer focus-visible:outline-2 focus-visible:outline-silver-deep"
         >
-          <ShoppingBag className="size-5 stroke-[1.5]" />
+          <ShoppingCart className="size-5 stroke-[1.5]" />
           {hydrated && totalItems() > 0 && (
-            <span className="absolute -top-2 -right-2 grid size-4 place-items-center rounded-full bg-silver-deep text-[10px] font-bold text-white">
+            <span className="absolute top-0 right-0 grid min-w-4 h-4 px-0.5 place-items-center rounded-full bg-silver-deep text-[10px] font-bold text-white">
               {totalItems()}
             </span>
           )}
         </button>
       </SheetTrigger>
       <SheetContent
-        className="flex w-full flex-col p-0 sm:max-w-md z-[100] max-h-screen overflow-y-auto glass-strong"
+        className="flex w-full h-dvh flex-col p-0 sm:max-w-md z-[100] overflow-y-auto overflow-x-hidden bg-white"
         side="right"
+        aria-describedby={undefined}
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          titleRef.current?.focus();
+        }}
       >
-        <SheetHeader className="border-b border-gray-200 px-6 py-4">
-          <SheetTitle className="flex items-center gap-2 text-silver-deep">
-            <ShoppingBag className="size-5" />
+        <SheetHeader className="shrink-0 border-b border-gray-200 px-4 pr-12 py-4 sm:px-6">
+          <SheetTitle
+            ref={titleRef}
+            tabIndex={-1}
+            className="flex items-center gap-2 text-silver-deep outline-none"
+          >
+            <ShoppingCart className="size-5" />
             Meu Carrinho
           </SheetTitle>
         </SheetHeader>
 
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
-            <ShoppingBag className="mb-4 size-12 text-muted-foreground/30" />
+            <ShoppingCart className="mb-4 size-12 text-muted-foreground/30" />
             <p className="text-lg font-medium text-ink">Seu carrinho está vazio</p>
             <p className="mt-2 text-sm text-muted-foreground">
               Adicione produtos para começar a comprar.
             </p>
           </div>
         ) : (
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <ScrollArea className="flex-1 px-6">
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
+            <div className="px-4 sm:px-6">
               <div className="divide-y divide-gray-200 py-4">
                 {items.map((item: CartItem) => (
-                  <div key={item.name} className="flex gap-4 py-4">
-                    <div className="size-20 shrink-0 overflow-hidden rounded-md border border-gray-200 bg-gray-100">
+                  <div
+                    key={`${item.id ?? item.name}-${JSON.stringify(item.selectedVariations)}`}
+                    className="flex gap-3 py-4 sm:gap-4"
+                  >
+                    <div className="size-16 sm:size-20 shrink-0 overflow-hidden rounded-md border border-gray-200 bg-gray-100">
                       <img
                         src={item.image}
                         alt={item.name}
                         className="h-full w-full object-contain"
                       />
                     </div>
-                    <div className="flex flex-1 flex-col justify-between">
+                    <div className="flex min-w-0 flex-1 flex-col justify-between">
                       <div>
                         <div className="flex items-start justify-between gap-2">
-                          <h4 className="text-sm font-medium leading-tight text-ink">{item.name}</h4>
+                          <h4 className="min-w-0 break-words text-sm font-medium leading-tight text-ink">
+                            {item.name}
+                          </h4>
                           <button
                             onClick={() => removeItem(item.name, item.selectedVariations)}
-                            className="text-muted-foreground hover:text-destructive cursor-pointer"
+                            type="button"
+                            aria-label={`Remover ${item.name}`}
+                            className="grid size-10 shrink-0 place-items-center rounded-full text-muted-foreground hover:text-destructive cursor-pointer focus-visible:outline-2 focus-visible:outline-silver-deep"
                           >
                             <X className="size-4" />
                           </button>
                         </div>
-                        <p className="text-xs text-muted-foreground">{item.subtitle}</p>
+                        <p className="break-words text-xs text-muted-foreground">{item.subtitle}</p>
                         {item.selectedVariations && (
                           <div className="flex flex-wrap gap-1 mt-1">
                             {Object.entries(item.selectedVariations).map(([key, value]) => (
@@ -182,27 +189,38 @@ export function CartDrawer() {
                           </div>
                         )}
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-silver-deep">{item.price}</span>
-                        <div className="flex items-center gap-2 rounded-full border border-gray-200 px-2 py-1">
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                        <span className="whitespace-nowrap text-sm font-bold text-silver-deep">
+                          {item.price}
+                        </span>
+                        <div className="flex items-center rounded-full border border-gray-200 bg-white">
                           <button
+                            type="button"
+                            aria-label="Diminuir quantidade"
+                            disabled={item.quantity <= 1}
                             onClick={() =>
                               updateQuantity(item.name, item.quantity - 1, item.selectedVariations)
                             }
-                            className="text-muted-foreground hover:text-silver-deep cursor-pointer"
+                            className="grid size-10 place-items-center rounded-full text-muted-foreground hover:text-silver-deep cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-silver-deep"
                           >
-                            <Minus className="size-3" />
+                            <Minus className="size-4" />
                           </button>
-                          <span className="min-w-[20px] text-center text-xs font-medium text-ink">
+                          <span
+                            aria-live="polite"
+                            className="min-w-[24px] text-center text-sm tabular-nums font-medium text-ink"
+                          >
                             {item.quantity}
                           </span>
                           <button
+                            type="button"
+                            aria-label="Aumentar quantidade"
+                            disabled={item.quantity >= getCartItemLimit(items, item)}
                             onClick={() =>
                               updateQuantity(item.name, item.quantity + 1, item.selectedVariations)
                             }
-                            className="text-muted-foreground hover:text-silver-deep cursor-pointer"
+                            className="grid size-10 place-items-center rounded-full text-muted-foreground hover:text-silver-deep cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-silver-deep"
                           >
-                            <Plus className="size-3" />
+                            <Plus className="size-4" />
                           </button>
                         </div>
                       </div>
@@ -210,9 +228,9 @@ export function CartDrawer() {
                   </div>
                 ))}
               </div>
-            </ScrollArea>
+            </div>
 
-            <SheetFooter className="mt-auto border-t border-gray-200 bg-gray-50/50 px-6 py-6 sm:flex-col">
+            <SheetFooter className="mt-auto shrink-0 flex-col border-t border-gray-200 bg-white px-4 py-6 sm:px-6 sm:flex-col sm:space-x-0 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
               <div className="mb-4 flex items-center justify-between text-lg font-bold w-full">
                 <span className="text-ink">Total</span>
                 <span className="text-silver-deep">

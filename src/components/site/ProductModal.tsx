@@ -1,21 +1,21 @@
-import { ShoppingBag, Check, AlertCircle, Package, X } from "lucide-react";
+import { ShoppingBag, Check, AlertCircle, Package, X, Minus, Plus } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useCart } from "@/hooks/useCart";
+import { useCart, getCartItemLimit } from "@/hooks/useCart";
 import { toast } from "sonner";
 import { useState, useEffect, useMemo } from "react";
 import { publicImageUrl } from "@/lib/storage/public-url";
+import type { PublicProduct } from "@/lib/queries.queries";
 
 interface ProductModalProps {
-  product: any;
+  product: PublicProduct | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
-function resolveProductImage(product: any): string | null {
-  const images = product?.product_images ?? product?.productImages ?? [];
-  const main = images.find((img: any) => img.is_main || img.isMain);
+function resolveProductImage(product: PublicProduct): string | null {
+  const images = product.product_images;
+  const main = images.find((img) => img.isMain);
   const url = (main ?? images[0])?.url;
   if (!url) return null;
   return publicImageUrl(url);
@@ -28,7 +28,7 @@ interface VariationOption {
 }
 
 export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
-  const { addItem } = useCart();
+  const { addItem, items } = useCart();
   const [selectedVariations, setSelectedVariations] = useState<Record<string, string>>({});
   const [quantity, setQuantity] = useState(1);
 
@@ -50,7 +50,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   if (!product) return null;
 
   const mainImage = resolveProductImage(product);
-  const totalStock = product.stockQuantity ?? product.stock ?? 0;
+  const totalStock = product.stockQuantity;
 
   const getOptionStock = (varName: string, optValue: string): number | null => {
     const v = variations.find((vv) => vv.name === varName);
@@ -78,7 +78,31 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
       return s !== null && s <= 0;
     });
 
-  const effectiveMax = selectedMaxStock ?? totalStock;
+  const inCart = items.filter((item) => item.id === product.id);
+  const variationStock = Object.fromEntries(
+    variations.map((variation) => [variation.name, variation.stockByOption ?? {}]),
+  );
+  const sameVariation = inCart.filter(
+    (item) =>
+      JSON.stringify(item.selectedVariations) ===
+      JSON.stringify(hasVariations ? selectedVariations : undefined),
+  );
+  const effectiveMax =
+    getCartItemLimit(
+      items.filter((item) => !sameVariation.includes(item)),
+      {
+        id: product.id,
+        name: product.name,
+        subtitle: product.subtitle ?? "",
+        price: String(product.price),
+        image: mainImage ?? "",
+        quantity: 0,
+        selectedVariations: hasVariations ? selectedVariations : undefined,
+        stockQuantity: totalStock,
+        maxQuantity: selectedMaxStock ?? totalStock,
+        variationStock,
+      },
+    ) - sameVariation.reduce((sum, item) => sum + item.quantity, 0);
   const safeQuantity = Math.min(Math.max(1, quantity), Math.max(1, effectiveMax));
 
   const handleAddToCart = () => {
@@ -111,6 +135,9 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
         price: `R$ ${Number(product.price).toFixed(2)}`,
         image: mainImage || "",
         selectedVariations: hasVariations ? selectedVariations : undefined,
+        maxQuantity: selectedMaxStock ?? totalStock,
+        stockQuantity: totalStock,
+        variationStock,
       },
       safeQuantity,
     );
@@ -121,7 +148,10 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="w-[95vw] max-w-4xl p-0 overflow-hidden sm:rounded-2xl max-h-[90vh] overflow-y-auto bg-white border-white/40">
-        <div className="pointer-events-none absolute -inset-px rounded-2xl overflow-hidden" aria-hidden="true">
+        <div
+          className="pointer-events-none absolute -inset-px rounded-2xl overflow-hidden"
+          aria-hidden="true"
+        >
           <div className="led-border" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2">
@@ -264,30 +294,27 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                       size="icon"
                       onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                       disabled={safeQuantity <= 1}
+                      aria-label="Diminuir quantidade"
                       className="h-10 w-10"
                     >
-                      −
+                      <Minus className="size-4" />
                     </Button>
-                    <Input
-                      type="number"
-                      min="1"
-                      max={effectiveMax}
-                      value={safeQuantity}
-                      onChange={(e) => {
-                        const v = parseInt(e.target.value) || 1;
-                        setQuantity(Math.min(Math.max(1, v), effectiveMax));
-                      }}
-                      className="h-10 w-20 text-center text-base font-bold"
-                    />
+                    <span
+                      aria-live="polite"
+                      className="grid h-10 min-w-10 place-items-center text-base font-bold tabular-nums"
+                    >
+                      {safeQuantity}
+                    </span>
                     <Button
                       type="button"
                       variant="outline"
                       size="icon"
                       onClick={() => setQuantity((q) => Math.min(effectiveMax, q + 1))}
                       disabled={safeQuantity >= effectiveMax}
+                      aria-label="Aumentar quantidade"
                       className="h-10 w-10"
                     >
-                      +
+                      <Plus className="size-4" />
                     </Button>
                     <span className="text-xs text-muted-foreground">
                       {effectiveMax} {effectiveMax === 1 ? "disponível" : "disponíveis"}

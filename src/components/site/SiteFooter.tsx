@@ -1,5 +1,6 @@
 import { Instagram, Facebook, Mail, MapPin, Phone } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { socialLinks } from "@/lib/site-config";
 
 export function SiteFooter() {
   return (
@@ -20,25 +21,25 @@ export function SiteFooter() {
           </p>
           <div className="mt-6 flex items-center gap-3">
             <a
-              href="https://www.instagram.com/pielinne_semijoias/"
+              href={socialLinks.instagram}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               aria-label="Instagram"
               className="grid size-10 place-items-center rounded-full bg-gray-100 text-ink/60 transition-all duration-300 hover:bg-silver-deep hover:text-white"
             >
               <Instagram className="size-4.5" />
             </a>
             <a
-              href="https://www.facebook.com/pielinne_semijoias/"
+              href={socialLinks.facebook}
               target="_blank"
-              rel="noreferrer"
-              aria-label="Facebook"
+              rel="noopener noreferrer"
+              aria-label="Facebook da Pielinne"
               className="grid size-10 place-items-center rounded-full bg-gray-100 text-ink/60 transition-all duration-300 hover:bg-silver-deep hover:text-white"
             >
               <Facebook className="size-4.5" />
             </a>
             <a
-              href="https://wa.me/5541985073920"
+              href={socialLinks.whatsapp}
               target="_blank"
               rel="noreferrer"
               aria-label="WhatsApp"
@@ -51,7 +52,9 @@ export function SiteFooter() {
 
         {/* Col 2 — Coleções */}
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-silver-deep">Coleções</h3>
+          <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-silver-deep">
+            Coleções
+          </h3>
           <ul className="mt-6 space-y-3">
             {["Anéis", "Colares", "Brincos", "Pulseiras", "Conjuntos"].map((link) => (
               <li key={link}>
@@ -75,18 +78,22 @@ export function SiteFooter() {
 
         {/* Col 3 — Pielinne */}
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-silver-deep">Pielinne</h3>
+          <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-silver-deep">
+            Pielinne
+          </h3>
           <ul className="mt-6 space-y-3">
-            {[
-              { label: "Sobre nós", to: "/sobre-nos" },
-              { label: "Como comprar", to: "/como-comprar" },
-              { label: "Trocas e devoluções", to: "/trocas-e-devolucoes" },
-              { label: "Política de privacidade", to: "/politica-de-privacidade" },
-              { label: "Perguntas frequentes", to: "/perguntas-frequentes" },
-            ].map((link) => (
+            {(
+              [
+                { label: "Sobre nós", to: "/sobre-nos" },
+                { label: "Como comprar", to: "/como-comprar" },
+                { label: "Trocas e devoluções", to: "/trocas-e-devolucoes" },
+                { label: "Política de privacidade", to: "/politica-de-privacidade" },
+                { label: "Perguntas frequentes", to: "/perguntas-frequentes" },
+              ] as const
+            ).map((link) => (
               <li key={link.label}>
                 <Link
-                  to={link.to as any}
+                  to={link.to}
                   className="text-xs text-ink/60 transition-colors duration-300 hover:text-silver-deep"
                 >
                   {link.label}
@@ -103,7 +110,7 @@ export function SiteFooter() {
             <li className="flex items-center gap-3 text-xs text-ink/60">
               <Phone className="size-3.5 shrink-0 text-silver-deep" />
               <a
-                href="https://wa.me/5541985073920"
+                href={socialLinks.whatsapp}
                 target="_blank"
                 rel="noreferrer"
                 className="transition-colors duration-300 hover:text-silver-deep"
