@@ -9,7 +9,7 @@ if (!url) throw new Error("DATABASE_URL required");
 const db = drizzle(neon(url));
 
 const ADMIN_EMAIL = "pielinneadmin@admin.com";
-const NEW_PASSWORD = "admin123";
+const NEW_PASSWORD = "pielinne2026@";
 
 async function main() {
   const hash = await bcrypt.hash(NEW_PASSWORD, 10);

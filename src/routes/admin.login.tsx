@@ -140,7 +140,7 @@ function AdminLoginPage() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button className="w-full bg-pink hover:bg-pink/90" type="submit" disabled={isLoading}>
+            <Button className="w-full" type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Entrar
             </Button>
